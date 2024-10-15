@@ -14,6 +14,7 @@ export * from './LogoIcon';
 export * from './LogoWhite';
 export * from './Pending';
 export * from './QRCode';
+export * from './Sort';
 export * from './Security';
 export * from './Spinner';
 export * from './Success';

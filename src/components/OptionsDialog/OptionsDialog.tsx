@@ -1,12 +1,11 @@
 import { Dialog, DialogTrigger } from '@radix-ui/react-dialog';
 import { LogOut } from 'lucide-react';
 import React from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 
 import { ArrowLeft, DotsVertical, Expand, Security, Support } from '@/assets/icons';
-import { ROUTES } from '@/constants';
-import { removeLocalStorageItem } from '@/helpers';
 import { Button, DialogContent } from '@/ui-kit';
+import { useLogout } from '@/hooks';
 
 const OPTIONS = [
   {
@@ -30,12 +29,10 @@ const OPTIONS = [
 ];
 
 export const OptionsDialog: React.FC = () => {
-  const navigate = useNavigate();
+  const logout = useLogout();
 
   const handleLogOut = () => {
-    removeLocalStorageItem('accessToken');
-
-    navigate(ROUTES.AUTH.ROOT);
+    logout();
   };
 
   return (

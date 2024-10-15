@@ -20,6 +20,7 @@ const MainLayout: React.FC = () => (
         className="flex items-center py-1.5 px-2 rounded-full border border-neutral-2 h-8"
       >
         <img className="h-5 w-5" src={avatarUrl} alt="Avatar" />
+        {/* TODO: change for Wallet Name display */}
         <span className="text-sm text-white ml-1.5">Au4...Z45U56x</span>
         <Copy width="14px" className="text-neutral-1 ml-1" />
       </div>

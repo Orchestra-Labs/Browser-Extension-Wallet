@@ -17,6 +17,5 @@ export const ROUTES = {
       CREATE: `${AUTH_ROOT}/wallet/create`,
       IMPORT: `${AUTH_ROOT}/wallet/import`,
     },
-    FORGOT_PASSWORD: `${AUTH_ROOT}/forgot-password`,
   },
 };

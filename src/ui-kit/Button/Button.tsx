@@ -1,7 +1,6 @@
 import { Slot } from '@radix-ui/react-slot';
 import { cva, type VariantProps } from 'class-variance-authority';
 import * as React from 'react';
-
 import { cn } from '@/helpers/utils';
 
 type ButtonConfig = {
@@ -25,10 +24,22 @@ const buttonVariants = cva<ButtonConfig>(
           'disabled:bg-neutral-3 disabled:text-neutral-1',
         ],
         transparent: ['bg-transparent text-blue min-h-12', 'hover:text-blue-dark'],
+        transparentNeutral: ['bg-transparent text-neutral-1 min-h-12', 'hover:text-grey-dark'],
         secondary: [
           'text-blue border bg-transparent',
           'hover:bg-blue-hover-secondary hover:text-blue-dark hover:border-blue-darker',
           'active:bg-blue-pressed-secondary active:text-blue active:border-blue',
+          'disabled:border-neutral-3 disabled:text-neutral-3 disabled:bg-transparent',
+        ],
+        unselected: [
+          'text-neutral-1 border-grey',
+          'hover:bg-grey hover:text-grey-dark hover:border-grey',
+          'active:bg-grey-pressed-secondary active:text-neutral-1 active:border-grey',
+          'disabled:border-neutral-3 disabled:text-neutral-3 disabled:bg-transparent',
+        ],
+        selected: [
+          'text-blue border bg-transparent',
+          'cursor-default',
           'disabled:border-neutral-3 disabled:text-neutral-3 disabled:bg-transparent',
         ],
         icon: ['rounded-full bg-neutral-2 text-white', ''],

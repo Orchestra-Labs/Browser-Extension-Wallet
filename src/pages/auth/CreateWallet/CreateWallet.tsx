@@ -1,98 +1,246 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
-
-import { EyeOpen, VerifySuccess } from '@/assets/icons';
-import { RecoveryPhraseGrid } from '@/components';
-import { EXAMPLE_RECOVERY_PHRASE, ROUTES } from '@/constants';
-import { Button, Input, Stepper } from '@/ui-kit';
+import { Secp256k1HdWallet } from '@cosmjs/amino';
+import { CreatePasswordForm, RecoveryPhraseGrid, WalletSuccessScreen } from '@/components';
+import { ROUTES } from '@/constants';
+import { Button, Stepper } from '@/ui-kit';
+import { createWallet, generateToken } from '@/helpers/wallet';
+import { useAtom, useSetAtom } from 'jotai';
+import {
+  confirmPasswordAtom,
+  mnemonic12State,
+  mnemonic24State,
+  mnemonicVerifiedState,
+  passwordAtom,
+  passwordsVerifiedAtom,
+  use24WordsState,
+} from '@/atoms';
 
 const STEPS_LABELS = ['Create password', 'Recovery phrase', 'Verify phrase'];
 
 export const CreateWallet = () => {
-  const [active, setActive] = useState(0);
+  const [mnemonic12, setMnemonic12] = useAtom(mnemonic12State);
+  const [mnemonic24, setMnemonic24] = useAtom(mnemonic24State);
+  const [use24Words, setUse24Words] = useAtom(use24WordsState);
+  const [mnemonicVerified, setMnemonicVerified] = useAtom(mnemonicVerifiedState);
 
-  const nextStep = () => setActive(current => (current < 3 ? current + 1 : current));
-  const prevStep = () => setActive(current => (current > 0 ? current - 1 : current));
+  const [password, setPassword] = useAtom(passwordAtom);
+  const setConfirmPassword = useSetAtom(confirmPasswordAtom);
+  const [passwordsVerified, setPasswordsVerified] = useAtom(passwordsVerifiedAtom);
+
+  const [activeScreen, setActiveScreen] = useState(0);
+  const [fullyVerified, setFullyVerified] = useState(false);
+
+  // Proceed to next step
+  const nextStep = () => setActiveScreen(current => (current < 3 ? current + 1 : current));
+  const prevStep = () => setActiveScreen(current => (current > 0 ? current - 1 : current));
+
+  useEffect(() => {
+    clearState();
+  }, []);
+
+  useEffect(() => {
+    // Ensure both passwords and mnemonic are fully validated before enabling the next button
+    setFullyVerified(passwordsVerified && mnemonicVerified);
+  }, [passwordsVerified, mnemonicVerified]);
+
+  // Select random hidden indexes for verification step
+  const getRandomIndexes = () => {
+    const phraseLength = use24Words ? 24 : 12;
+    const indexes = Array.from(Array(phraseLength).keys());
+    const shuffled = indexes.sort(() => 0.5 - Math.random());
+    const sortedRandomIndices = shuffled.slice(0, 3).sort((a, b) => a - b); // Sort numerically
+    return sortedRandomIndices;
+  };
+
+  const [randomHiddenIndexes, setRandomHiddenIndexes] = useState(getRandomIndexes());
+
+  // Generate the mnemonic phrases on component mount
+  useEffect(() => {
+    const generateMnemonics = async () => {
+      const wallet12 = await Secp256k1HdWallet.generate(12);
+      const wallet24 = await Secp256k1HdWallet.generate(24);
+      setMnemonic12(wallet12.mnemonic.split(' '));
+      setMnemonic24(wallet24.mnemonic.split(' '));
+    };
+
+    generateMnemonics();
+  }, []);
+
+  useEffect(() => {
+    if (activeScreen !== 2) {
+      setMnemonicVerified(false);
+      // Reset verification words on change of screen
+      setRandomHiddenIndexes(getRandomIndexes());
+    }
+  }, [activeScreen]);
+
+  const getCurrentMnemonic = () => (use24Words ? mnemonic24 : mnemonic12);
+  const getStringMnemonic = () => getCurrentMnemonic().join(' ');
+
+  const clearState = () => {
+    setMnemonic12(new Array(12).fill(''));
+    setMnemonic24(new Array(24).fill(''));
+    setUse24Words(false);
+    setMnemonicVerified(false);
+
+    setPassword('');
+    setConfirmPassword('');
+    setPasswordsVerified(false);
+  };
+
+  // Regenerate random indexes when use24Words is toggled
+  useEffect(() => {
+    setRandomHiddenIndexes(getRandomIndexes());
+  }, [use24Words]);
+
+  /* Current TODOs */
+  // TODO: bring list views out to other screen.  component?
+  // TODO: check format of entered address for send field
+  // TODO: format numbers on balance and asset value field to user locale.  start with US format, add others
+  // TODO: send fields vary in size and shift on data entry.  fix this.
+  // TODO: add mock max amount placeholder to amount sections (send and validator)
+  // TODO: after send, navigate to congratulations page
+
+  // TODO: provide updates to user as send information updates (viewable in console currently)
+  // TODO: add fields to let user know when sending over IBC
+
+  // TODO: add icon retrieval from registry
+  // TODO: move most of walletState atom into main.  this prevents re-building auth every time wallet updates
+  // TODO: force loss of focus on click outside extension
+  // TODO: fix update from token on return to focus (or find out what that's called when an extension becomes active again)
+  // TODO: clean up helper functions and hooks
+  // TODO: add max button to amount section
+  // TODO: add slide tray for asset selections (like on mobile)
+  // TODO: fix timed logout.  not currently functional
+
+  /* Inside wallet TODOs */
+  // TODO: ensure new encrypted mnemonic overwrites old in case of same password and name (but let user know first)
+  // TODO: add sorting function to wallet asset list
+  // TODO: add search function to wallet asset list
+  // TODO: add show/hide function to wallet asset list
+  // TODO: add sorting function to validator list
+  // TODO: add search function to validator list
+  // TODO: add show/hide function to validator list
+  // TODO: abstract IBC needs
+
+  /* Wallet UI TODOs */
+  // TODO: remove or enable connected services button
+  // TODO: remove or enable transaction history
+  // TODO: show donut chart with assets rather than singular value
+  // TODO: remove or enable expand view
+  // TODO: remove "support" in favor of links to site and socials
+  // TODO: add link to github repo for registry
+  // TODO: change "options" to settings?
+  // TODO: security tab enables/disables need to confirm transactions/re-entry of password on transactions (3 levels of security)
+  // TODO: change options buttons
+  // TODO: update transactions history button (need endpoint for this.  disable until ready)
+
+  /* Auth TODOs */
+  // TODO: abstract wallet prefix and mnemonic decryption
+  // TODO: look into changing return of wallet object into return of offline signer object.  can one be used for all activities?  is one more secure than the other?
+  // TODO: ensure trim on completion of password entry (such as save to storage).  same on login.  to avoid copy/paste errors
+
+  /* Less Critical Auth TODOs */
+  // TODO: cut trailing 0s on numeric asset displays
+  // TODO: handle error printout (in place of subtitle on verify screen?)
+  // TODO: for default on text, ensure no focus and basic mouse onHover (no change)
+  // TODO: test path and create error for no wallet exists and user attempts login
+  // TODO: Add Manual RPC changes in-app
+
+  /* Less Critical Wallet TODOs */
+  // TODO: add QR code input to address on send screen (drag and drop/image selection)
+  // TODO: create add wallet screen to allow management of multiple accounts
+  // TODO: add save wallet screen for saving preferred received assets per wallet and wallet name/identifier (for those user sends to)
+  // TODO: add qr code screen for transfer data (including account data).  or from google
+  // TODO: add swipe to dismiss on dialog trays
+
+  /* Nice to have TODOs */
+  // TODO: add swipe to refresh on main page lists
+  // TODO: show green or red border for passphrase box on full verify, clear on start of typing
+  // TODO: add password complexity bar on entry
+  // TODO: add toggle option for single-click transactions and another for force accepting/declining transactions
+  // TODO: add toggle option for ultra-secure mode, using password auth for on every transaction like with hardware wallets.  in that mode, no session storage is used.
+  // TODO: add click and drag to scroll for passphrase box and tilescroller
+  // TODO: keep track of current page for case of re-open before timeout
+
+  /* Interchain-compatibility TODOs */
+  // TODO: add icon and chain display name to copy address for receive
+  // TODO: add manual IBC (for rare cases.  hide behind dev tool enabling?)
+
+  // Check everything is completed properly and pass to confirmation screen
+  const handleCreateWallet = async () => {
+    try {
+      // Generate wallet from the mnemonic and create the token
+      const { walletAddress } = await createWallet(getStringMnemonic(), password);
+      generateToken(walletAddress);
+
+      // Clear state and navigate to confirmation page after wallet creation
+      clearState();
+      nextStep();
+    } catch (error) {
+      console.error('Error creating wallet:', error);
+    }
+  };
 
   return (
     <div className="mt-6 h-full">
-      <Stepper
-        active={active}
-        labels={STEPS_LABELS}
-        progressBarClass="px-9"
-        containerClass="h-full"
-      >
-        <div className="w-full h-full pt-7 px-8 flex flex-col">
-          <h1 className="text-white text-h3 font-semibold">{STEPS_LABELS[0]}</h1>
-          <form className="mt-9 flex-1">
-            <Input
-              variant="primary"
-              className="w-full"
-              wrapperClass="mb-4"
-              label="New password (8 characters min)"
-              placeholder="Enter password"
-              icon={<EyeOpen width={20} />}
-              iconRole="button"
-            />
-            <Input
-              variant="primary"
-              className="w-full"
-              label="Confirm password"
-              placeholder="Repeat password"
-              icon={<EyeOpen width={20} />}
-              iconRole="button"
-            />
-          </form>
-          <div className="flex w-full justify-between gap-x-5 pb-2">
-            <Button variant="secondary" className="w-full" asChild>
-              <NavLink to={ROUTES.AUTH.NEW_WALLET.ROOT}>Back</NavLink>
-            </Button>
-            <Button className="w-full" onClick={nextStep}>
-              Next
-            </Button>
+      {activeScreen < STEPS_LABELS.length ? (
+        <Stepper
+          active={activeScreen}
+          labels={STEPS_LABELS}
+          progressBarClass="px-9"
+          containerClass="h-full"
+        >
+          {/* Step 1: Create password */}
+          <div className="w-full h-full pt-7 px-8 flex flex-col">
+            <h1 className="text-white text-h3 font-semibold">{STEPS_LABELS[0]}</h1>
+            <CreatePasswordForm />
+
+            <div className="flex w-full justify-between gap-x-5 pb-2">
+              <Button variant="secondary" className="w-full" asChild>
+                <NavLink to={ROUTES.AUTH.NEW_WALLET.ROOT}>Back</NavLink>
+              </Button>
+              <Button className="w-full" onClick={nextStep} disabled={!passwordsVerified}>
+                Next
+              </Button>
+            </div>
           </div>
-        </div>
-        <div className="w-full h-full pt-7 flex flex-col">
-          <h1 className="text-white text-h3 font-semibold">{STEPS_LABELS[1]}</h1>
-          <p className="mt-2.5 text-base text-neutral-1">Backup your secret recovery phrase</p>
-          <div className="mt-9 flex-1">
-            <RecoveryPhraseGrid phrase={EXAMPLE_RECOVERY_PHRASE} readOnly withButtons />
+
+          {/* Step 2: Display recovery phrase */}
+          <div className="w-full h-full pt-7 flex flex-col">
+            <h1 className="text-white text-h3 font-semibold">{STEPS_LABELS[1]}</h1>
+            <p className="mt-2.5 text-base text-neutral-1">Backup your secret recovery phrase</p>
+            <RecoveryPhraseGrid />
+            <div className="flex w-full px-10 justify-between gap-x-5 pb-2 mt-4">
+              <Button variant="secondary" className="w-full" onClick={prevStep}>
+                Back
+              </Button>
+              <Button className="w-full" onClick={nextStep}>
+                Next
+              </Button>
+            </div>
           </div>
-          <div className="flex w-full px-10 justify-between gap-x-5 pb-2">
-            <Button variant="secondary" className="w-full" onClick={prevStep}>
-              Back
-            </Button>
-            <Button className="w-full" onClick={nextStep}>
-              Next
-            </Button>
+
+          {/* Step 3: Verify recovery phrase */}
+          <div className="w-full h-full pt-7 flex flex-col">
+            <h1 className="text-white text-h3 font-semibold">{STEPS_LABELS[2]}</h1>
+            <p className="mt-2.5 text-neutral-1 text-base">Confirm your secret recovery phrase</p>
+            <RecoveryPhraseGrid isVerifyMode={true} hiddenIndices={randomHiddenIndexes} />
+            <div className="flex w-full px-10 justify-between gap-x-5 pb-2">
+              <Button variant="secondary" className="w-full" onClick={prevStep}>
+                Back
+              </Button>
+              <Button className="w-full" onClick={handleCreateWallet} disabled={!fullyVerified}>
+                Next
+              </Button>
+            </div>
           </div>
-        </div>
-        <div className="w-full h-full pt-7 flex flex-col">
-          <h1 className="text-white text-h3 font-semibold">{STEPS_LABELS[2]}</h1>
-          <p className="mt-2.5 text-neutral-1 text-base">Confirm your secret recovery phrase</p>
-          <div className="mt-9 flex-1">
-            <RecoveryPhraseGrid phrase={EXAMPLE_RECOVERY_PHRASE} verifyPhrase />
-          </div>
-          <div className="flex w-full px-10 justify-between gap-x-5 pb-2">
-            <Button variant="secondary" className="w-full" onClick={prevStep}>
-              Back
-            </Button>
-            <Button className="w-full" onClick={nextStep}>
-              Next
-            </Button>
-          </div>
-        </div>
-        <div className="w-full h-full pt-3 flex flex-col px-16" data-hidden="true">
-          <div className="px-10 pb-2">
-            <VerifySuccess width="100%" />
-          </div>
-          <h1 className="text-white text-h3 font-semibold">Congratulations!</h1>
-          <p className="mt-2.5 text-neutral-1 text-base">Your wallet is created succesfully</p>
-          <Button className="mt-8" asChild>
-            <NavLink to={ROUTES.AUTH.ROOT}>Got it</NavLink>
-          </Button>
-        </div>
-      </Stepper>
+        </Stepper>
+      ) : (
+        // Wallet success screen outside the Stepper
+        <WalletSuccessScreen caption="Your wallet was created successfully" />
+      )}
     </div>
   );
 };

@@ -1,2 +1,2 @@
-export * from './defaultValues';
+export * from './default';
 export * from './routes';

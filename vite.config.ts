@@ -5,10 +5,20 @@ import viteTsconfigPaths from 'vite-tsconfig-paths';
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react(), viteTsconfigPaths()],
+  define: {
+    global: 'window',
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
+  },
+  plugins: [react(), viteTsconfigPaths()],
+  server: {
+    open: true,
+    host: true,
+  },
+  preview: {
+    open: false,
   },
 });

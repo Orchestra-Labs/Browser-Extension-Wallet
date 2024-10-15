@@ -1,99 +1,203 @@
-import { Select, SelectValue } from '@radix-ui/react-select';
-import { NavLink } from 'react-router-dom';
-
-import { LogoIcon } from '@/assets/icons';
-import { ReceiveDialog } from '@/components';
-import { ROUTES } from '@/constants';
+import { Swiper, SwiperClass, SwiperSlide } from 'swiper/react';
+import 'swiper/swiper-bundle.css';
+import { BalanceCard, TileScroller } from '@/components';
 import {
-  Button,
-  ScrollArea,
-  SelectContent,
-  SelectItem,
-  SelectSeparator,
-  SelectTrigger,
-} from '@/ui-kit';
+  walletStateAtom,
+  delegationAtom,
+  paginationAtom,
+  validatorInfoAtom,
+  rewardsAtom,
+  showCurrentValidatorsAtom,
+  swiperIndexState,
+} from '@/atoms';
+import { useEffect, useRef } from 'react';
+import { useAtom, useAtomValue, useSetAtom } from 'jotai';
+import { GREATER_EXPONENT_DEFAULT, LOCAL_ASSET_REGISTRY, CHAIN_NODES } from '@/constants';
+import axios from 'axios';
+import { convertToGreaterUnit, fetchDelegations, fetchValidatorInfo } from '@/helpers';
+import { Sort } from '@/assets/icons';
+import { Button } from '@/ui-kit';
 
-const EXAMPLE_ASSETS = [1, 2, 3, 4, 5, 6, 7, 8];
+export const Main = () => {
+  const walletState = useAtomValue(walletStateAtom);
+  const [delegationState, setDelegationState] = useAtom(delegationAtom);
+  const setPaginationState = useSetAtom(paginationAtom);
+  const setValidatorInfo = useSetAtom(validatorInfoAtom);
+  const totalSlides = 2;
+  const [activeIndex, setActiveIndex] = useAtom(swiperIndexState);
+  const [rewards, setRewards] = useAtom(rewardsAtom);
+  const [showCurrentValidators, setValidatorToggle] = useAtom(showCurrentValidatorsAtom);
+  const swiperRef = useRef<SwiperClass | null>(null);
 
-export const Main = () => (
-  <div className="h-full pt-5">
-    <div className="flex gap-x-6 px-4">
-      <div className="text-left">
-        <label className="text-sm text-neutral-1">Account 1</label>
-        <Select defaultValue="1ZChms...HVDzw">
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Account" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="1ZChms...HVDzw">1ZChms...HVDzw</SelectItem>
-            <SelectSeparator />
-            <SelectItem value="1ZChms...HbHe1">1ZChms...HbHe1</SelectItem>
-            <SelectSeparator />
-            <SelectItem value="1ZChms...H24Kvh">1ZChms...H24Kvh</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-      <div className="text-left">
-        <label className="text-sm text-neutral-1 mb-0.5">Network</label>
-        <Select defaultValue="symphony">
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Network" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="symphony">Symphony</SelectItem>
-            <SelectSeparator />
-            <SelectItem value="ethereum">Ethereum</SelectItem>
-            <SelectSeparator />
-            <NavLink
-              to={ROUTES.APP.ADD_NETWORK}
-              className="flex text-blue font-normal hover:text-blue-dark py-2 px-2.5 focus:outline-0"
-            >
-              Add new network
-            </NavLink>
-          </SelectContent>
-        </Select>
-      </div>
-    </div>
-    <div className="px-4 mt-4">
-      <div className="p-4 border rounded-xl border-neutral-4 flex flex-col items-center">
-        <div className="text-center mb-7">
-          <p className="text-base text-neutral-1">Available balance</p>
-          <h1 className="text-h2 text-white font-bold">$1504.94</h1>
-        </div>
-        <div className="grid grid-cols-2 w-full gap-x-4 px-2">
-          <ReceiveDialog />
-          <Button className="w-full" asChild>
-            <NavLink to={ROUTES.APP.SEND}>Send</NavLink>
-          </Button>
-        </div>
-      </div>
-    </div>
-    <div className="text-left pt-4">
-      <h3 className="text-h4 text-white font-bold px-4">Assets</h3>
-      <ScrollArea
-        className="h-[200px] w-full mt-3"
-        type="always"
-        scrollbarProps={{
-          className: 'max-h-[93%]',
-        }}
-      >
-        {EXAMPLE_ASSETS.map(item => (
-          <div
-            key={item}
-            className="mx-4 py-2 min-h-[52px] flex items-center not-last:border-b not-last:border-neutral-4"
-          >
-            <div className="rounded-full h-9 w-9 bg-neutral-2 p-2 flex items-center justify-center">
-              <LogoIcon />
+  // Fetch delegation and validator info
+  const fetchDelegationsAndValidators = async () => {
+    if (!walletState.address) return;
+
+    try {
+      const { delegations, pagination } = await fetchDelegations(walletState.address);
+      setDelegationState(delegations);
+      setPaginationState(pagination);
+
+      const validatorPromises = delegations.map(delegation =>
+        fetchValidatorInfo(delegation.delegation.validator_address),
+      );
+      const validators = await Promise.all(validatorPromises);
+      setValidatorInfo(validators);
+
+      fetchRewards(walletState.address, delegations);
+    } catch (error) {
+      console.error('Error fetching delegations or validators:', error);
+    }
+  };
+
+  // Fetch rewards for each validator
+  const fetchRewards = async (walletAddress: string, delegations: any[]) => {
+    try {
+      const rewardsPromises = delegations.map(async delegation => {
+        const apiUrl = `${CHAIN_NODES.symphonytestnet[0].rest}/cosmos/distribution/v1beta1/delegators/${walletAddress}/rewards/${delegation.delegation.validator_address}`;
+        const response = await axios.get(apiUrl);
+        return {
+          validator: delegation.delegation.validator_address,
+          rewards: response.data.rewards || [],
+        };
+      });
+
+      const rewardsData = await Promise.all(rewardsPromises);
+      setRewards(rewardsData);
+    } catch (error) {
+      console.error('Error fetching rewards:', error);
+    }
+  };
+
+  // Fetch delegations and validators when activeIndex changes
+  useEffect(() => {
+    if (activeIndex === 1) {
+      fetchDelegationsAndValidators();
+    }
+
+    // Sync the swiper visual state
+    if (swiperRef.current) {
+      swiperRef.current.slideTo(activeIndex);
+    }
+  }, [activeIndex, walletState.address]);
+
+  // Toggle between "All" and "Current" validators
+  const handleToggleChange = (shouldShowCurrent: boolean) => {
+    setValidatorToggle(shouldShowCurrent);
+  };
+
+  // Calculate total available MLD balance
+  const totalAvailableMLD = walletState.assets
+    .filter(asset => asset.denom === 'note')
+    .reduce((sum, delegation) => sum + parseFloat(delegation.amount), 0)
+    .toFixed(GREATER_EXPONENT_DEFAULT);
+
+  // Calculate total staked MLD balance
+  const totalStakedMLD = delegationState
+    .filter(delegation => delegation.balance.denom === 'note')
+    .reduce(
+      (sum, delegation) =>
+        sum +
+        parseFloat(delegation.balance.amount) /
+          Math.pow(10, LOCAL_ASSET_REGISTRY.note.exponent || GREATER_EXPONENT_DEFAULT),
+      0,
+    );
+
+  const totalStakedRewards = rewards.reduce((sum, reward) => {
+    const totalReward = reward.rewards.reduce((rSum, r) => rSum + parseFloat(r.amount), 0);
+    return sum + totalReward;
+  }, 0);
+  const convertedTotalRewards = convertToGreaterUnit(
+    totalStakedRewards,
+    GREATER_EXPONENT_DEFAULT,
+  ).toFixed(GREATER_EXPONENT_DEFAULT);
+
+  return (
+    <div className="h-full flex flex-col overflow-hidden">
+      {/* Swiper Component for Balance Cards */}
+      <div className="relative h-48 flex-none overflow-hidden">
+        <Swiper
+          spaceBetween={50}
+          slidesPerView={1}
+          loop={false}
+          onSlideChange={swiper => setActiveIndex(swiper.activeIndex)}
+          onSwiper={swiper => {
+            swiperRef.current = swiper;
+          }}
+        >
+          <SwiperSlide>
+            <div className="w-full px-4 mt-4 flex-shrink-0">
+              <BalanceCard
+                title="Available balance"
+                primaryText={`${totalAvailableMLD} MLD`}
+                currentStep={activeIndex}
+                totalSteps={totalSlides}
+              />
             </div>
-            <div className="flex flex-col ml-3">
-              <h6 className="text-base text-white">Melody</h6>
-              <p className="text-xs text-neutral-1">20456 MLD</p>
+          </SwiperSlide>
+          <SwiperSlide>
+            <div className="w-full px-4 mt-4 flex-shrink-0">
+              <BalanceCard
+                title="Staked balance"
+                primaryText={`${convertedTotalRewards} MLD`}
+                secondaryText={`${totalStakedMLD} MLD`}
+                currentStep={activeIndex}
+                totalSteps={totalSlides}
+              />
             </div>
-            <div className="flex-1" />
-            <div className="text-white text-h6">$1504.94</div>
-          </div>
-        ))}
-      </ScrollArea>
+          </SwiperSlide>
+        </Swiper>
+      </div>
+
+      {/* Assets section */}
+      <div className="flex-grow pt-4 pb-4 flex flex-col overflow-hidden">
+        {activeIndex === 0 ? (
+          <h3 className="text-h4 text-white font-bold px-4 text-left">Holdings</h3>
+        ) : (
+          <h3 className="text-h4 text-white font-bold px-4 text-left flex items-center">
+            <span className="flex-1">Validators</span>
+            <div className="flex-1 flex justify-center items-center space-x-2">
+              <Button
+                variant={showCurrentValidators ? 'selected' : 'unselected'}
+                size="small"
+                onClick={() => handleToggleChange(true)}
+                className="px-2 rounded-md text-xs"
+              >
+                Current
+              </Button>
+              <Button
+                variant={!showCurrentValidators ? 'selected' : 'unselected'}
+                size="small"
+                onClick={() => handleToggleChange(false)}
+                className="px-2 rounded-md text-xs"
+              >
+                All
+              </Button>
+            </div>
+            <div className="flex-1 flex justify-end">
+              {/* TODO: add functionality */}
+              <Sort width={20} className="text-white" />
+            </div>
+          </h3>
+        )}
+
+        <div className="flex justify-between px-4 text-neutral-1 text-xs font-bold">
+          {activeIndex === 1 ? (
+            <>
+              <span>Delegations</span>
+              <span>Rewards</span>
+            </>
+          ) : (
+            <span>&nbsp;</span>
+          )}
+        </div>
+
+        {walletState.address ? (
+          <TileScroller activeIndex={activeIndex} />
+        ) : (
+          <p className="text-base text-neutral-1 px-4">No available assets</p>
+        )}
+      </div>
     </div>
-  </div>
-);
+  );
+};

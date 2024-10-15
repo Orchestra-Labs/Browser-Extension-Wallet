@@ -15,18 +15,30 @@ export default {
       transparent: 'transparent',
       inherit: 'inherit',
       white: '#F2F2FA',
-      grey: '#D5D5E0',
+      grey: {
+        DEFAULT: '#D5D5E0',
+        dark: '#6F7078',
+      },
       'neutral-1': '#A2A2AA',
       'neutral-2': 'rgba(255, 255, 255, 0.06)',
       'neutral-3': 'rgba(82, 82, 90, 1)',
       'neutral-4': 'rgba(255, 255, 255, 0.09)',
       black: 'rgba(24, 24, 27, 1)',
-      success: '#048A4E',
-      'success-dark': '#2D403A',
-      warning: '#D9B32E',
-      'warning-dark': '#9C791C',
-      error: '#FC2A58',
-      'error-dark': '#9C0A36',
+      success: {
+        DEFAULT: '#3FDBA8',
+        dark: '#048A4E',
+        darker: '#2D403A',
+        light: '#00C896',
+      },
+      warning: {
+        DEFAULT: '#D9B32E',
+        dark: '#9C791C',
+      },
+      error: {
+        DEFAULT: '#F75363',
+        dark: '#9C0A36',
+        light: '#FC2A58',
+      },
       blue: {
         DEFAULT: '#61CBF4',
         darker: '#43ADD6',
@@ -57,11 +69,45 @@ export default {
         h5: ['20px', '28px'],
         h6: ['18px', '26px'],
       },
+      animation: {
+        'scale-up': 'scaleUp 0.3s ease-in-out',
+        'slide-in-from-bottom': 'slideInFromBottom 0.3s ease-in-out',
+      },
+      keyframes: {
+        scaleUp: {
+          '0%': { transform: 'scale(0)' },
+          '100%': { transform: 'scale(1)' },
+        },
+        slideInFromBottom: {
+          '0%': { transform: 'translateY(100%)', opacity: 0 },
+          '100%': { transform: 'translateY(0)', opacity: 1 },
+        },
+      },
+      height: {
+        76: '18.75rem',
+      },
+      maxHeight: {
+        76: '18.75rem',
+      },
+      minHeight: {
+        76: '18.75rem',
+      },
     },
   },
   plugins: [
-    plugin(function ({ addVariant }) {
+    plugin(function ({ addVariant, addUtilities }) {
       addVariant('not-last', '&:not(:last-child)');
+      addUtilities({
+        '.hide-scrollbar': {
+          /* Hide scrollbar for WebKit browsers (Chrome, Safari) */
+          '&::-webkit-scrollbar': {
+            display: 'none',
+          },
+          /* Hide scrollbar for Firefox and Edge */
+          'scrollbar-width': 'none', // Firefox
+          '-ms-overflow-style': 'none', // IE and Edge
+        },
+      });
     }),
   ],
 };

@@ -3,16 +3,11 @@ import { Outlet, useNavigate } from 'react-router-dom';
 
 import { Logo } from '@/assets/icons';
 import { ROUTES } from '@/constants';
-import { setLocalStorageItem } from '@/helpers';
-
-const EXAMPLE_TOKEN = 'token';
 
 const AuthLayout: React.FC = () => {
   const navigate = useNavigate();
 
   const onLogoClick = () => {
-    setLocalStorageItem('accessToken', EXAMPLE_TOKEN);
-
     navigate(ROUTES.APP.ROOT);
   };
   return (
