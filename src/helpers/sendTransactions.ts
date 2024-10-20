@@ -1,9 +1,10 @@
 import { CHAIN_ENDPOINTS } from '@/constants';
 import { queryRpcNode } from './queryNodes';
-import { SendObject } from '@/types';
+import { SendObject, TransactionResult } from '@/types';
 
-export const sendTransaction = async (fromAddress: string, sendObject: SendObject) => {
+export const sendTransaction = async (fromAddress: string, sendObject: SendObject) : Promise<TransactionResult> => {
   const endpoint = CHAIN_ENDPOINTS.sendMessage;
+
   const messages = [
     {
       typeUrl: endpoint,
@@ -23,14 +24,25 @@ export const sendTransaction = async (fromAddress: string, sendObject: SendObjec
     });
 
     console.log('Successfully sent:', response);
+    return {
+      success: true,
+      message: 'Transaction sent successfully!',
+      data: response,
+    };
   } catch (error) {
     console.error('Error during send:', error);
+    return {
+      success: false,
+      message: 'Error sending transaction. Please try again.',
+      data: error,
+    };
   }
 };
 
 // TODO: suppose sends of multiple different currencies
-export const multiSendTransaction = async (fromAddress: string, sendObjects: SendObject[]) => {
-  const endpoint = CHAIN_ENDPOINTS.sendMessage;
+export const multiSendTransaction = async (fromAddress: string, sendObjects: SendObject[]) : Promise<TransactionResult> => {
+    const endpoint = CHAIN_ENDPOINTS.sendMessage;
+
 
   const messages = sendObjects.map(sendObject => ({
     typeUrl: endpoint,
@@ -42,15 +54,25 @@ export const multiSendTransaction = async (fromAddress: string, sendObjects: Sen
   }));
 
   try {
-    const unstakeResponse = await queryRpcNode({
+    const response = await queryRpcNode({
       endpoint,
       messages,
       feeDenom: sendObjects[0].denom,
     });
 
-    console.log('Successfully sent to all recipients:', unstakeResponse);
+    console.log('Successfully sent to all recipients:', response);
+    return {
+      success: true,
+      message: 'Transactions sent successfully to all recipients!',
+      data: response,
+    };
   } catch (error) {
-    // TODO: show error to user
     console.error('Error during sending:', error);
+    return {
+      success: false,
+      message: 'Error sending transactions. Please try again.',
+      data: error,
+    };
   }
 };
+

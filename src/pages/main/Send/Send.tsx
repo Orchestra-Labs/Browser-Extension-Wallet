@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { ArrowLeft, QRCode, Swap } from '@/assets/icons';
 import { DEFAULT_ASSET, GREATER_EXPONENT_DEFAULT, ROUTES } from '@/constants';
@@ -6,9 +6,10 @@ import { cn } from '@/helpers/utils';
 import { Button, Input, Separator } from '@/ui-kit';
 import { useAtomValue } from 'jotai';
 import { walletStateAtom } from '@/atoms';
-import { Asset } from '@/types';
-import { getSessionToken, sendTransaction, swapTransaction } from '@/helpers';
+import { Asset, TransactionResult } from '@/types';
+import { getSessionToken, sendTransaction, swapTransaction} from '@/helpers';
 import { AssetSelectDialog, WalletSuccessScreen } from '@/components';
+
 
 export const Send = () => {
   const location = useLocation();
@@ -23,6 +24,19 @@ export const Send = () => {
   );
   const [sendAmount, setSendAmount] = useState('1');
   const [receiveAmount, setReceiveAmount] = useState('');
+  const [alert, setAlert] = useState<{ type: 'success' | 'error', message: string } | null>(null);
+
+  //alert config for tx success/fail
+  useEffect(() => {
+    if (alert) {
+      const timer = setTimeout(() => {
+        setAlert(null);
+      }, 5000); // Hide alert after 5 seconds
+
+      return () => clearTimeout(timer);
+    }
+  }, [alert]);
+
   const [isSuccess, setIsSuccess] = useState(false);
 
   const handleSend = async () => {
@@ -30,11 +44,11 @@ export const Send = () => {
     const sessionToken = getSessionToken();
     console.log('Send page, Session token:', sessionToken);
     console.log('Send page, Wallet state', walletState);
-
+    console.log('send asset', sendAsset);
     if (!sendAsset) return;
     const assetToSend = walletAssets.find(a => a.denom === sendAsset.denom);
     if (!assetToSend) return;
-
+    console.log(assetToSend)
     const adjustedAmount = (
       parseFloat(sendAmount) * Math.pow(10, assetToSend.exponent || GREATER_EXPONENT_DEFAULT)
     ).toFixed(0); // No decimals, as this is sending the minor unit, not the greater.
@@ -48,22 +62,39 @@ export const Send = () => {
     };
 
     try {
+      let result: TransactionResult;
       if (sendAsset === receiveAsset) {
-        // Send transaction
-        await sendTransaction(walletState.address, sendObject);
+        result = await sendTransaction(walletState.address, sendObject);
+        // TODO: change gas and fee calculations
+        // TODO: show max and min for gas fees, show actual amount taken for transaction fee.  from simulated send?
         // Set success state to true after transaction
         setIsSuccess(true);
       } else if (receiveAsset) {
         // Swap transaction
         const swapObject = { sendObject, resultDenom: receiveAsset.denom };
-        await swapTransaction(walletState.address, swapObject);
-        // Set success state to true after swap
-        setIsSuccess(true);
+        result = await swapTransaction(walletState.address, swapObject);
+                setIsSuccess(true);
+      } else {
+        throw new Error('Invalid asset configuration');
+      }
+
+      setAlert({
+        type: result.success ? 'success' : 'error',
+        message: result.message,
+      });
+
+      if (!result.success) {
+        console.error('Detailed error:', result.data);
       }
     } catch (error) {
       console.error('Error broadcasting transaction', error);
+      setAlert({
+        type: 'error',
+        message: error instanceof Error ? error.message : 'An unexpected error occurred. Please try again.',
+      });
     }
   };
+  
 
   if (isSuccess) {
     return <WalletSuccessScreen caption="Transaction success!" />;
@@ -174,7 +205,29 @@ export const Send = () => {
             Send
           </Button>
         </div>
-      </div>
+
+              {/* Tailwind CSS Alert */}
+      {alert && (
+        <div className={`fixed bottom-4 left-4 right-4 p-4 rounded-md ${
+          alert.type === 'success' ? 'bg-green-500' : 'bg-red-500'
+        } text-white shadow-lg transition-opacity duration-500 ease-in-out`}>
+          <div className="flex justify-between items-center">
+            <span>{alert.message}</span>
+            <button 
+              onClick={() => setAlert(null)}
+              className="text-white hover:text-gray-200 focus:outline-none"
+            >
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
     </div>
+  </div>
+
+
+
   );
 };
