@@ -94,16 +94,35 @@ export const CreateWallet = () => {
     setRandomHiddenIndexes(getRandomIndexes());
   }, [use24Words]);
 
+  /* ******************************************************************************************* */
   /* Chris current TODO */
   // TODO: provide updates to user as staking, claim, and unstaking information changes (successes, errors, and changing gas fees)
   // TODO: provide updates to user as send information updates (errors and changing gas fees)
+  /* ******************************************************************************************* */
 
+  /* ******************************************************************************************* */
   /* David Current TODOs */
-  // TODO: add mock max amount placeholder to amount sections (send and validator)
   // TODO: add clear and max buttons to amount section
-  // TODO: check format of entered address for send field
+  // TODO: test validation of format of entered address for send field
   // TODO: make "clear" and "max" button placement and appearance more uniform (send and unstake sections)
   // TODO: format numbers on balance and asset value field to user locale.  start with US format, add others
+  // TODO: cut trailing 0s on numeric asset displays
+
+  // TODO: add sorting function to wallet asset list
+  // TODO: add search function to wallet asset list
+  // TODO: add show/hide function to wallet asset list
+  // TODO: add sorting function to validator list
+  // TODO: add search function to validator list
+  // TODO: add show/hide function to validator list
+
+  // TODO: remove "support" in favor of links to site and socials
+
+  // TODO: show green or red border for passphrase box on full verify, clear on start of typing
+
+  // TODO: change "options" to settings?
+  // TODO: show donut chart with assets rather than singular value
+
+  /* ******************************************************************************************* */
 
   /* Current TODOs */
   // TODO: clean up helper functions and hooks
@@ -120,26 +139,16 @@ export const CreateWallet = () => {
 
   /* Inside wallet TODOs */
   // TODO: ensure new encrypted mnemonic overwrites old in case of same password and name (but let user know first)
-  // TODO: add sorting function to wallet asset list
-  // TODO: add search function to wallet asset list
-  // TODO: add show/hide function to wallet asset list
-  // TODO: add sorting function to validator list
-  // TODO: add search function to validator list
-  // TODO: add show/hide function to validator list
 
   /* Wallet UI TODOs */
   // TODO: remove or enable connected services button <-- could be good for using firebase to transfer/remove settings data
   // TODO: remove or enable transaction history
-  // TODO: show donut chart with assets rather than singular value
   // TODO: remove or enable expand view
-  // TODO: remove "support" in favor of links to site and socials
-  // TODO: change "options" to settings?
   // TODO: security tab enables/disables need to confirm transactions/re-entry of password on transactions (3 levels of security)
   // TODO: change options buttons
   // TODO: update transactions history button (need endpoint for this.  disable until ready)
 
   /* Less Critical Auth TODOs */
-  // TODO: cut trailing 0s on numeric asset displays
   // TODO: handle error printout for create/import wallet (in place of subtitle on verify screen?)
   // TODO: for default on text, ensure no focus and basic mouse onHover (no change)
   // TODO: test path and create error for no wallet exists and user attempts login
@@ -154,7 +163,6 @@ export const CreateWallet = () => {
 
   /* Nice to have TODOs */
   // TODO: add swipe to refresh on main page lists
-  // TODO: show green or red border for passphrase box on full verify, clear on start of typing
   // TODO: add password complexity bar on entry
   // TODO: add toggle option for single-click transactions and another for force accepting/declining transactions
   // TODO: add toggle option for ultra-secure mode, using password auth for on every transaction like with hardware wallets.  in that mode, no session storage is used.

@@ -12,6 +12,7 @@ interface AssetInputProps {
     asset: Asset | null;
     amount: number;
   };
+  placeholder: string;
   updateAsset: (newAsset: Asset, propagateChanges?: boolean) => void;
   updateAmount: (newReceiveAmount: number, propagateChanges?: boolean) => void;
 }
@@ -20,6 +21,7 @@ export const AssetInput: React.FC<AssetInputProps> = ({
   isReceiveInput = false,
   isDisabled = false,
   currentState,
+  placeholder = '',
   updateAsset,
   updateAmount,
 }) => {
@@ -36,11 +38,11 @@ export const AssetInput: React.FC<AssetInputProps> = ({
 
   // Effect to update local input value whenever the parent updates amountValue
   useEffect(() => {
-    if (!isNaN(currentState.amount) && currentState.amount !== null) {
+    if (!isNaN(currentState.amount) && currentState.amount !== null && currentState.amount !== 0) {
       const formattedNumber = formatNumberWithCommas(currentState.amount || 0);
       setLocalInputValue(formattedNumber);
     } else {
-      setLocalInputValue('0');
+      setLocalInputValue('');
     }
   }, [currentState.amount]);
 
@@ -158,8 +160,7 @@ export const AssetInput: React.FC<AssetInputProps> = ({
           variant="primary"
           type="text"
           ref={inputRef}
-          // TODO: add placeholder
-          placeholder=""
+          placeholder={placeholder}
           step={currentExponent}
           value={localInputValue || ''}
           onChange={handleAmountChange}

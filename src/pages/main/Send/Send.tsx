@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { ArrowLeft, Spinner, Swap } from '@/assets/icons';
-import { DEFAULT_ASSET, GREATER_EXPONENT_DEFAULT, ROUTES } from '@/constants';
+import { DEFAULT_ASSET, GREATER_EXPONENT_DEFAULT, LOCAL_ASSET_REGISTRY, ROUTES } from '@/constants';
 import { Button, Separator } from '@/ui-kit';
 import { useAtom, useAtomValue } from 'jotai';
 import {
@@ -13,7 +13,7 @@ import {
   walletStateAtom,
 } from '@/atoms';
 import { Asset } from '@/types';
-import { sendTransaction, swapTransaction } from '@/helpers';
+import { removeTrailingZeroes, sendTransaction, swapTransaction } from '@/helpers';
 import { WalletSuccessScreen } from '@/components';
 import { loadingAtom } from '@/atoms/loadingAtom';
 import { useExchangeRate } from '@/hooks/';
@@ -330,6 +330,21 @@ export const Send = () => {
     return <WalletSuccessScreen caption="Transaction success!" />;
   }
 
+  const isNotSwappable =
+    sendState.asset?.denom === receiveState.asset?.denom ||
+    (receiveState.asset?.isIbc && receiveState.asset.denom != LOCAL_ASSET_REGISTRY.note.denom) ||
+    (sendState.asset?.isIbc && sendState.asset.denom != LOCAL_ASSET_REGISTRY.note.denom);
+
+  const sendAsset = sendState.asset || DEFAULT_ASSET;
+  const receiveAsset = receiveState.asset || DEFAULT_ASSET;
+  const maxSendable = calculateMaxAvailable(sendAsset);
+  const applicableExchangeRate = sendAsset.denom === receiveAsset.denom ? 1 : exchangeRate || 1;
+  const maxReceivable = maxSendable * applicableExchangeRate;
+  const sendPlaceholder = `Max: ${removeTrailingZeroes(maxSendable)}${sendAsset.symbol}`;
+  const receivePlaceholder = isNotSwappable
+    ? 'No exchange on current pair'
+    : `Max: ${removeTrailingZeroes(maxReceivable)}${receiveAsset.symbol}`;
+
   return (
     <div className="h-screen flex flex-col bg-black text-white">
       {/* Top bar with back button and title */}
@@ -356,6 +371,7 @@ export const Send = () => {
           {/* Send Section */}
           <AssetInput
             currentState={sendState}
+            placeholder={sendPlaceholder}
             updateAsset={updateSendAsset}
             updateAmount={updateSendAmount}
           />
@@ -370,8 +386,9 @@ export const Send = () => {
           {/* Receive Section */}
           <AssetInput
             isReceiveInput={true}
-            isDisabled={sendState.asset?.denom === receiveState.asset?.denom}
+            isDisabled={isNotSwappable}
             currentState={receiveState}
+            placeholder={receivePlaceholder}
             updateAsset={updateReceiveAsset}
             updateAmount={updateReceiveAmount}
           />

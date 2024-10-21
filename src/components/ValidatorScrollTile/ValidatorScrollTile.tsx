@@ -8,6 +8,7 @@ import {
   claimRewardsFromValidator,
   convertToGreaterUnit,
   isValidUrl,
+  removeTrailingZeroes,
   selectTextColorByStatus,
   stakeToValidator,
   unstakeFromValidator,
@@ -38,11 +39,11 @@ export const ValidatorScrollTile = ({
   const walletState = useAtomValue(walletStateAtom);
   const [amount, setAmount] = useState('');
 
-  const delegatedAmount = `${delegation ? convertToGreaterUnit(parseFloat(delegation.balance.amount), GREATER_EXPONENT_DEFAULT) : 0} ${LOCAL_ASSET_REGISTRY.note.symbol}`;
+  const delegatedAmount = `${removeTrailingZeroes(delegation ? convertToGreaterUnit(parseFloat(delegation.balance.amount), GREATER_EXPONENT_DEFAULT) : 0)} ${LOCAL_ASSET_REGISTRY.note.symbol}`;
 
   const title = validator.description.moniker || 'Unknown Validator';
   const subTitle = delegatedAmount || '';
-  const rewardAmount = reward || '0 MLD';
+  const rewardAmount = removeTrailingZeroes(reward || '') || '0 MLD';
   const commission = `${parseFloat(validator.commission.commission_rates.rate) * 100}%`;
 
   const unbondingDays = 12; // TODO: After differentiating by chain, pull dynamically from the validator

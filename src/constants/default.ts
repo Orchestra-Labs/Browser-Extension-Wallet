@@ -37,6 +37,7 @@ export const CHAIN_NODES = {
 export const CHAIN_ENDPOINTS = {
   getBalance: '/cosmos/bank/v1beta1/balances/',
   getDelegations: '/cosmos/staking/v1beta1/delegations/',
+  getSpecificDelegations: '/cosmos/staking/v1beta1/delegators/',
   getValidators: '/cosmos/staking/v1beta1/validators',
   getIBCInfo: '/ibc/apps/transfer/v1/denom_traces/',
   claimRewards: '/cosmos.distribution.v1beta1.MsgWithdrawDelegatorReward',

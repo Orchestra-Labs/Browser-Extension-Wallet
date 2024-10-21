@@ -14,7 +14,12 @@ import { useEffect, useRef } from 'react';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { GREATER_EXPONENT_DEFAULT, LOCAL_ASSET_REGISTRY, CHAIN_NODES } from '@/constants';
 import axios from 'axios';
-import { convertToGreaterUnit, fetchDelegations, fetchValidators } from '@/helpers';
+import {
+  convertToGreaterUnit,
+  fetchDelegations,
+  fetchValidators,
+  removeTrailingZeroes,
+} from '@/helpers';
 import { Sort } from '@/assets/icons';
 import { Button } from '@/ui-kit';
 
@@ -91,6 +96,7 @@ export const Main = () => {
     .filter(asset => asset.denom === 'note')
     .reduce((sum, delegation) => sum + parseFloat(delegation.amount), 0)
     .toFixed(GREATER_EXPONENT_DEFAULT);
+  const formattedTotalAvailableMLD = removeTrailingZeroes(totalAvailableMLD);
 
   // Calculate total staked MLD balance
   const totalStakedMLD = delegationState
@@ -102,6 +108,7 @@ export const Main = () => {
           Math.pow(10, LOCAL_ASSET_REGISTRY.note.exponent || GREATER_EXPONENT_DEFAULT),
       0,
     );
+  const formattedTotalStakedMLD = removeTrailingZeroes(totalStakedMLD);
 
   const totalStakedRewards = rewards.reduce((sum, reward) => {
     const totalReward = reward.rewards.reduce((rSum, r) => rSum + parseFloat(r.amount), 0);
@@ -111,6 +118,7 @@ export const Main = () => {
     totalStakedRewards,
     GREATER_EXPONENT_DEFAULT,
   ).toFixed(GREATER_EXPONENT_DEFAULT);
+  const formattedConvertedTotalRewards = removeTrailingZeroes(convertedTotalRewards);
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
@@ -129,7 +137,7 @@ export const Main = () => {
             <div className="w-full px-4 mt-4 flex-shrink-0">
               <BalanceCard
                 title="Available balance"
-                primaryText={`${totalAvailableMLD} MLD`}
+                primaryText={`${formattedTotalAvailableMLD} MLD`}
                 currentStep={activeIndex}
                 totalSteps={totalSlides}
               />
@@ -139,8 +147,8 @@ export const Main = () => {
             <div className="w-full px-4 mt-4 flex-shrink-0">
               <BalanceCard
                 title="Staked balance"
-                primaryText={`${convertedTotalRewards} MLD`}
-                secondaryText={`${totalStakedMLD} MLD`}
+                primaryText={`${formattedConvertedTotalRewards} MLD`}
+                secondaryText={`${formattedTotalStakedMLD} MLD`}
                 currentStep={activeIndex}
                 totalSteps={totalSlides}
               />

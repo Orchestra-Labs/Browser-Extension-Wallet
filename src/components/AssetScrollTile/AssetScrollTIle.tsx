@@ -6,6 +6,7 @@ import { NavLink } from 'react-router-dom';
 import { ROUTES } from '@/constants';
 import { useSetAtom } from 'jotai';
 import { swiperIndexState } from '@/atoms/';
+import { removeTrailingZeroes } from '@/helpers';
 
 interface AssetScrollTileProps {
   asset: Asset;
@@ -23,7 +24,7 @@ export const AssetScrollTile = ({
   const setActiveIndex = useSetAtom(swiperIndexState);
 
   const title = asset.symbol || 'Unknown Asset';
-  const value = `${asset.amount} ${asset.symbol}`;
+  const value = `${removeTrailingZeroes(asset.amount)} ${asset.symbol}`;
   const logo = asset.logo;
 
   const handleClick = () => {

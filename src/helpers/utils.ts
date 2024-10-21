@@ -33,3 +33,10 @@ export const isValidUrl = (url: string): boolean => {
 
   return !!urlPattern.test(url);
 };
+
+export const removeTrailingZeroes = (num: string | number): string => {
+  const numberString = String(num);
+  const cleanedNumber = parseFloat(numberString).toString();
+
+  return cleanedNumber;
+};

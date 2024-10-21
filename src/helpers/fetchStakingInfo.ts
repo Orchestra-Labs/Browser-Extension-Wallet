@@ -12,7 +12,7 @@ export const fetchDelegations = async (
 
     // If a validatorAddress is provided, modify the endpoint to fetch delegation for that specific validator
     if (validatorAddress) {
-      endpoint = `${CHAIN_ENDPOINTS.getDelegations}${delegatorAddress}/delegations/${validatorAddress}`;
+      endpoint = `${CHAIN_ENDPOINTS.getSpecificDelegations}${delegatorAddress}/delegations/${validatorAddress}`;
     }
 
     console.log(
@@ -52,7 +52,7 @@ export const fetchValidators = async (
 
     // If a specific validatorAddress is provided, modify the endpoint to fetch that validator's info
     if (validatorAddress) {
-      endpoint = `${CHAIN_ENDPOINTS.getValidators}${validatorAddress}`;
+      endpoint = `${CHAIN_ENDPOINTS.getValidators}/${validatorAddress}`;
     }
 
     console.log('Fetching validator(s) info for:', validatorAddress || 'all validators');
