@@ -94,14 +94,21 @@ export const CreateWallet = () => {
     setRandomHiddenIndexes(getRandomIndexes());
   }, [use24Words]);
 
-  /* Current TODOs */
+  /* Chris current TODO */
   // TODO: provide updates to user as staking, claim, and unstaking information changes (successes, errors, and changing gas fees)
-
   // TODO: provide updates to user as send information updates (errors and changing gas fees)
-  // TODO: add fields to let user know when sending over IBC
 
+  /* David Current TODOs */
+  // TODO: add mock max amount placeholder to amount sections (send and validator)
+  // TODO: add clear and max buttons to amount section
+  // TODO: check format of entered address for send field
+  // TODO: make "clear" and "max" button placement and appearance more uniform (send and unstake sections)
+  // TODO: format numbers on balance and asset value field to user locale.  start with US format, add others
+
+  /* Current TODOs */
   // TODO: clean up helper functions and hooks
 
+  // TODO: add fields to let user know when sending over IBC
   // TODO: abstract wallet prefix and mnemonic decryption
   // TODO: ensure trim on completion of password entry (such as save to storage).  same on login.  to avoid copy/paste errors
   // TODO: add link to github repo for registry
@@ -121,8 +128,6 @@ export const CreateWallet = () => {
   // TODO: add show/hide function to validator list
 
   /* Wallet UI TODOs */
-  // TODO: make "clear" and "max" button placement and appearance more uniform (send and unstake sections)
-  // TODO: format numbers on balance and asset value field to user locale.  start with US format, add others
   // TODO: remove or enable connected services button <-- could be good for using firebase to transfer/remove settings data
   // TODO: remove or enable transaction history
   // TODO: show donut chart with assets rather than singular value

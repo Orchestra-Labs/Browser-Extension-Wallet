@@ -29,7 +29,6 @@ export interface SwapObject {
   resultDenom: string;
 }
 
-// TODO: add nullable validator info to delegation response?
 export interface DelegationResponse {
   delegation: {
     delegator_address: string;
@@ -47,7 +46,7 @@ export interface Pagination {
   total: string;
 }
 
-// TODO: add nullable rewards to validator info?
+// TODO: add delegation information to validator info (and rename validator info to validator)
 export interface ValidatorInfo {
   operator_address: string;
   jailed: boolean;
