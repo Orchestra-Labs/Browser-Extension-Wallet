@@ -108,12 +108,12 @@ export const CreateWallet = () => {
   // TODO: format numbers on balance and asset value field to user locale.  start with US format, add others
   // TODO: cut trailing 0s on numeric asset displays
 
-  // TODO: add sorting function to wallet asset list
-  // TODO: add search function to wallet asset list
-  // TODO: add show/hide function to wallet asset list
-  // TODO: add sorting function to validator list
-  // TODO: add search function to validator list
-  // TODO: add show/hide function to validator list
+  // TODO: add sorting function (by name, by holdings) (asc/desc) to wallet asset list
+  // TODO: add search function to wallet asset list (by name, by chain)
+  // TODO: add show/hide function to wallet asset list (select which assets to show.  add searchability to this)
+  // TODO: add sorting function to validator list (by name, by delegation, by rewards, by apr, by voting power) (asc/desc)
+  // TODO: add search function to validator list (by name, by chain)
+  // TODO: add show/hide function to validator list (by activity, by chain)
 
   // TODO: remove "support" in favor of links to site and socials
 
