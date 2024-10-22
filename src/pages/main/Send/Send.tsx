@@ -12,7 +12,7 @@ import {
   sendStateAtom,
   walletStateAtom,
 } from '@/atoms';
-import { Asset } from '@/types';
+import { Asset, TransactionResult } from '@/types';
 import { removeTrailingZeroes, sendTransaction, swapTransaction } from '@/helpers';
 import { WalletSuccessScreen } from '@/components';
 import { loadingAtom } from '@/atoms/loadingAtom';
