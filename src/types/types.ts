@@ -77,3 +77,9 @@ export interface CombinedStakingInfo {
   validator: ValidatorInfo;
   rewards: ValidatorReward['rewards'];
 }
+
+export interface TransactionResult {
+  success: boolean;
+  message: string;
+  data?: any;
+}

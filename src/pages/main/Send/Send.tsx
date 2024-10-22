@@ -12,7 +12,7 @@ import {
   sendStateAtom,
   walletStateAtom,
 } from '@/atoms';
-import { Asset } from '@/types';
+import { Asset, TransactionResult } from '@/types';
 import { removeTrailingZeroes, sendTransaction, swapTransaction } from '@/helpers';
 import { WalletSuccessScreen } from '@/components';
 import { loadingAtom } from '@/atoms/loadingAtom';
@@ -20,12 +20,14 @@ import { useExchangeRate } from '@/hooks/';
 import { AssetInput } from './AssetInput';
 import { AddressInput } from './AddressInput';
 
+
 export const Send = () => {
   const location = useLocation();
   const selectedSendAsset = location.state?.selectedSendAsset || DEFAULT_ASSET;
 
   const walletState = useAtomValue(walletStateAtom);
   const walletAssets = walletState?.assets || [];
+
   const [sendState, setSendState] = useAtom(sendStateAtom);
   const [receiveState, setReceiveState] = useAtom(receiveStateAtom);
   const [changeMap, setChangeMap] = useAtom(changeMapAtom);
@@ -53,7 +55,6 @@ export const Send = () => {
     if (!sendAsset) return;
     const assetToSend = walletAssets.find(a => a.denom === sendAsset.denom);
     if (!assetToSend) return;
-
     const adjustedAmount = (
       sendAmount * Math.pow(10, assetToSend.exponent || GREATER_EXPONENT_DEFAULT)
     ).toFixed(0); // No decimals, as this is sending the minor unit, not the greater.
@@ -67,17 +68,21 @@ export const Send = () => {
     setLoading(true);
 
     try {
-      if (sendAsset === receiveAsset) {
-        // Send transaction
-        await sendTransaction(walletState.address, sendObject);
+      let result: TransactionResult;
+      if (sendAsset.denom === receiveAsset.denom) {
+        result = await sendTransaction(walletState.address, sendObject);
         // Set success state to true after transaction
         setIsSuccess(true);
       } else if (receiveAsset) {
         // Swap transaction
         const swapObject = { sendObject, resultDenom: receiveAsset.denom };
-        await swapTransaction(walletState.address, swapObject);
-        // Set success state to true after swap
-        setIsSuccess(true);
+        result = await swapTransaction(walletState.address, swapObject);
+                setIsSuccess(true);
+      } else {
+        throw new Error('Invalid asset configuration');
+      }
+      if (!result.success) {
+        console.error('Detailed error:', result.data);
       }
     } catch (error) {
       console.error('Error broadcasting transaction', error);
