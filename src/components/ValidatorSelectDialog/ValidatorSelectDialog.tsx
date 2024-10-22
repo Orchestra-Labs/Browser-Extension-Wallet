@@ -53,7 +53,6 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
           </div>
 
           {/* TODO: reduce to 13 REM if bottom border goes back in, consider border-neutral-4 */}
-          {/* QR Code Display */}
           <div className="flex-grow w-full max-h-[13.5rem] overflow-y-auto border border-gray-300 rounded-md">
             {/* TODO: within tilescroller, ensure overflow over halfway results in ellipses.  they can click in for more information if needed */}
             <TileScroller activeIndex={1} addMargin={false} />

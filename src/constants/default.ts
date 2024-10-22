@@ -40,6 +40,7 @@ export const CHAIN_ENDPOINTS = {
   getSpecificDelegations: '/cosmos/staking/v1beta1/delegators/',
   getValidators: '/cosmos/staking/v1beta1/validators',
   getIBCInfo: '/ibc/apps/transfer/v1/denom_traces/',
+  getRewards: '/cosmos/distribution/v1beta1/delegators',
   claimRewards: '/cosmos.distribution.v1beta1.MsgWithdrawDelegatorReward',
   delegateToValidator: '/cosmos.staking.v1beta1.MsgDelegate',
   undelegateFromValidator: '/cosmos.staking.v1beta1.MsgUndelegate',

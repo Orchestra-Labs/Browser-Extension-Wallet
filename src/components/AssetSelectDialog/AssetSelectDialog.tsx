@@ -1,9 +1,10 @@
 import React from 'react';
 import { SlideTray } from '@/ui-kit';
 import { TileScroller } from '../TileScroller';
-import { LogoIcon, Sort } from '@/assets/icons';
+import { LogoIcon } from '@/assets/icons';
 import { Asset } from '@/types';
 import { cn } from '@/helpers';
+import { SortDialog } from '../SortDialog';
 
 interface AssetSelectDialogProps {
   selectedAsset: Asset | null;
@@ -42,8 +43,7 @@ export const AssetSelectDialog: React.FC<AssetSelectDialogProps> = ({
             Selected: <span className="text-blue">{selectedAsset?.symbol || 'None'}</span>
           </div>
           <div className="flex justify-end w-[5rem]">
-            {/* TODO: add functionality */}
-            <Sort width={20} className="text-white" />
+            <SortDialog />
           </div>
         </div>
 
@@ -54,7 +54,6 @@ export const AssetSelectDialog: React.FC<AssetSelectDialogProps> = ({
             {/* TODO: within tilescroller, ensure overflow over halfway results in ellipses.  they can click in for more information if needed */}
             <TileScroller
               activeIndex={0}
-              displayWalletAssets={isSendDialog}
               isSelectable={true}
               addMargin={false}
               onSelectAsset={onClick}

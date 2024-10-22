@@ -46,13 +46,15 @@ export const SlideTray: React.FC<SlideTrayProps> = ({
         />
         <DialogPrimitive.Content
           className={cn(
-            'fixed bottom-0 left-0 right-0 z-50 w-full mx-auto p-6 bg-background-dialog-bg rounded-t-2xl',
+            'fixed bottom-0 left-0 right-0 z-50 w-full mx-auto p-6 bg-background-dialog-bg rounded-t-2xl flex flex-col',
             'data-[state=open]:animate-slide-in-from-bottom data-[state=closed]:animate-slide-out-to-bottom',
             className,
           )}
           style={{ height }}
         >
-          <div className="relative">
+          {/* Container with flex layout */}
+          <div className="relative flex flex-col h-full">
+            {/* Title section */}
             {title && (
               <>
                 <h2 className={`text-h5 font-bold ${titleColor} text-center mb-2`}>{title}</h2>
@@ -60,18 +62,21 @@ export const SlideTray: React.FC<SlideTrayProps> = ({
               </>
             )}
 
-            <div className="mt-4 h-76 max-h-76 min-h-76 overflow-y-auto">{children}</div>
+            {/* Children take up the remaining space with flex-1 */}
+            <div className="flex-1 overflow-y-auto">{children}</div>
 
+            {/* Close button handling */}
             {closeButtonVariant === 'top-right' && (
               <DialogPrimitive.Close className="absolute right-4 top-4 focus:outline-none">
                 <X width={18} height={18} />
                 <span className="sr-only">Close</span>
               </DialogPrimitive.Close>
             )}
+
             {closeButtonVariant === 'bottom-center' && (
               <>
                 <Separator variant="bottom" showBorder={showBottomBorder} />
-                <div className="absolute left-0 right-0 flex justify-center mt-1">
+                <div className="flex justify-center mt-1">
                   <DialogPrimitive.Close asChild>
                     <Button className="w-[56%] py-3 rounded-full text-lg">Close</Button>
                   </DialogPrimitive.Close>

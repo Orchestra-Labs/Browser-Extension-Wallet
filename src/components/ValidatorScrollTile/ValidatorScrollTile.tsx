@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { DelegationResponse, ValidatorInfo } from '@/types';
+import { CombinedStakingInfo } from '@/types';
 import { SlideTray, Button, Input } from '@/ui-kit';
 import { LogoIcon } from '@/assets/icons';
 import { ScrollTile } from '../ScrollTile';
@@ -18,36 +18,52 @@ import { useAtomValue } from 'jotai';
 import { walletStateAtom } from '@/atoms';
 
 interface ValidatorScrollTileProps {
-  validator: ValidatorInfo;
-  delegation?: DelegationResponse;
-  reward?: string;
+  combinedStakingInfo: CombinedStakingInfo;
   isSelectable?: boolean;
   addMargin?: boolean;
 }
 
 export const ValidatorScrollTile = ({
-  validator,
-  delegation,
-  reward,
+  combinedStakingInfo,
   isSelectable = false,
   addMargin = true,
 }: ValidatorScrollTileProps) => {
   const [selectedAction, setSelectedAction] = useState<'stake' | 'unstake' | 'claim' | null>(
-    // TODO: fix this not coming in on "all" page
-    !delegation ? 'stake' : null,
+    !combinedStakingInfo.delegation ? 'stake' : null,
   );
   const walletState = useAtomValue(walletStateAtom);
   const [amount, setAmount] = useState('');
 
-  const delegatedAmount = `${removeTrailingZeroes(delegation ? convertToGreaterUnit(parseFloat(delegation.balance.amount), GREATER_EXPONENT_DEFAULT) : 0)} ${LOCAL_ASSET_REGISTRY.note.symbol}`;
+  // Destructure combined info
+  const { validator, delegation, balance, rewards } = combinedStakingInfo;
+  const delegationResponse = { delegation, balance };
+
+  // TODO: address NaN on inactive nodes, jailed nodes, and non-delegated nodes
+  // Calculating the staked amount based on delegation.shares (as delegation is of type DelegationResponse['delegation'])
+  const delegatedAmount = delegation
+    ? `${removeTrailingZeroes(
+        convertToGreaterUnit(parseFloat(delegation.shares), GREATER_EXPONENT_DEFAULT),
+      )} ${LOCAL_ASSET_REGISTRY.note.symbol}`
+    : '0 MLD';
+
+  // Aggregating the rewards (sum all reward amounts for this validator)
+  const rewardAmount = rewards
+    .reduce((sum, reward) => sum + parseFloat(reward.amount), 0)
+    .toString();
+  const formattedRewardAmount = `${removeTrailingZeroes(
+    convertToGreaterUnit(parseFloat(rewardAmount), GREATER_EXPONENT_DEFAULT).toFixed(
+      GREATER_EXPONENT_DEFAULT,
+    ),
+  )} MLD`;
 
   const title = validator.description.moniker || 'Unknown Validator';
   const subTitle = delegatedAmount || '';
-  const rewardAmount = removeTrailingZeroes(reward || '') || '0 MLD';
   const commission = `${parseFloat(validator.commission.commission_rates.rate) * 100}%`;
 
-  const unbondingDays = 12; // TODO: After differentiating by chain, pull dynamically from the validator
+  // TODO: pull dynamically from the validator
+  const unbondingDays = 12;
 
+  // Determine validator status
   let statusLabel = '';
   let statusColor: 'good' | 'warn' | 'error' = 'good';
   if (validator.jailed) {
@@ -66,6 +82,7 @@ export const ValidatorScrollTile = ({
 
   const textColor = selectTextColorByStatus(statusColor);
 
+  // Validator website validation
   const website = validator.description.website;
   const isWebsiteValid = isValidUrl(website);
 
@@ -75,7 +92,7 @@ export const ValidatorScrollTile = ({
         <ScrollTile
           title={title}
           subtitle={subTitle}
-          value={rewardAmount}
+          value={formattedRewardAmount}
           icon={<LogoIcon />}
           status={statusColor}
           addMargin={addMargin}
@@ -87,7 +104,7 @@ export const ValidatorScrollTile = ({
               <ScrollTile
                 title={title}
                 subtitle={subTitle}
-                value={rewardAmount}
+                value={formattedRewardAmount}
                 icon={<LogoIcon />}
                 status={statusColor}
                 addMargin={addMargin}
@@ -98,11 +115,11 @@ export const ValidatorScrollTile = ({
           showBottomBorder
           status={statusColor}
         >
-          {reward && (
+          {rewards && (
             <>
               <div className="text-center mb-2">
                 <div className="truncate text-base font-medium text-neutral-1">
-                  Reward: <span className="text-blue">{reward}</span>
+                  Reward: <span className="text-blue">{formattedRewardAmount}</span>
                 </div>
                 <span className="text-grey-dark text-xs text-base">
                   Unstaking period <span className="text-warning">{unbondingDays} days</span>
@@ -187,7 +204,7 @@ export const ValidatorScrollTile = ({
                             walletState.address,
                             validator.operator_address,
                           )
-                        : unstakeFromValidator(amount, delegation as DelegationResponse);
+                        : unstakeFromValidator(amount, delegationResponse);
                     }}
                   >
                     {selectedAction === 'stake' ? 'Stake' : 'Unstake'}
@@ -209,10 +226,7 @@ export const ValidatorScrollTile = ({
                 >
                   Claim to Wallet
                 </Button>
-                <Button
-                  className="w-full"
-                  onClick={() => claimAndRestake(delegation as DelegationResponse)}
-                >
+                <Button className="w-full" onClick={() => claimAndRestake(delegationResponse)}>
                   Claim to Restake
                 </Button>
               </div>

@@ -102,18 +102,24 @@ export const CreateWallet = () => {
 
   /* ******************************************************************************************* */
   /* David Current TODOs */
+  // TODO: add search to other select dialogs
+  // TODO: add search icon, add search capability
+  // TODO: on select screen, tap to select, tap again to confirm selection/close
+  // TODO: revisit heights on receive dialog and validator search dialog
+  // TODO: revisit receive dialog.  remove y spacing so subtitled text is closer to box.
+  // TODO: apply sorting function to wallet asset list
+  // TODO: apply sorting function to validator list
+  // TODO: add current/all buttons to holdings, but make them non-zero/all
+
+  // TODO: add search function to validator list (by name, by chain)
+
+  // TODO: add show/hide function to wallet asset list (select which assets to show.  add searchability to this)
+  // TODO: add show/hide function to validator list (by activity, by chain)
+
   // TODO: add clear and max buttons to amount section
   // TODO: test validation of format of entered address for send field
   // TODO: make "clear" and "max" button placement and appearance more uniform (send and unstake sections)
   // TODO: format numbers on balance and asset value field to user locale.  start with US format, add others
-  // TODO: cut trailing 0s on numeric asset displays
-
-  // TODO: add sorting function (by name, by holdings) (asc/desc) to wallet asset list
-  // TODO: add search function to wallet asset list (by name, by chain)
-  // TODO: add show/hide function to wallet asset list (select which assets to show.  add searchability to this)
-  // TODO: add sorting function to validator list (by name, by delegation, by rewards, by apr, by voting power) (asc/desc)
-  // TODO: add search function to validator list (by name, by chain)
-  // TODO: add show/hide function to validator list (by activity, by chain)
 
   // TODO: remove "support" in favor of links to site and socials
 
@@ -122,9 +128,16 @@ export const CreateWallet = () => {
   // TODO: change "options" to settings?
   // TODO: show donut chart with assets rather than singular value
 
+  // TODO: emable selection in validator select dialog
+  // TODO: add conclusionary action with selection in asset select dialog.  should picking close the dialog?
+
+  // TODO: add onHover and onClick color changes to asset and validator tiles
+
+  // TODO: apply regional formatting to regular display numbers
   /* ******************************************************************************************* */
 
   /* Current TODOs */
+  // TODO: show errors to user (user displayable values)
   // TODO: clean up helper functions and hooks
 
   // TODO: add fields to let user know when sending over IBC
@@ -171,6 +184,7 @@ export const CreateWallet = () => {
 
   /* Nice to have Interchain-compatibility TODOs */
   // TODO: add manual IBC (for rare cases.  hide behind dev tool enabling?)
+  // TODO: enable search function for wallet asset list by chain (on top of current functionality)
 
   // Check everything is completed properly and pass to confirmation screen
   const handleCreateWallet = async () => {
