@@ -71,3 +71,9 @@ export interface ValidatorReward {
   validator: string;
   rewards: any[];
 }
+
+export interface TransactionResult{
+  success: boolean;
+  message: string;
+  data?: any;
+}
