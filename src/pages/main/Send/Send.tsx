@@ -69,7 +69,7 @@ export const Send = () => {
 
     try {
       let result: TransactionResult;
-      if (sendAsset === receiveAsset) {
+      if (sendAsset.denom === receiveAsset.denom) {
         result = await sendTransaction(walletState.address, sendObject);
         // Set success state to true after transaction
         setIsSuccess(true);
