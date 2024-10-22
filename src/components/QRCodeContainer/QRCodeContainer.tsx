@@ -8,7 +8,7 @@ interface QRCodeContainerProps {
 
 export const QRCodeContainer: React.FC<QRCodeContainerProps> = ({ qrCodeValue }) => {
   return (
-    <div className="relative flex justify-center items-center bg-background-black rounded-lg w-[260px] h-[260px]">
+    <div className="relative flex justify-center items-center bg-background-black rounded-lg w-[255px] h-[255px]">
       {/* Top-left corner */}
       <div className="absolute top-[-0px] left-[-0px] w-[75px] h-[75px] border-t-4 border-l-4 border-blue rounded-tl-[8px]" />
       {/* Top-right corner */}

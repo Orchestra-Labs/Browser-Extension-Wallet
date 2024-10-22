@@ -111,8 +111,6 @@ export const CreateWallet = () => {
   // TODO: apply sorting function to validator list
   // TODO: add current/all buttons to holdings, but make them non-zero/all
 
-  // TODO: add search function to validator list (by name, by chain)
-
   // TODO: add show/hide function to wallet asset list (select which assets to show.  add searchability to this)
   // TODO: add show/hide function to validator list (by activity, by chain)
 
@@ -185,6 +183,7 @@ export const CreateWallet = () => {
   /* Nice to have Interchain-compatibility TODOs */
   // TODO: add manual IBC (for rare cases.  hide behind dev tool enabling?)
   // TODO: enable search function for wallet asset list by chain (on top of current functionality)
+  // TODO: enable search function to validator list by chain (on top of current functionality)
 
   // Check everything is completed properly and pass to confirmation screen
   const handleCreateWallet = async () => {

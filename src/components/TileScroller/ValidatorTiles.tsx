@@ -8,7 +8,6 @@ interface ValidatorTilesProps {
   addMargin?: boolean;
 }
 
-// TODO: ensure this shows all 100 validators on "all" selection
 // TODO: show some indicator of uptime (such as coloring symphony icon depending) (on all screen)
 // TODO: show some indicator of APY (on all screen)
 // TODO: check for registry symbol where symbol equals denom
