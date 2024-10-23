@@ -33,6 +33,10 @@ export const Main = () => {
     }
   }, [activeIndex, walletState.address]);
 
+  useEffect(() => {
+    setSearchTerm('');
+  }, [activeIndex]);
+
   // Fetch all validator data (delegations, validators, rewards) in one go
   useEffect(() => {
     if (walletState.address) {
