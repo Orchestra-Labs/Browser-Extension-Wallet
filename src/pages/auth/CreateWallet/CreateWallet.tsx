@@ -102,7 +102,7 @@ export const CreateWallet = () => {
 
   /* ******************************************************************************************* */
   /* David Current TODOs */
-  // TODO: emable selection in validator select dialog
+  // TODO: enable selection in validator select dialog
   // TODO: add onHover and onClick color changes to asset and validator tiles
   // TODO: add onHover and onClick color changes to password and create wallet buttons
 
