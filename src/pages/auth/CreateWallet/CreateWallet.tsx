@@ -104,7 +104,7 @@ export const CreateWallet = () => {
   /* David Current TODOs */
   // TODO: add search to other select dialogs
   // TODO: add search icon, add search capability
-  // TODO: on select screen, tap to select, tap again to confirm selection/close
+  // TODO: on select dialogs, rather than confirm buttons, tap to select, tap again to confirm selection/close
   // TODO: apply sorting function to wallet asset list
   // TODO: apply sorting function to validator list
 
