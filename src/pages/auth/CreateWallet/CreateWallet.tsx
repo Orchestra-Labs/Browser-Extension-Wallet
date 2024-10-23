@@ -104,12 +104,9 @@ export const CreateWallet = () => {
   /* David Current TODOs */
   // TODO: add search to other select dialogs
   // TODO: add search icon, add onclick
-  // TODO: on select dialogs, rather than confirm buttons, tap to select, tap again to confirm selection/close
+  // TODO: add confirm button to select dialogs.  does not need to be visible before selection
   // TODO: apply sorting function to wallet asset list
   // TODO: apply sorting function to validator list
-
-  // TODO: add show/hide function to wallet asset list (select which assets to show.  add searchability to this)
-  // TODO: add show/hide function to validator list (by activity, by chain)
 
   // TODO: add clear and max buttons to amount section
   // TODO: test validation of format of entered address for send field
@@ -127,6 +124,7 @@ export const CreateWallet = () => {
   // TODO: add conclusionary action with selection in asset select dialog.  should picking close the dialog?
 
   // TODO: add onHover and onClick color changes to asset and validator tiles
+  // TODO: add onHover and onClick color changes to password and create wallet buttons
 
   // TODO: apply regional formatting to regular display numbers
   /* ******************************************************************************************* */
@@ -149,12 +147,17 @@ export const CreateWallet = () => {
   // TODO: ensure new encrypted mnemonic overwrites old in case of same password and name (but let user know first)
 
   /* Wallet UI TODOs */
+  // TODO: add show/hide function to wallet asset list (select which assets to show.  add searchability to this)
+  // TODO: add show/hide function to validator list (by activity, by chain)
   // TODO: remove or enable connected services button <-- could be good for using firebase to transfer/remove settings data
   // TODO: remove or enable transaction history
   // TODO: remove or enable expand view
   // TODO: security tab enables/disables need to confirm transactions/re-entry of password on transactions (3 levels of security)
   // TODO: change options buttons
   // TODO: update transactions history button (need endpoint for this.  disable until ready)
+
+  /* Interchain-compatibility TODOs */
+  // TODO: integrate skip protocol or automated use of exchange to allow swapping between chains
 
   /* Less Critical Auth TODOs */
   // TODO: handle error printout for create/import wallet (in place of subtitle on verify screen?)
