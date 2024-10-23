@@ -7,6 +7,7 @@ export * from './localStorage';
 export * from './queryNodes';
 export * from './sendTransactions';
 export * from './sessionStorage';
+export * from './sort';
 export * from './swapTransactions';
 export * from './timer';
 export * from './utils';

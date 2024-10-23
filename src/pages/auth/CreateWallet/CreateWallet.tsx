@@ -102,10 +102,10 @@ export const CreateWallet = () => {
 
   /* ******************************************************************************************* */
   /* David Current TODOs */
+  // TODO: revert sort and search for dialogs on close
+  // TODO: split search bar into own component
   // TODO: add search icon, add onclick
   // TODO: add confirm button to select dialogs.  does not need to be visible before selection
-  // TODO: apply sorting function to wallet asset list
-  // TODO: apply sorting function to validator list
 
   // TODO: add clear and max buttons to amount section
   // TODO: test validation of format of entered address for send field

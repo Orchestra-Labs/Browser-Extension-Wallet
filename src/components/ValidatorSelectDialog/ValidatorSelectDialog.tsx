@@ -3,7 +3,7 @@ import { Button, Input, SlideTray } from '@/ui-kit';
 import { TileScroller } from '../TileScroller';
 import { SortDialog } from '../SortDialog';
 import { useAtom } from 'jotai';
-import { searchTermAtom } from '@/atoms';
+import { dialogSearchAtom } from '@/atoms';
 
 interface ValidatorSelectDialogProps {
   buttonText: string;
@@ -11,13 +11,12 @@ interface ValidatorSelectDialogProps {
   isClaimDialog?: boolean;
 }
 
-// TODO: make select functional
 export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
   buttonText,
   buttonVariant,
   isClaimDialog = false,
 }) => {
-  const [searchTerm, setSearchTerm] = useAtom(searchTermAtom);
+  const [searchTerm, setSearchTerm] = useAtom(dialogSearchAtom);
 
   return (
     <SlideTray
@@ -30,7 +29,6 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
       showBottomBorder
     >
       <div className="flex flex-col h-full">
-        {/* Conditionally render buttons based on the dialog type */}
         {isClaimDialog && (
           <div className="flex justify-between space-x-4">
             <Button variant="secondary" className="w-full">
@@ -40,7 +38,6 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
           </div>
         )}
 
-        {/* Selection section */}
         <div className="flex justify-between items-center px-2">
           <div className="flex-1 text-sm">Tap to select</div>
           <div className="flex items-center">
@@ -54,17 +51,17 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
             </Button>
           </div>
           <div className="flex-1 flex justify-end">
-            <SortDialog isValidatorSort />
+            <SortDialog isValidatorSort isDialog />
           </div>
         </div>
 
-        {/* Scroller */}
         {/* TODO: within tilescroller, ensure overflow over halfway results in ellipses.  they can click in for more information if needed */}
         <TileScroller
           activeIndex={1}
           isSelectable={true}
           addMargin={false}
           onSelectValidator={() => {}}
+          isDialog={true}
         />
 
         <div className="mx-4 mt-2 mb-2">
@@ -73,7 +70,7 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
             variant="primary"
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
-            placeholder="Search by asset name or symbol..."
+            placeholder="Search by validator name..."
           />
         </div>
 

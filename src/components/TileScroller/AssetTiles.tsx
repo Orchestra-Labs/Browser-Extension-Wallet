@@ -1,21 +1,23 @@
 import React from 'react';
 import { AssetScrollTile } from '../AssetScrollTile';
 import { useAtomValue } from 'jotai';
-import { filteredAssetsAtom } from '@/atoms';
+import { filteredAssetsAtom, filteredDialogAssetsAtom } from '@/atoms';
 import { Asset } from '@/types';
 
 interface AssetTilesProps {
   isSelectable?: boolean;
   addMargin?: boolean;
   onClick?: (asset: Asset) => void;
+  isDialog?: boolean;
 }
 
 export const AssetTiles: React.FC<AssetTilesProps> = ({
   isSelectable = false,
   addMargin = true,
   onClick,
+  isDialog = false,
 }) => {
-  const filteredAssets = useAtomValue(filteredAssetsAtom);
+  const filteredAssets = useAtomValue(isDialog ? filteredDialogAssetsAtom : filteredAssetsAtom);
 
   if (!filteredAssets?.length) {
     return <p className="text-base text-neutral-1 px-4">No assets found</p>;

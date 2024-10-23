@@ -7,17 +7,33 @@ import {
   assetSortTypeAtom,
   validatorSortOrderAtom,
   validatorSortTypeAtom,
+  assetDialogSortOrderAtom,
+  assetDialogSortTypeAtom,
+  validatorDialogSortOrderAtom,
+  validatorDialogSortTypeAtom,
 } from '@/atoms';
 
 interface SortDialogProps {
   isValidatorSort?: boolean;
+  isDialog?: boolean;
 }
 
-export const SortDialog: React.FC<SortDialogProps> = ({ isValidatorSort = false }) => {
-  const [assetSortOrder, setAssetSortOrder] = useAtom(assetSortOrderAtom);
-  const [validatorSortOrder, setValidatorSortOrder] = useAtom(validatorSortOrderAtom);
-  const [assetSortType, setAssetSortType] = useAtom(assetSortTypeAtom);
-  const [validatorSortType, setValidatorSortType] = useAtom(validatorSortTypeAtom);
+export const SortDialog: React.FC<SortDialogProps> = ({
+  isValidatorSort = false,
+  isDialog = false,
+}) => {
+  const [assetSortOrder, setAssetSortOrder] = useAtom(
+    isDialog ? assetDialogSortOrderAtom : assetSortOrderAtom,
+  );
+  const [validatorSortOrder, setValidatorSortOrder] = useAtom(
+    isDialog ? validatorDialogSortOrderAtom : validatorSortOrderAtom,
+  );
+  const [assetSortType, setAssetSortType] = useAtom(
+    isDialog ? assetDialogSortTypeAtom : assetSortTypeAtom,
+  );
+  const [validatorSortType, setValidatorSortType] = useAtom(
+    isDialog ? validatorDialogSortTypeAtom : validatorSortTypeAtom,
+  );
 
   const sortOptions = isValidatorSort
     ? ['name', 'delegation', 'rewards', 'apr', 'votingPower']

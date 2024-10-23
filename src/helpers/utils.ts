@@ -40,3 +40,7 @@ export const removeTrailingZeroes = (num: string | number): string => {
 
   return cleanedNumber;
 };
+
+export function stripNonAlphanumerics(input: string): string {
+  return input.replace(/[^a-z0-9]/gi, '');
+}

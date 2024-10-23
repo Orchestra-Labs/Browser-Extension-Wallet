@@ -10,6 +10,7 @@ interface TileScrollerProps {
   addMargin?: boolean;
   onSelectAsset?: (asset: Asset) => void;
   onSelectValidator?: (validator: CombinedStakingInfo) => void;
+  isDialog?: boolean;
 }
 
 export const TileScroller: React.FC<TileScrollerProps> = ({
@@ -18,17 +19,24 @@ export const TileScroller: React.FC<TileScrollerProps> = ({
   addMargin = true,
   onSelectAsset,
   onSelectValidator,
+  isDialog = false,
 }) => {
   return (
     // TODO: add border to TileScroller
     <ScrollArea className="flex-grow w-full overflow-y-auto" type="always" scrollbarProps={{}}>
       {activeIndex === 0 ? (
-        <AssetTiles isSelectable={isSelectable} addMargin={addMargin} onClick={onSelectAsset} />
+        <AssetTiles
+          isSelectable={isSelectable}
+          addMargin={addMargin}
+          onClick={onSelectAsset}
+          isDialog={isDialog}
+        />
       ) : (
         <ValidatorTiles
           isSelectable={isSelectable}
           addMargin={addMargin}
           onClick={onSelectValidator}
+          isDialog={isDialog}
         />
       )}
     </ScrollArea>

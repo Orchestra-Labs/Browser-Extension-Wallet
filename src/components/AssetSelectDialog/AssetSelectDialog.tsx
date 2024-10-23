@@ -6,7 +6,7 @@ import { Asset } from '@/types';
 import { cn } from '@/helpers';
 import { SortDialog } from '../SortDialog';
 import { useAtom } from 'jotai';
-import { searchTermAtom } from '@/atoms';
+import { dialogSearchAtom } from '@/atoms';
 
 interface AssetSelectDialogProps {
   selectedAsset: Asset | null;
@@ -19,7 +19,7 @@ export const AssetSelectDialog: React.FC<AssetSelectDialogProps> = ({
   isSendDialog = false,
   onClick,
 }) => {
-  const [searchTerm, setSearchTerm] = useAtom(searchTermAtom);
+  const [searchTerm, setSearchTerm] = useAtom(dialogSearchAtom);
 
   return (
     <SlideTray
@@ -40,23 +40,22 @@ export const AssetSelectDialog: React.FC<AssetSelectDialogProps> = ({
       showBottomBorder
     >
       <div className="flex flex-col h-full">
-        {/* Selection section */}
         <div className="flex justify-between items-center w-full px-2">
           <div className="text-sm flex w-[5rem]">Tap to select</div>
           <div className="text-sm flex-1 text-center">
             Selected: <span className="text-blue">{selectedAsset?.symbol || 'None'}</span>
           </div>
           <div className="flex justify-end w-[5rem]">
-            <SortDialog />
+            <SortDialog isDialog />
           </div>
         </div>
 
-        {/* Scroller */}
         <TileScroller
           activeIndex={0}
           isSelectable={true}
           addMargin={false}
           onSelectAsset={onClick}
+          isDialog={true}
         />
 
         <div className="mx-4 mt-2 mb-2">
