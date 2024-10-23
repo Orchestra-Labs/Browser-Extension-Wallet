@@ -113,8 +113,6 @@ export const CreateWallet = () => {
   // TODO: make "clear" and "max" button placement and appearance more uniform (send and unstake sections)
   // TODO: format numbers on balance and asset value field to user locale.  start with US format, add others
 
-  // TODO: remove "support" in favor of links to site and socials
-
   // TODO: show green or red border for passphrase box on full verify, clear on start of typing
 
   // TODO: change "options" to settings?
