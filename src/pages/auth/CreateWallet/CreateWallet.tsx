@@ -105,8 +105,6 @@ export const CreateWallet = () => {
   // TODO: add search to other select dialogs
   // TODO: add search icon, add search capability
   // TODO: on select screen, tap to select, tap again to confirm selection/close
-  // TODO: revisit heights on receive dialog and validator search dialog
-  // TODO: revisit receive dialog.  remove y spacing so subtitled text is closer to box.
   // TODO: apply sorting function to wallet asset list
   // TODO: apply sorting function to validator list
   // TODO: add current/all buttons to holdings, but make them non-zero/all

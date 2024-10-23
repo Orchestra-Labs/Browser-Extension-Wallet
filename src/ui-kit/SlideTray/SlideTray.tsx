@@ -34,6 +34,7 @@ export const SlideTray: React.FC<SlideTrayProps> = ({
   }
 
   return (
+    // TODO: darken SlideTray.
     <DialogPrimitive.Root>
       <DialogPrimitive.Trigger asChild>{triggerComponent}</DialogPrimitive.Trigger>
 

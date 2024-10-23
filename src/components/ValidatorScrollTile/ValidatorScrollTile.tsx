@@ -21,12 +21,14 @@ interface ValidatorScrollTileProps {
   combinedStakingInfo: CombinedStakingInfo;
   isSelectable?: boolean;
   addMargin?: boolean;
+  onClick?: (asset: CombinedStakingInfo) => void;
 }
 
 export const ValidatorScrollTile = ({
   combinedStakingInfo,
   isSelectable = false,
   addMargin = true,
+  onClick,
 }: ValidatorScrollTileProps) => {
   const [selectedAction, setSelectedAction] = useState<'stake' | 'unstake' | 'claim' | null>(
     !combinedStakingInfo.delegation ? 'stake' : null,
@@ -86,6 +88,12 @@ export const ValidatorScrollTile = ({
   const website = validator.description.website;
   const isWebsiteValid = isValidUrl(website);
 
+  const handleClick = () => {
+    if (onClick) {
+      onClick(combinedStakingInfo);
+    }
+  };
+
   return (
     <>
       {isSelectable ? (
@@ -96,6 +104,7 @@ export const ValidatorScrollTile = ({
           icon={<LogoIcon />}
           status={statusColor}
           addMargin={addMargin}
+          onClick={handleClick}
         />
       ) : (
         <SlideTray

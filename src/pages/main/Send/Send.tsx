@@ -20,7 +20,6 @@ import { useExchangeRate } from '@/hooks/';
 import { AssetInput } from './AssetInput';
 import { AddressInput } from './AddressInput';
 
-
 export const Send = () => {
   const location = useLocation();
   const selectedSendAsset = location.state?.selectedSendAsset || DEFAULT_ASSET;
@@ -55,6 +54,7 @@ export const Send = () => {
     if (!sendAsset) return;
     const assetToSend = walletAssets.find(a => a.denom === sendAsset.denom);
     if (!assetToSend) return;
+
     const adjustedAmount = (
       sendAmount * Math.pow(10, assetToSend.exponent || GREATER_EXPONENT_DEFAULT)
     ).toFixed(0); // No decimals, as this is sending the minor unit, not the greater.
@@ -69,7 +69,7 @@ export const Send = () => {
 
     try {
       let result: TransactionResult;
-      if (sendAsset.denom === receiveAsset.denom) {
+      if (sendAsset?.denom === receiveAsset?.denom) {
         result = await sendTransaction(walletState.address, sendObject);
         // Set success state to true after transaction
         setIsSuccess(true);
@@ -77,7 +77,7 @@ export const Send = () => {
         // Swap transaction
         const swapObject = { sendObject, resultDenom: receiveAsset.denom };
         result = await swapTransaction(walletState.address, swapObject);
-                setIsSuccess(true);
+        setIsSuccess(true);
       } else {
         throw new Error('Invalid asset configuration');
       }

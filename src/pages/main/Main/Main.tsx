@@ -178,7 +178,6 @@ export const Main = () => {
           </h3>
         )}
 
-        {/* TODO: move into tilescroller */}
         {/* Display the filtered and sorted assets */}
         <div className="flex justify-between px-4 text-neutral-1 text-xs font-bold mb-1">
           {activeIndex === 0 ? (
