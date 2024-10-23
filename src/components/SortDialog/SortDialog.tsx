@@ -104,7 +104,7 @@ export const SortDialog: React.FC<SortDialogProps> = ({ isValidatorSort = false 
           <div className="flex justify-center items-center p-2">
             <Button
               variant="unselected"
-              size="xsmall"
+              size="small"
               className="px-1 rounded-md text-xs"
               onClick={resetDefaults}
             >

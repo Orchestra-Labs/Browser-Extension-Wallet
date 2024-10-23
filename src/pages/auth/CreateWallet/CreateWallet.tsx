@@ -144,6 +144,7 @@ export const CreateWallet = () => {
   // TODO: prevent re-building auth every time wallet updates
 
   /* Inside wallet TODOs */
+  // TODO: add button to "add chain" at bottom of Holdings list
   // TODO: ensure new encrypted mnemonic overwrites old in case of same password and name (but let user know first)
 
   /* Wallet UI TODOs */

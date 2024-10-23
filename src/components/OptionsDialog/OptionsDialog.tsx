@@ -1,30 +1,19 @@
 import { Dialog, DialogTrigger } from '@radix-ui/react-dialog';
 import { LogOut } from 'lucide-react';
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
-import { ArrowLeft, DotsVertical, Expand, Security, Support } from '@/assets/icons';
+import { ArrowLeft, Discord, DotsVertical } from '@/assets/icons';
 import { Button, DialogContent } from '@/ui-kit';
 import { useLogout } from '@/hooks';
 
 const OPTIONS = [
   {
     id: 1,
-    name: 'Expand view',
-    icon: <Expand />,
-    to: '#',
-  },
-  {
-    id: 2,
-    name: 'Support',
-    icon: <Support />,
-    to: '#',
-  },
-  {
-    id: 3,
-    name: 'Security',
-    icon: <Security />,
-    to: '#',
+    name: 'Contact Us',
+    icon: <Discord />,
+    target: '_blank',
+    to: 'https://discord.gg/symphony-1162823265975279636',
   },
 ];
 
@@ -46,9 +35,10 @@ export const OptionsDialog: React.FC = () => {
         <h3 className="text-h5 font-bold">Options</h3>
         <div className="grid">
           {OPTIONS.map(option => (
-            <NavLink
+            <Link
               key={option.id}
               to={option.to}
+              target={option.target}
               className="flex items-center text-sm text-white font-normal py-3 not-last:border-b not-last:border-neutral-4 hover:text-white"
             >
               <div className="h-8 w-8 bg-blue rounded-full flex items-center justify-center p-1.5 mr-2.5 text-black">
@@ -57,7 +47,7 @@ export const OptionsDialog: React.FC = () => {
               {option.name}
               <div className="flex-1" />
               <ArrowLeft className="rotate-180 h-3 w-3" />
-            </NavLink>
+            </Link>
           ))}
           <Button
             variant="transparent"

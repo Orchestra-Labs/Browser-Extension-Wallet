@@ -2,6 +2,7 @@ export * from './ArrowLeft';
 export * from './BinanceLogo';
 export * from './Check';
 export * from './Copy';
+export * from './Discord';
 export * from './DotsVertical';
 export * from './Expand';
 export * from './EyeClose';
