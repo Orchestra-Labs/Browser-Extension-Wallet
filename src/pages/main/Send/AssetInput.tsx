@@ -4,14 +4,12 @@ import { cn } from '@/helpers/utils';
 import { Asset } from '@/types';
 import { ChangeEvent, useEffect, useRef, useState } from 'react';
 import { GREATER_EXPONENT_DEFAULT } from '@/constants';
+import { useAtomValue } from 'jotai';
+import { receiveStateAtom, sendStateAtom } from '@/atoms';
 
 interface AssetInputProps {
   isReceiveInput?: boolean;
   isDisabled?: boolean;
-  currentState: {
-    asset: Asset | null;
-    amount: number;
-  };
   placeholder: string;
   updateAsset: (newAsset: Asset, propagateChanges?: boolean) => void;
   updateAmount: (newReceiveAmount: number, propagateChanges?: boolean) => void;
@@ -20,16 +18,18 @@ interface AssetInputProps {
 export const AssetInput: React.FC<AssetInputProps> = ({
   isReceiveInput = false,
   isDisabled = false,
-  currentState,
   placeholder = '',
   updateAsset,
   updateAmount,
 }) => {
+  const currentState = useAtomValue(isReceiveInput ? receiveStateAtom : sendStateAtom);
   const [localInputValue, setLocalInputValue] = useState<string>('');
   const inputRef = useRef<HTMLInputElement>(null);
   const prevValueRef = useRef<string>('');
   const currentAsset = currentState.asset;
   const currentExponent = currentAsset?.exponent ?? GREATER_EXPONENT_DEFAULT;
+
+  console.log('asset input', isReceiveInput, currentAsset, currentState);
 
   const onAmountValueChange = (value: number) => {
     const roundedValue = parseFloat(value.toFixed(currentExponent));
@@ -167,13 +167,7 @@ export const AssetInput: React.FC<AssetInputProps> = ({
           onBlur={handleBlur}
           // TODO: ensure onHover is removed and text colors are muted for disabled variant
           disabled={isDisabled}
-          icon={
-            <AssetSelectDialog
-              selectedAsset={currentAsset}
-              isSendDialog={false}
-              onClick={updateAsset}
-            />
-          }
+          icon={<AssetSelectDialog isSendDialog={false} onClick={updateAsset} />}
           className={cn('p-2.5 text-white border border-neutral-2 rounded-md w-full h-10')}
         />
       </div>

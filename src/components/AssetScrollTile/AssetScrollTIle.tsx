@@ -2,10 +2,10 @@ import { Asset } from '@/types';
 import { SlideTray, Button } from '@/ui-kit';
 import { ScrollTile } from '../ScrollTile';
 import { ReceiveDialog } from '../ReceiveDialog';
-import { NavLink } from 'react-router-dom';
+import { useAtom, useSetAtom } from 'jotai';
+import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '@/constants';
-import { useSetAtom } from 'jotai';
-import { swiperIndexState } from '@/atoms/';
+import { swiperIndexState, selectedAssetAtom, dialogSelectedAssetAtom } from '@/atoms/';
 import { removeTrailingZeroes } from '@/helpers';
 
 interface AssetScrollTileProps {
@@ -22,16 +22,28 @@ export const AssetScrollTile = ({
   onClick,
 }: AssetScrollTileProps) => {
   const setActiveIndex = useSetAtom(swiperIndexState);
+  const setSelectedAsset = useSetAtom(selectedAssetAtom);
+  const [dialogSelectedAsset, setDialogSelectedAsset] = useAtom(dialogSelectedAssetAtom);
+
+  const navigate = useNavigate();
 
   const title = asset.symbol || 'Unknown Asset';
   const value = `${removeTrailingZeroes(asset.amount)} ${asset.symbol}`;
   const logo = asset.logo;
 
+  const handleSendClick = () => {
+    setSelectedAsset(asset);
+    navigate(ROUTES.APP.SEND);
+  };
+
   const handleClick = () => {
     if (onClick) {
+      setDialogSelectedAsset(asset);
       onClick(asset);
     }
   };
+
+  const isSelected = asset.denom === dialogSelectedAsset.denom;
 
   return (
     <>
@@ -42,6 +54,7 @@ export const AssetScrollTile = ({
           value={value}
           icon={<img src={logo} alt={title} />}
           addMargin={addMargin}
+          selected={isSelected}
           onClick={handleClick}
         />
       ) : (
@@ -97,10 +110,9 @@ export const AssetScrollTile = ({
 
           {/* Action Buttons */}
           <div className="flex flex-col items-center justify-center grid grid-cols-3 w-full gap-x-4 px-2">
-            <Button className={'w-full'} asChild>
-              <NavLink to={ROUTES.APP.SEND} state={{ selectedSendAsset: asset }}>
-                Send
-              </NavLink>
+            {/* Use the custom handler for the send button */}
+            <Button className={'w-full'} onClick={handleSendClick}>
+              Send
             </Button>
             <ReceiveDialog />
             <Button className={'w-full'} onClick={() => setActiveIndex(1)}>

@@ -23,12 +23,13 @@ export const ScrollTile = ({
   onClick,
 }: ScrollTileProps) => {
   const textColor = selectTextColorByStatus(status);
-  const borderClass = selected ? 'border-blue-500' : 'border-neutral-4';
-
+  const borderClass = selected ? 'border-blue bg-blue-hover-secondary' : 'border-neutral-4';
+  const activityBorderClass =
+    'hover:bg-blue-hover-secondary hover:text-blue-dark hover:border-blue-darker active:bg-blue-pressed-secondary active:text-blue active:border-blue';
   return (
     <div
       className={cn(
-        `${addMargin ? 'mx-4' : ''} p-2 min-h-[52px] flex items-center cursor-pointer border ${borderClass}`,
+        `${addMargin ? 'mx-4' : ''} p-2 min-h-[52px] rounded-md flex items-center cursor-pointer border ${borderClass} ${activityBorderClass}`,
       )}
       onClick={onClick}
     >

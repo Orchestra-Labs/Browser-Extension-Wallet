@@ -12,6 +12,7 @@ import { filterAndSortValidators } from '@/helpers';
 
 export const showCurrentValidatorsAtom = atom<boolean>(true);
 export const validatorDataAtom = atom<CombinedStakingInfo[]>([]);
+export const selectedValidatorsAtom = atom<CombinedStakingInfo[]>([]);
 
 export const filteredValidatorsAtom = atom(get => {
   const validatorData = get(validatorDataAtom);

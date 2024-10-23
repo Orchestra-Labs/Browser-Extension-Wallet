@@ -15,13 +15,13 @@ import {
 } from '@/helpers';
 import { GREATER_EXPONENT_DEFAULT, LOCAL_ASSET_REGISTRY } from '@/constants';
 import { useAtomValue } from 'jotai';
-import { walletStateAtom } from '@/atoms';
+import { selectedValidatorsAtom, walletStateAtom } from '@/atoms';
 
 interface ValidatorScrollTileProps {
   combinedStakingInfo: CombinedStakingInfo;
   isSelectable?: boolean;
   addMargin?: boolean;
-  onClick?: (asset: CombinedStakingInfo) => void;
+  onClick?: (validator: CombinedStakingInfo) => void;
 }
 
 export const ValidatorScrollTile = ({
@@ -30,6 +30,8 @@ export const ValidatorScrollTile = ({
   addMargin = true,
   onClick,
 }: ValidatorScrollTileProps) => {
+  const selectedValidators = useAtomValue(selectedValidatorsAtom);
+
   const [selectedAction, setSelectedAction] = useState<'stake' | 'unstake' | 'claim' | null>(
     !combinedStakingInfo.delegation ? 'stake' : null,
   );
@@ -94,6 +96,10 @@ export const ValidatorScrollTile = ({
     }
   };
 
+  const isSelected = selectedValidators.some(
+    v => v.delegation.validator_address === combinedStakingInfo.delegation.validator_address,
+  );
+
   return (
     <>
       {isSelectable ? (
@@ -104,6 +110,7 @@ export const ValidatorScrollTile = ({
           icon={<LogoIcon />}
           status={statusColor}
           addMargin={addMargin}
+          selected={isSelected}
           onClick={handleClick}
         />
       ) : (

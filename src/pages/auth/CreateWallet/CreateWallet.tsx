@@ -102,7 +102,8 @@ export const CreateWallet = () => {
 
   /* ******************************************************************************************* */
   /* David Current TODOs */
-  // TODO: enable selection in validator select dialog
+  // TODO: add space between scrollbar and tiles on dialogs.  like on main
+  // TODO: have selections for validators query properly
   // TODO: add onHover and onClick color changes to asset and validator tiles
   // TODO: add onHover and onClick color changes to password and create wallet buttons
 
@@ -154,6 +155,7 @@ export const CreateWallet = () => {
 
   /* Interchain-compatibility TODOs */
   // TODO: integrate skip protocol or automated use of exchange to allow swapping between chains
+  // TODO: modify claim, restake, and unstake functions to withdraw from all unique delegator addresses
 
   /* Less Critical Auth TODOs */
   // TODO: handle error printout for create/import wallet (in place of subtitle on verify screen?)
