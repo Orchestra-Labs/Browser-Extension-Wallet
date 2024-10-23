@@ -102,7 +102,6 @@ export const CreateWallet = () => {
 
   /* ******************************************************************************************* */
   /* David Current TODOs */
-  // TODO: revert sort and search for dialogs on close
   // TODO: split search bar into own component
   // TODO: add search icon, add onclick
   // TODO: add confirm button to select dialogs.  does not need to be visible before selection

@@ -2,8 +2,12 @@ import React from 'react';
 import { Button, Input, SlideTray } from '@/ui-kit';
 import { TileScroller } from '../TileScroller';
 import { SortDialog } from '../SortDialog';
-import { useAtom } from 'jotai';
-import { dialogSearchAtom } from '@/atoms';
+import { useAtom, useSetAtom } from 'jotai';
+import {
+  dialogSearchAtom,
+  validatorDialogSortOrderAtom,
+  validatorDialogSortTypeAtom,
+} from '@/atoms';
 
 interface ValidatorSelectDialogProps {
   buttonText: string;
@@ -17,7 +21,14 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
   isClaimDialog = false,
 }) => {
   const [searchTerm, setSearchTerm] = useAtom(dialogSearchAtom);
+  const setSortOrder = useSetAtom(validatorDialogSortOrderAtom);
+  const setSortType = useSetAtom(validatorDialogSortTypeAtom);
 
+  const resetDefaults = () => {
+    setSearchTerm('');
+    setSortOrder('Desc');
+    setSortType('name');
+  };
   return (
     <SlideTray
       triggerComponent={
@@ -26,6 +37,7 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
         </Button>
       }
       title={isClaimDialog ? 'Claim' : 'Unstake'}
+      onClose={resetDefaults}
       showBottomBorder
     >
       <div className="flex flex-col h-full">

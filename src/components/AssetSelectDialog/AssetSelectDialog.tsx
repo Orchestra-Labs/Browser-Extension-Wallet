@@ -5,8 +5,8 @@ import { LogoIcon } from '@/assets/icons';
 import { Asset } from '@/types';
 import { cn } from '@/helpers';
 import { SortDialog } from '../SortDialog';
-import { useAtom } from 'jotai';
-import { dialogSearchAtom } from '@/atoms';
+import { useAtom, useSetAtom } from 'jotai';
+import { assetDialogSortOrderAtom, assetDialogSortTypeAtom, dialogSearchAtom } from '@/atoms';
 
 interface AssetSelectDialogProps {
   selectedAsset: Asset | null;
@@ -20,6 +20,14 @@ export const AssetSelectDialog: React.FC<AssetSelectDialogProps> = ({
   onClick,
 }) => {
   const [searchTerm, setSearchTerm] = useAtom(dialogSearchAtom);
+  const setSortOrder = useSetAtom(assetDialogSortOrderAtom);
+  const setSortType = useSetAtom(assetDialogSortTypeAtom);
+
+  const resetDefaults = () => {
+    setSearchTerm('');
+    setSortOrder('Desc');
+    setSortType('name');
+  };
 
   return (
     <SlideTray
@@ -37,6 +45,7 @@ export const AssetSelectDialog: React.FC<AssetSelectDialogProps> = ({
         </div>
       }
       title={isSendDialog ? 'Send' : 'Receive'}
+      onClose={resetDefaults}
       showBottomBorder
     >
       <div className="flex flex-col h-full">

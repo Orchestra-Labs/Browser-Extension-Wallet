@@ -14,6 +14,7 @@ interface SlideTrayProps {
   height?: string;
   showBottomBorder?: boolean;
   status?: 'error' | 'warn' | 'good';
+  onClose?: () => void;
 }
 
 export const SlideTray: React.FC<SlideTrayProps> = ({
@@ -25,6 +26,7 @@ export const SlideTray: React.FC<SlideTrayProps> = ({
   height = '75%',
   showBottomBorder = false,
   status = 'good',
+  onClose,
 }) => {
   let titleColor = 'text-white';
   if (status === 'warn') {
@@ -35,7 +37,7 @@ export const SlideTray: React.FC<SlideTrayProps> = ({
 
   return (
     // TODO: darken SlideTray.
-    <DialogPrimitive.Root>
+    <DialogPrimitive.Root onOpenChange={open => !open && onClose?.()}>
       <DialogPrimitive.Trigger asChild>{triggerComponent}</DialogPrimitive.Trigger>
 
       <DialogPrimitive.Portal>
