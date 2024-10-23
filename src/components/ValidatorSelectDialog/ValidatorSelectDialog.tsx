@@ -1,7 +1,9 @@
 import React from 'react';
-import { Button, SlideTray } from '@/ui-kit';
+import { Button, Input, SlideTray } from '@/ui-kit';
 import { TileScroller } from '../TileScroller';
 import { SortDialog } from '../SortDialog';
+import { useAtom } from 'jotai';
+import { searchTermAtom } from '@/atoms';
 
 interface ValidatorSelectDialogProps {
   buttonText: string;
@@ -15,6 +17,8 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
   buttonVariant,
   isClaimDialog = false,
 }) => {
+  const [searchTerm, setSearchTerm] = useAtom(searchTermAtom);
+
   return (
     <SlideTray
       triggerComponent={
@@ -63,9 +67,19 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
           onSelectValidator={() => {}}
         />
 
+        <div className="mx-4 mt-2 mb-2">
+          <Input
+            type="text"
+            variant="primary"
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+            placeholder="Search by asset name or symbol..."
+          />
+        </div>
+
         {!isClaimDialog && (
           <div className="flex justify-center space-x-4">
-            <Button variant="secondary" className="mt-2 mb-1 w-[44%]">
+            <Button variant="secondary" className="mb-1 w-[44%]">
               Unstake
             </Button>
           </div>

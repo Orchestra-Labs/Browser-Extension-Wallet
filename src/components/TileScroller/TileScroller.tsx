@@ -20,7 +20,7 @@ export const TileScroller: React.FC<TileScrollerProps> = ({
   onSelectValidator,
 }) => {
   return (
-    // TODO: add botder to TileScroller
+    // TODO: add border to TileScroller
     <ScrollArea className="flex-grow w-full overflow-y-auto" type="always" scrollbarProps={{}}>
       {activeIndex === 0 ? (
         <AssetTiles isSelectable={isSelectable} addMargin={addMargin} onClick={onSelectAsset} />

@@ -1,10 +1,12 @@
 import React from 'react';
-import { SlideTray } from '@/ui-kit';
+import { Input, SlideTray } from '@/ui-kit';
 import { TileScroller } from '../TileScroller';
 import { LogoIcon } from '@/assets/icons';
 import { Asset } from '@/types';
 import { cn } from '@/helpers';
 import { SortDialog } from '../SortDialog';
+import { useAtom } from 'jotai';
+import { searchTermAtom } from '@/atoms';
 
 interface AssetSelectDialogProps {
   selectedAsset: Asset | null;
@@ -17,6 +19,8 @@ export const AssetSelectDialog: React.FC<AssetSelectDialogProps> = ({
   isSendDialog = false,
   onClick,
 }) => {
+  const [searchTerm, setSearchTerm] = useAtom(searchTermAtom);
+
   return (
     <SlideTray
       triggerComponent={
@@ -54,6 +58,16 @@ export const AssetSelectDialog: React.FC<AssetSelectDialogProps> = ({
           addMargin={false}
           onSelectAsset={onClick}
         />
+
+        <div className="mx-4 mt-2 mb-2">
+          <Input
+            type="text"
+            variant="primary"
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+            placeholder="Search by asset name or symbol..."
+          />
+        </div>
       </div>
     </SlideTray>
   );
