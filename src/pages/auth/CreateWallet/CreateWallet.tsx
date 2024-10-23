@@ -102,6 +102,12 @@ export const CreateWallet = () => {
 
   /* ******************************************************************************************* */
   /* David Current TODOs */
+  // TODO: emable selection in validator select dialog
+  // TODO: add onHover and onClick color changes to asset and validator tiles
+  // TODO: add onHover and onClick color changes to password and create wallet buttons
+
+  // TODO: apply regional formatting to regular display numbers
+
   // TODO: add search icon, add onclick
   // TODO: add confirm button to select dialogs.  does not need to be visible before selection
 
@@ -115,13 +121,7 @@ export const CreateWallet = () => {
   // TODO: change "options" to settings?
   // TODO: show donut chart with assets rather than singular value
 
-  // TODO: emable selection in validator select dialog
   // TODO: add conclusionary action with selection in asset select dialog.  should picking close the dialog?
-
-  // TODO: add onHover and onClick color changes to asset and validator tiles
-  // TODO: add onHover and onClick color changes to password and create wallet buttons
-
-  // TODO: apply regional formatting to regular display numbers
   /* ******************************************************************************************* */
 
   /* Current TODOs */
