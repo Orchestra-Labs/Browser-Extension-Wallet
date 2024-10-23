@@ -107,7 +107,6 @@ export const CreateWallet = () => {
   // TODO: on select screen, tap to select, tap again to confirm selection/close
   // TODO: apply sorting function to wallet asset list
   // TODO: apply sorting function to validator list
-  // TODO: add current/all buttons to holdings, but make them non-zero/all
 
   // TODO: add show/hide function to wallet asset list (select which assets to show.  add searchability to this)
   // TODO: add show/hide function to validator list (by activity, by chain)
