@@ -1,13 +1,14 @@
 import React from 'react';
-import { Button, Input, SlideTray } from '@/ui-kit';
+import { Button, SlideTray } from '@/ui-kit';
 import { TileScroller } from '../TileScroller';
 import { SortDialog } from '../SortDialog';
-import { useAtom, useSetAtom } from 'jotai';
+import { useSetAtom } from 'jotai';
 import {
-  dialogSearchAtom,
+  dialogSearchTermAtom,
   validatorDialogSortOrderAtom,
   validatorDialogSortTypeAtom,
 } from '@/atoms';
+import { SearchBar } from '../SearchBar';
 
 interface ValidatorSelectDialogProps {
   buttonText: string;
@@ -20,7 +21,7 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
   buttonVariant,
   isClaimDialog = false,
 }) => {
-  const [searchTerm, setSearchTerm] = useAtom(dialogSearchAtom);
+  const setSearchTerm = useSetAtom(dialogSearchTermAtom);
   const setSortOrder = useSetAtom(validatorDialogSortOrderAtom);
   const setSortType = useSetAtom(validatorDialogSortTypeAtom);
 
@@ -76,15 +77,7 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
           isDialog={true}
         />
 
-        <div className="mx-4 mt-2 mb-2">
-          <Input
-            type="text"
-            variant="primary"
-            value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
-            placeholder="Search by validator name..."
-          />
-        </div>
+        <SearchBar isDialog isValidatorSearch />
 
         {!isClaimDialog && (
           <div className="flex justify-center space-x-4">

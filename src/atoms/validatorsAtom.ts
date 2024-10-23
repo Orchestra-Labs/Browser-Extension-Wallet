@@ -4,7 +4,7 @@ import {
   validatorSortOrderAtom,
   validatorSortTypeAtom,
   searchTermAtom,
-  dialogSearchAtom,
+  dialogSearchTermAtom,
   validatorDialogSortOrderAtom,
   validatorDialogSortTypeAtom,
 } from '@/atoms';
@@ -31,7 +31,7 @@ export const filteredValidatorsAtom = atom(get => {
 
 export const filteredDialogValidatorsAtom = atom(get => {
   const validatorData = get(validatorDataAtom);
-  const searchTerm = get(dialogSearchAtom);
+  const searchTerm = get(dialogSearchTermAtom);
   const sortOrder = get(validatorDialogSortOrderAtom);
   const sortType = get(validatorDialogSortTypeAtom);
 

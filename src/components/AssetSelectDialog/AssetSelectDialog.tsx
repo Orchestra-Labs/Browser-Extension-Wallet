@@ -1,12 +1,13 @@
 import React from 'react';
-import { Input, SlideTray } from '@/ui-kit';
+import { SlideTray } from '@/ui-kit';
 import { TileScroller } from '../TileScroller';
 import { LogoIcon } from '@/assets/icons';
 import { Asset } from '@/types';
 import { cn } from '@/helpers';
 import { SortDialog } from '../SortDialog';
-import { useAtom, useSetAtom } from 'jotai';
-import { assetDialogSortOrderAtom, assetDialogSortTypeAtom, dialogSearchAtom } from '@/atoms';
+import { useSetAtom } from 'jotai';
+import { assetDialogSortOrderAtom, assetDialogSortTypeAtom, dialogSearchTermAtom } from '@/atoms';
+import { SearchBar } from '../SearchBar';
 
 interface AssetSelectDialogProps {
   selectedAsset: Asset | null;
@@ -19,7 +20,7 @@ export const AssetSelectDialog: React.FC<AssetSelectDialogProps> = ({
   isSendDialog = false,
   onClick,
 }) => {
-  const [searchTerm, setSearchTerm] = useAtom(dialogSearchAtom);
+  const setSearchTerm = useSetAtom(dialogSearchTermAtom);
   const setSortOrder = useSetAtom(assetDialogSortOrderAtom);
   const setSortType = useSetAtom(assetDialogSortTypeAtom);
 
@@ -67,15 +68,7 @@ export const AssetSelectDialog: React.FC<AssetSelectDialogProps> = ({
           isDialog={true}
         />
 
-        <div className="mx-4 mt-2 mb-2">
-          <Input
-            type="text"
-            variant="primary"
-            value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
-            placeholder="Search by asset name or symbol..."
-          />
-        </div>
+        <SearchBar isDialog />
       </div>
     </SlideTray>
   );

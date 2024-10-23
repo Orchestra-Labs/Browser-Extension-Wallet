@@ -1,6 +1,6 @@
 import { Swiper, SwiperClass, SwiperSlide } from 'swiper/react';
 import 'swiper/swiper-bundle.css';
-import { BalanceCard, SortDialog, TileScroller } from '@/components';
+import { BalanceCard, SearchBar, SortDialog, TileScroller } from '@/components';
 import {
   walletStateAtom,
   swiperIndexState,
@@ -10,8 +10,8 @@ import {
   searchTermAtom,
 } from '@/atoms';
 import { useEffect, useRef } from 'react';
-import { useAtom, useAtomValue } from 'jotai';
-import { Button, Input, Separator } from '@/ui-kit';
+import { useAtom, useAtomValue, useSetAtom } from 'jotai';
+import { Button, Separator } from '@/ui-kit';
 import { removeTrailingZeroes, convertToGreaterUnit, fetchValidatorData } from '@/helpers';
 import { GREATER_EXPONENT_DEFAULT, LOCAL_ASSET_REGISTRY } from '@/constants';
 
@@ -21,7 +21,7 @@ export const Main = () => {
   const [validatorData, setValidatorData] = useAtom(validatorDataAtom);
   const [showCurrentValidators, setShowCurrentValidators] = useAtom(showCurrentValidatorsAtom);
   const [showAllAssets, setShowAllAssets] = useAtom(showAllAssetsAtom);
-  const [searchTerm, setSearchTerm] = useAtom(searchTermAtom);
+  const setSearchTerm = useSetAtom(searchTermAtom);
 
   const swiperRef = useRef<SwiperClass | null>(null);
   const totalSlides = 2;
@@ -203,15 +203,7 @@ export const Main = () => {
 
         <Separator className="pt-2 px-4" />
 
-        <div className="mx-4 mt-2 mb-2">
-          <Input
-            type="text"
-            variant="primary"
-            value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
-            placeholder="Search by asset name or symbol..."
-          />
-        </div>
+        <SearchBar />
       </div>
     </div>
   );

@@ -5,7 +5,7 @@ import {
   assetSortOrderAtom,
   assetSortTypeAtom,
   showAllAssetsAtom,
-  dialogSearchAtom,
+  dialogSearchTermAtom,
   assetDialogSortOrderAtom,
   assetDialogSortTypeAtom,
 } from '@/atoms';
@@ -28,7 +28,7 @@ export const filteredAssetsAtom = atom(get => {
 
 export const filteredDialogAssetsAtom = atom(get => {
   const walletState = get(walletStateAtom);
-  const searchTerm = get(dialogSearchAtom);
+  const searchTerm = get(dialogSearchTermAtom);
   const sortOrder = get(assetDialogSortOrderAtom);
   const sortType = get(assetDialogSortTypeAtom);
 

@@ -1,7 +1,7 @@
 import { atom } from 'jotai';
 
 export const searchTermAtom = atom<string>('');
-export const dialogSearchAtom = atom<string>('');
+export const dialogSearchTermAtom = atom<string>('');
 
 // main
 export const assetSortOrderAtom = atom<'Asc' | 'Desc'>('Desc');

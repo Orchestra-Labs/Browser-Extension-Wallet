@@ -9,6 +9,7 @@ export * from './QRCodeContainer';
 export * from './ReceiveDialog';
 export * from './RecoveryPhraseGrid';
 export * from './ScrollTile';
+export * from './SearchBar';
 export * from './SortDialog';
 export * from './TileScroller';
 export * from './ValidatorScrollTile';
