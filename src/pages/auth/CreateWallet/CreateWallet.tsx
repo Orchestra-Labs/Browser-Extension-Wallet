@@ -103,7 +103,7 @@ export const CreateWallet = () => {
 
   /* ******************************************************************************************* */
   /* David Current TODOs */
-  // TODO: (test on validator screen, nodeshub and large amounts) within tilescroller, ensure overflow over some value results in ellipses.  they can click in for more information if needed
+  // TODO: change validator unstake and stake buttons to change input display like on send screen
   // TODO: add onHover and onClick color changes to password and create wallet buttons
   // TODO: ensure trim on completion of password entry (such as save to storage).  same on login.  to avoid copy/paste errors
   // TODO: show green or red border for passphrase box on full verify, clear on start of typing
