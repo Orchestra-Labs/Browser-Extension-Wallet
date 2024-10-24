@@ -178,13 +178,14 @@ export const ValidatorScrollTile = ({
 
           {/* Action Selection */}
           {delegation && (
-            <div className="flex flex-col items-center justify-center grid grid-cols-3 w-full gap-x-4 px-2">
+            <div className="flex justify-between w-full px-4 mb-2">
+              {/* Apply flex here */}
               <Button className="w-full" onClick={() => setSelectedAction('stake')}>
                 Stake
               </Button>
               <Button
                 variant="secondary"
-                className="w-full"
+                className="w-full mx-2"
                 onClick={() => setSelectedAction('unstake')}
               >
                 Unstake
@@ -196,7 +197,6 @@ export const ValidatorScrollTile = ({
           )}
 
           <div className="flex flex-col items-center justify-center h-[4rem]">
-            {/* Stake and Unstake Actions */}
             {(selectedAction === 'stake' || selectedAction === 'unstake') && (
               <>
                 <div className="flex items-center w-full">
@@ -226,50 +226,43 @@ export const ValidatorScrollTile = ({
                     {selectedAction === 'stake' ? 'Stake' : 'Unstake'}
                   </Button>
                 </div>
+                <div className="flex justify-between w-full mt-1 px-4">
+                  <Button
+                    size="xs"
+                    variant="unselected"
+                    className="px-2 rounded-md text-xs"
+                    onClick={() => setAmount('')}
+                  >
+                    Clear
+                  </Button>
+                  <Button
+                    size="xs"
+                    variant="unselected"
+                    className="px-2 rounded-md text-xs"
+                    onClick={() => setAmount(subTitle)}
+                  >
+                    Max
+                  </Button>
+                </div>
               </>
             )}
 
-            {/* Claim Action */}
             {selectedAction === 'claim' && (
-              <div className="flex flex-col items-center justify-center grid grid-cols-2 gap-4 mt-[1.5rem]">
+              <div className="flex justify-between w-full px-4 mb-2">
                 <Button
                   variant="secondary"
                   className="w-full"
-                  onClick={() =>
-                    // TODO: update this entry in the validator list after completion (fix timing first.  can extract update function from that)
-                    claimRewards(walletState.address, validator.operator_address)
-                  }
+                  // TODO: update this entry in the validator list after completion
+                  onClick={() => claimRewards(walletState.address, validator.operator_address)}
                 >
                   Claim to Wallet
                 </Button>
-                <Button className="w-full" onClick={() => claimAndRestake(delegationResponse)}>
+                <Button className="w-full ml-2" onClick={() => claimAndRestake(delegationResponse)}>
                   Claim to Restake
                 </Button>
               </div>
             )}
           </div>
-          {(selectedAction === 'stake' || selectedAction === 'unstake') && (
-            <>
-              <div className="flex justify-between w-full mt-1">
-                <Button
-                  size="xs"
-                  variant="unselected"
-                  className="px-2 rounded-md text-xs"
-                  onClick={() => setAmount('')}
-                >
-                  Clear
-                </Button>
-                <Button
-                  size="xs"
-                  variant="unselected"
-                  className="px-2 rounded-md text-xs"
-                  onClick={() => setAmount(subTitle)}
-                >
-                  Max
-                </Button>
-              </div>
-            </>
-          )}
         </SlideTray>
       )}
     </>
