@@ -133,7 +133,6 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
           </div>
         </div>
 
-        {/* TODO: within tilescroller, ensure overflow over halfway results in ellipses.  they can click in for more information if needed */}
         <TileScroller
           activeIndex={1}
           addMargin={false}

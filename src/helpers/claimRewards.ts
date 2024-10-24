@@ -1,4 +1,4 @@
-import { CHAIN_ENDPOINTS } from '@/constants';
+import { CHAIN_ENDPOINTS, GREATER_EXPONENT_DEFAULT, LOCAL_ASSET_REGISTRY } from '@/constants';
 import { queryRpcNode } from './queryNodes';
 import { DelegationResponse } from '@/types';
 
@@ -134,7 +134,6 @@ export const claimAndRestake = async (delegations: DelegationResponse | Delegati
   }
 };
 
-// TODO: test all functions below this line
 // Function to stake to a validator
 export const stakeToValidator = async (
   amount: string,
@@ -143,11 +142,16 @@ export const stakeToValidator = async (
   validatorAddress: string,
 ) => {
   const endpoint = CHAIN_ENDPOINTS.delegateToValidator;
+  const formattedAmount = (
+    parseFloat(amount) *
+    Math.pow(10, LOCAL_ASSET_REGISTRY[denom].exponent || GREATER_EXPONENT_DEFAULT)
+  ).toFixed(0);
+
   const messages = buildClaimMessage({
     endpoint,
     delegatorAddress: walletAddress,
     validatorAddress,
-    amount,
+    amount: formattedAmount,
     denom,
   });
 
@@ -170,11 +174,21 @@ export const unstakeFromValidator = async (amount: string, delegation: Delegatio
   const validatorAddress = delegation.delegation.validator_address;
   const denom = delegation.balance.denom;
 
+  // TODO: format according to passed asset
+  // Convert the amount to the smallest unit by multiplying by 10^exponent
+  const formattedAmount = (
+    parseFloat(amount) *
+    Math.pow(10, LOCAL_ASSET_REGISTRY[denom].exponent || GREATER_EXPONENT_DEFAULT)
+  ).toFixed(0);
+
+  // Log the formatted amount to ensure it is correct
+  console.log('Formatted amount (in smallest unit):', formattedAmount);
+
   const messages = buildClaimMessage({
     endpoint,
     delegatorAddress,
     validatorAddress,
-    amount,
+    amount: formattedAmount,
     denom,
   });
 

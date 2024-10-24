@@ -42,14 +42,6 @@ export const ValidatorScrollTile = ({
   const { validator, delegation, balance, rewards } = combinedStakingInfo;
   const delegationResponse = { delegation, balance };
 
-  // TODO: address NaN on inactive nodes, jailed nodes, and non-delegated nodes
-  // Calculating the staked amount based on delegation.shares (as delegation is of type DelegationResponse['delegation'])
-  const delegatedAmount = delegation
-    ? `${removeTrailingZeroes(
-        convertToGreaterUnit(parseFloat(delegation.shares), GREATER_EXPONENT_DEFAULT),
-      )} ${LOCAL_ASSET_REGISTRY.note.symbol}`
-    : '0 MLD';
-
   // Aggregating the rewards (sum all reward amounts for this validator)
   const rewardAmount = rewards
     .reduce((sum, reward) => sum + parseFloat(reward.amount), 0)
@@ -60,9 +52,23 @@ export const ValidatorScrollTile = ({
     ),
   )} MLD`;
 
+  const delegatedAmount = removeTrailingZeroes(
+    convertToGreaterUnit(parseFloat(delegation.shares || '0'), GREATER_EXPONENT_DEFAULT),
+  );
+
   const title = validator.description.moniker || 'Unknown Validator';
-  const subTitle = delegatedAmount || '';
   const commission = `${parseFloat(validator.commission.commission_rates.rate) * 100}%`;
+
+  let subTitle: string;
+  if (validator.jailed) {
+    subTitle = 'Jailed';
+  } else if (validator.status === 'BOND_STATUS_UNBONDED') {
+    subTitle = 'Inactive';
+  } else if (delegatedAmount === '0') {
+    subTitle = 'No delegation';
+  } else {
+    subTitle = `${delegatedAmount} ${LOCAL_ASSET_REGISTRY.note.symbol}`;
+  }
 
   // TODO: pull dynamically from the validator
   const unbondingDays = 12;

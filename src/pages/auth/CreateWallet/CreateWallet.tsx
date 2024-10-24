@@ -102,10 +102,12 @@ export const CreateWallet = () => {
 
   /* ******************************************************************************************* */
   /* David Current TODOs */
+  // TODO: (test on validator screen, nodeshub and large amounts) within tilescroller, ensure overflow over halfway results in ellipses.  they can click in for more information if needed
   // TODO: add space between scrollbar and tiles on dialogs.  like on main
-  // TODO: have selections for validators query properly
-  // TODO: add onHover and onClick color changes to asset and validator tiles
   // TODO: add onHover and onClick color changes to password and create wallet buttons
+  // TODO: add option screen filter for validator list (by status.  default to not showing jailed validators)
+
+  // TODO: show green or red border for passphrase box on full verify, clear on start of typing
 
   // TODO: apply regional formatting to regular display numbers
 
@@ -117,10 +119,7 @@ export const CreateWallet = () => {
   // TODO: make "clear" and "max" button placement and appearance more uniform (send and unstake sections)
   // TODO: format numbers on balance and asset value field to user locale.  start with US format, add others
 
-  // TODO: show green or red border for passphrase box on full verify, clear on start of typing
-
   // TODO: change "options" to settings?
-  // TODO: show donut chart with assets rather than singular value
 
   // TODO: add conclusionary action with selection in asset select dialog.  should picking close the dialog?
   /* ******************************************************************************************* */
@@ -148,10 +147,9 @@ export const CreateWallet = () => {
   // TODO: add show/hide function to validator list (by activity, by chain)
   // TODO: remove or enable connected services button <-- could be good for using firebase to transfer/remove settings data
   // TODO: remove or enable transaction history
-  // TODO: remove or enable expand view
   // TODO: security tab enables/disables need to confirm transactions/re-entry of password on transactions (3 levels of security)
-  // TODO: change options buttons
   // TODO: update transactions history button (need endpoint for this.  disable until ready)
+  // TODO: show donut chart with assets rather than singular value (requires connections to exchanges)
 
   /* Interchain-compatibility TODOs */
   // TODO: integrate skip protocol or automated use of exchange to allow swapping between chains

@@ -3,7 +3,7 @@ import BigNumber from 'bignumber.js';
 import { useAtomValue } from 'jotai';
 import { useMemo } from 'react';
 
-import { CHAIN_ENDPOINTS } from '@/constants';
+import { CHAIN_ENDPOINTS, GREATER_EXPONENT_DEFAULT, LOCAL_ASSET_REGISTRY } from '@/constants';
 import { receiveStateAtom, sendStateAtom } from '@/atoms';
 import { queryRestNode } from '@/helpers';
 
@@ -24,10 +24,13 @@ export function useExchangeRate() {
         return '1';
       }
 
+      // Format the offer amount to the smallest unit
+      const exponent = LOCAL_ASSET_REGISTRY[sendAsset]?.exponent || GREATER_EXPONENT_DEFAULT;
+      const formattedOfferAmount = (1 * Math.pow(10, exponent)).toFixed(0);
+
       // Use queryRestNode to query exchange rates
       const response = await queryRestNode({
-        // TODO: no hard values.  get the million from 1 * 10^exponent, defaulting to greater exponent default
-        endpoint: `${CHAIN_ENDPOINTS.swap}offerCoin=1000000${sendAsset}&askDenom=${receiveAsset}`,
+        endpoint: `${CHAIN_ENDPOINTS.swap}offerCoin=${formattedOfferAmount}${sendAsset}&askDenom=${receiveAsset}`,
         queryType: 'GET',
       });
 
