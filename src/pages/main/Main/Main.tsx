@@ -11,7 +11,7 @@ import {
 } from '@/atoms';
 import { useEffect, useRef } from 'react';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
-import { Button, Separator } from '@/ui-kit';
+import { Button } from '@/ui-kit';
 import { removeTrailingZeroes, convertToGreaterUnit, fetchValidatorData } from '@/helpers';
 import { GREATER_EXPONENT_DEFAULT, LOCAL_ASSET_REGISTRY } from '@/constants';
 
@@ -129,9 +129,9 @@ export const Main = () => {
       </div>
 
       {/* Assets section */}
-      <div className="flex-grow pt-4 pb-4 flex flex-col overflow-hidden">
+      <div className="flex-grow pt-4 px-4 pb-4 flex flex-col overflow-hidden">
         {activeIndex === 0 ? (
-          <h3 className="text-h4 text-white font-bold px-4 text-left flex items-center">
+          <h3 className="text-h4 text-white font-bold text-left flex items-center px-2">
             <span className="flex-1">Holdings</span>
             <div className="flex-1 flex justify-center items-center space-x-2">
               <Button
@@ -156,7 +156,7 @@ export const Main = () => {
             </div>
           </h3>
         ) : (
-          <h3 className="text-h4 text-white font-bold px-4 text-left flex items-center">
+          <h3 className="text-h4 text-white font-bold text-left flex items-center px-2">
             <span className="flex-1">Validators</span>
             <div className="flex-1 flex justify-center items-center space-x-2">
               <Button
@@ -183,25 +183,25 @@ export const Main = () => {
         )}
 
         {/* Display the filtered and sorted assets */}
-        <div className="flex justify-between px-4 text-neutral-1 text-xs font-bold mb-1">
+        <div className="flex justify-between pr-3 text-neutral-1 text-xs font-bold mb-1">
           {activeIndex === 0 ? (
             <>
               <span className="w-[3.5rem]">Logo</span>
               <span>Chain</span>
+              <span className="flex-1"></span>
               <span className="flex-1 text-right">Amount</span>
             </>
           ) : (
             <>
               <span className="w-[3.5rem]">Logo</span>
               <span>Delegations</span>
+              <span className="flex-1"></span>
               <span className="flex-1 text-right">Rewards</span>
             </>
           )}
         </div>
 
         <TileScroller activeIndex={activeIndex} />
-
-        <Separator className="pt-2 px-4" />
 
         <SearchBar />
       </div>

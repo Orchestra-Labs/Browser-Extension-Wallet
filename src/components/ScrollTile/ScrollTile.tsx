@@ -8,7 +8,6 @@ interface ScrollTileProps {
   icon?: React.ReactNode;
   status?: 'error' | 'warn' | 'good';
   selected?: boolean;
-  addMargin?: boolean;
   onClick?: () => void;
 }
 
@@ -19,7 +18,6 @@ export const ScrollTile = ({
   icon,
   status = 'good',
   selected = false,
-  addMargin = true,
   onClick,
 }: ScrollTileProps) => {
   const textColor = selectTextColorByStatus(status);
@@ -29,7 +27,7 @@ export const ScrollTile = ({
   return (
     <div
       className={cn(
-        `${addMargin ? 'mx-4' : ''} p-2 min-h-[52px] rounded-md flex items-center cursor-pointer border ${borderClass} ${activityBorderClass}`,
+        `p-2 min-h-[52px] rounded-md flex items-center cursor-pointer border ${borderClass} ${activityBorderClass}`,
       )}
       onClick={onClick}
     >

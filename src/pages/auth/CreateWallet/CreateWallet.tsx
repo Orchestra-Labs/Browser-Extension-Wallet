@@ -103,7 +103,6 @@ export const CreateWallet = () => {
   /* ******************************************************************************************* */
   /* David Current TODOs */
   // TODO: (test on validator screen, nodeshub and large amounts) within tilescroller, ensure overflow over halfway results in ellipses.  they can click in for more information if needed
-  // TODO: add space between scrollbar and tiles on dialogs.  like on main
   // TODO: add onHover and onClick color changes to password and create wallet buttons
   // TODO: add option screen filter for validator list (by status.  default to not showing jailed validators)
 

@@ -74,13 +74,7 @@ export const AssetSelectDialog: React.FC<AssetSelectDialogProps> = ({
           </div>
         </div>
 
-        <TileScroller
-          activeIndex={0}
-          isSelectable={true}
-          addMargin={false}
-          onSelectAsset={onClick}
-          isDialog={true}
-        />
+        <TileScroller activeIndex={0} isSelectable={true} onSelectAsset={onClick} isDialog={true} />
 
         <SearchBar isDialog />
       </div>

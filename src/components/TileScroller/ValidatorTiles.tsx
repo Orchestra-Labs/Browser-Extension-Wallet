@@ -6,7 +6,6 @@ import { CombinedStakingInfo } from '@/types';
 
 interface ValidatorTilesProps {
   isSelectable?: boolean;
-  addMargin?: boolean;
   onClick?: (asset: CombinedStakingInfo) => void;
   isDialog?: boolean;
 }
@@ -17,7 +16,6 @@ interface ValidatorTilesProps {
 // const denom = validatorReward.rewards[0]?.denom || 'UNKNOWN';
 export const ValidatorTiles: React.FC<ValidatorTilesProps> = ({
   isSelectable = false,
-  addMargin = true,
   onClick,
   isDialog = false,
 }) => {
@@ -26,7 +24,7 @@ export const ValidatorTiles: React.FC<ValidatorTilesProps> = ({
   );
 
   if (filteredValidators.length === 0) {
-    return <p className="text-base text-neutral-1 px-4">No validators found</p>;
+    return <p className="text-base text-neutral-1">No validators found</p>;
   }
 
   return (
@@ -36,7 +34,6 @@ export const ValidatorTiles: React.FC<ValidatorTilesProps> = ({
           key={`${combinedStakingInfo.validator.operator_address}`}
           combinedStakingInfo={combinedStakingInfo}
           isSelectable={isSelectable}
-          addMargin={addMargin}
           onClick={onClick}
         />
       ))}

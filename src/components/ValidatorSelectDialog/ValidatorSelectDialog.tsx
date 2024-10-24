@@ -135,7 +135,6 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
 
         <TileScroller
           activeIndex={1}
-          addMargin={false}
           onSelectValidator={handleValidatorSelect}
           isSelectable
           isDialog
@@ -147,6 +146,7 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
           <div className="flex justify-center space-x-4">
             <Button
               variant="secondary"
+              size="small"
               className="mb-1 w-[44%]"
               disabled={selectedValidators.length === 0}
               onClick={() => {

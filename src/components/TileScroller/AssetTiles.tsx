@@ -6,21 +6,19 @@ import { Asset } from '@/types';
 
 interface AssetTilesProps {
   isSelectable?: boolean;
-  addMargin?: boolean;
   onClick?: (asset: Asset) => void;
   isDialog?: boolean;
 }
 
 export const AssetTiles: React.FC<AssetTilesProps> = ({
   isSelectable = false,
-  addMargin = true,
   onClick,
   isDialog = false,
 }) => {
   const filteredAssets = useAtomValue(isDialog ? filteredDialogAssetsAtom : filteredAssetsAtom);
 
   if (!filteredAssets?.length) {
-    return <p className="text-base text-neutral-1 px-4">No assets found</p>;
+    return <p className="text-base text-neutral-1">No assets found</p>;
   }
 
   return (
@@ -31,7 +29,6 @@ export const AssetTiles: React.FC<AssetTilesProps> = ({
           key={asset.denom}
           asset={asset}
           isSelectable={isSelectable}
-          addMargin={addMargin}
           onClick={onClick}
         />
       ))}

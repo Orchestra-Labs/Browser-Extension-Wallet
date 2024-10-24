@@ -11,16 +11,10 @@ import { removeTrailingZeroes } from '@/helpers';
 interface AssetScrollTileProps {
   asset: Asset;
   isSelectable?: boolean;
-  addMargin?: boolean;
   onClick?: (asset: Asset) => void;
 }
 
-export const AssetScrollTile = ({
-  asset,
-  isSelectable = false,
-  addMargin = true,
-  onClick,
-}: AssetScrollTileProps) => {
+export const AssetScrollTile = ({ asset, isSelectable = false, onClick }: AssetScrollTileProps) => {
   const setActiveIndex = useSetAtom(swiperIndexState);
   const setSelectedAsset = useSetAtom(selectedAssetAtom);
   const [dialogSelectedAsset, setDialogSelectedAsset] = useAtom(dialogSelectedAssetAtom);
@@ -53,7 +47,6 @@ export const AssetScrollTile = ({
           subtitle="Symphony"
           value={value}
           icon={<img src={logo} alt={title} />}
-          addMargin={addMargin}
           selected={isSelected}
           onClick={handleClick}
         />
@@ -66,7 +59,6 @@ export const AssetScrollTile = ({
                 subtitle="Symphony"
                 value={value}
                 icon={<img src={logo} alt={title} />}
-                addMargin={addMargin}
               />
             </div>
           }

@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Input } from '@/ui-kit';
+import { Input, Separator } from '@/ui-kit';
 import { useAtom } from 'jotai';
 import { dialogSearchTermAtom, searchTermAtom } from '@/atoms';
 
@@ -24,14 +24,18 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   }, []);
 
   return (
-    <div className="mx-4 mt-2 mb-2">
-      <Input
-        type="text"
-        variant="primary"
-        value={searchTerm}
-        onChange={e => setSearchTerm(e.target.value)}
-        placeholder={isValidatorSearch ? PLACEHOLDERS.asset : PLACEHOLDERS.validator}
-      />
-    </div>
+    <>
+      <Separator className="pt-2 px-4" />
+
+      <div className="mt-2 mb-2">
+        <Input
+          type="text"
+          variant="primary"
+          value={searchTerm}
+          onChange={e => setSearchTerm(e.target.value)}
+          placeholder={isValidatorSearch ? PLACEHOLDERS.asset : PLACEHOLDERS.validator}
+        />
+      </div>
+    </>
   );
 };

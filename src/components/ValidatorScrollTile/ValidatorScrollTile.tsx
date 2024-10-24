@@ -20,14 +20,12 @@ import { selectedValidatorsAtom, walletStateAtom } from '@/atoms';
 interface ValidatorScrollTileProps {
   combinedStakingInfo: CombinedStakingInfo;
   isSelectable?: boolean;
-  addMargin?: boolean;
   onClick?: (validator: CombinedStakingInfo) => void;
 }
 
 export const ValidatorScrollTile = ({
   combinedStakingInfo,
   isSelectable = false,
-  addMargin = true,
   onClick,
 }: ValidatorScrollTileProps) => {
   const selectedValidators = useAtomValue(selectedValidatorsAtom);
@@ -115,7 +113,6 @@ export const ValidatorScrollTile = ({
           value={formattedRewardAmount}
           icon={<LogoIcon />}
           status={statusColor}
-          addMargin={addMargin}
           selected={isSelected}
           onClick={handleClick}
         />
@@ -129,7 +126,6 @@ export const ValidatorScrollTile = ({
                 value={formattedRewardAmount}
                 icon={<LogoIcon />}
                 status={statusColor}
-                addMargin={addMargin}
               />
             </div>
           }
