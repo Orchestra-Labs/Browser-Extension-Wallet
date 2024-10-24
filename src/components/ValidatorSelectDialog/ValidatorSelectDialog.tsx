@@ -147,7 +147,7 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
             <Button
               variant="secondary"
               size="small"
-              className="mb-1 w-[44%]"
+              className="mb-1 w-[44%] h-8"
               disabled={selectedValidators.length === 0}
               onClick={() => {
                 console.log('Unstaking selected validators:', selectedValidators);

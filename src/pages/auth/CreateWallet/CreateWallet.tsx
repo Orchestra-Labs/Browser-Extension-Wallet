@@ -96,35 +96,33 @@ export const CreateWallet = () => {
 
   /* ******************************************************************************************* */
   /* Chris current TODO */
+  // TODO: show errors to user (user displayable values)
   // TODO: provide updates to user as staking, claim, and unstaking information changes (successes, errors, and changing gas fees)
   // TODO: provide updates to user as send information updates (errors and changing gas fees)
   /* ******************************************************************************************* */
 
   /* ******************************************************************************************* */
   /* David Current TODOs */
-  // TODO: (test on validator screen, nodeshub and large amounts) within tilescroller, ensure overflow over halfway results in ellipses.  they can click in for more information if needed
+  // TODO: (test on validator screen, nodeshub and large amounts) within tilescroller, ensure overflow over some value results in ellipses.  they can click in for more information if needed
   // TODO: add onHover and onClick color changes to password and create wallet buttons
   // TODO: add option screen filter for validator list (by status.  default to not showing jailed validators)
-
-  // TODO: show green or red border for passphrase box on full verify, clear on start of typing
-
   // TODO: apply regional formatting to regular display numbers
-
-  // TODO: add search icon, add onclick
-  // TODO: add confirm button to select dialogs.  does not need to be visible before selection
-
-  // TODO: add clear and max buttons to amount section
-  // TODO: test validation of format of entered address for send field
-  // TODO: make "clear" and "max" button placement and appearance more uniform (send and unstake sections)
   // TODO: format numbers on balance and asset value field to user locale.  start with US format, add others
+  // TODO: add option screen filter for regional display for numbers
+  // TODO: add clear and max buttons to amount section
+  // TODO: show green or red border for passphrase box on full verify, clear on start of typing
+  // TODO: add search icon to search field, add onclick
+  // TODO: test validation of format of entered address for send field
+
+  // TODO: make "clear" and "max" button placement and appearance more uniform (send and unstake sections)
 
   // TODO: change "options" to settings?
 
   // TODO: add conclusionary action with selection in asset select dialog.  should picking close the dialog?
+  // TODO: add confirm button to select dialogs.  does not need to be visible before selection
   /* ******************************************************************************************* */
 
   /* Current TODOs */
-  // TODO: show errors to user (user displayable values)
   // TODO: clean up helper functions and hooks
 
   // TODO: add fields to let user know when sending over IBC

@@ -23,7 +23,6 @@ export const AssetTiles: React.FC<AssetTilesProps> = ({
 
   return (
     <>
-      {/* TODO: asset scroll tile using asset registry needs different values to display.  and/or add titles above columns to say what the value is */}
       {filteredAssets.map(asset => (
         <AssetScrollTile
           key={asset.denom}

@@ -180,7 +180,7 @@ export const ValidatorScrollTile = ({
 
           {/* Action Selection */}
           {delegation && (
-            <div className="flex justify-between w-full px-4 mb-2">
+            <div className="flex justify-between w-full px-2 mb-2">
               {/* Apply flex here */}
               <Button className="w-full" onClick={() => setSelectedAction('stake')}>
                 Stake
@@ -198,7 +198,7 @@ export const ValidatorScrollTile = ({
             </div>
           )}
 
-          <div className="flex flex-col items-center justify-center h-[4rem]">
+          <div className="flex flex-col items-center justify-center h-[4rem] px-[1.5rem]">
             {(selectedAction === 'stake' || selectedAction === 'unstake') && (
               <>
                 <div className="flex items-center w-full">
@@ -228,7 +228,7 @@ export const ValidatorScrollTile = ({
                     {selectedAction === 'stake' ? 'Stake' : 'Unstake'}
                   </Button>
                 </div>
-                <div className="flex justify-between w-full mt-1 px-4">
+                <div className="flex justify-between w-full mt-1">
                   <Button
                     size="xs"
                     variant="unselected"

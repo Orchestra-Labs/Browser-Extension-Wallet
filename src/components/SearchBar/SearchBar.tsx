@@ -27,7 +27,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
     <>
       <Separator className="pt-2 px-4" />
 
-      <div className="mt-2 mb-2">
+      <div className="mt-2 mb-2 px-2">
         <Input
           type="text"
           variant="primary"

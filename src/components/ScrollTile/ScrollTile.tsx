@@ -24,6 +24,7 @@ export const ScrollTile = ({
   const borderClass = selected ? 'border-blue bg-blue-hover-secondary' : 'border-neutral-4';
   const activityBorderClass =
     'hover:bg-blue-hover-secondary hover:text-blue-dark hover:border-blue-darker active:bg-blue-pressed-secondary active:text-blue active:border-blue';
+
   return (
     <div
       className={cn(
