@@ -12,8 +12,8 @@ import {
 import { useEffect, useRef } from 'react';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { Button } from '@/ui-kit';
-import { removeTrailingZeroes, convertToGreaterUnit, fetchValidatorData } from '@/helpers';
-import { GREATER_EXPONENT_DEFAULT, LOCAL_ASSET_REGISTRY } from '@/constants';
+import { convertToGreaterUnit, fetchValidatorData, formatBalanceDisplay } from '@/helpers';
+import { DEFAULT_ASSET, GREATER_EXPONENT_DEFAULT, LOCAL_ASSET_REGISTRY } from '@/constants';
 
 export const Main = () => {
   const walletState = useAtomValue(walletStateAtom);
@@ -64,19 +64,21 @@ export const Main = () => {
   };
 
   // Calculate total available MLD balance
+  const symbol = LOCAL_ASSET_REGISTRY.note.symbol || DEFAULT_ASSET.symbol || 'MLD';
   const currentExponent = LOCAL_ASSET_REGISTRY.note.exponent || GREATER_EXPONENT_DEFAULT;
   const totalAvailableMLD = walletState.assets
     .filter(asset => asset.denom === LOCAL_ASSET_REGISTRY.note.denom)
     .reduce((sum, delegation) => sum + parseFloat(delegation.amount), 0)
     .toFixed(currentExponent);
-  const formattedTotalAvailableMLD = removeTrailingZeroes(totalAvailableMLD);
+  const formattedTotalAvailableMLD = formatBalanceDisplay(totalAvailableMLD, symbol);
 
   // Calculate total staked MLD balance
   const totalStakedMLD = validatorData
     .filter(item => item.balance.denom === LOCAL_ASSET_REGISTRY.note.denom)
     .reduce((sum, item) => sum + parseFloat(item.balance?.amount || '0'), 0);
-  const formattedTotalStakedMLD = removeTrailingZeroes(
+  const formattedTotalStakedMLD = formatBalanceDisplay(
     convertToGreaterUnit(totalStakedMLD, currentExponent).toFixed(currentExponent),
+    symbol,
   );
 
   // Calculate total rewards
@@ -87,8 +89,9 @@ export const Main = () => {
     );
     return sum + totalReward;
   }, 0);
-  const formattedConvertedTotalRewards = removeTrailingZeroes(
+  const formattedConvertedTotalRewards = formatBalanceDisplay(
     convertToGreaterUnit(totalStakedRewards, 6).toFixed(6),
+    symbol,
   );
 
   return (
@@ -108,7 +111,7 @@ export const Main = () => {
             <div className="w-full px-4 mt-4 flex-shrink-0">
               <BalanceCard
                 title="Available balance"
-                primaryText={`${formattedTotalAvailableMLD} MLD`}
+                primaryText={formattedTotalAvailableMLD}
                 currentStep={activeIndex}
                 totalSteps={totalSlides}
               />
@@ -118,8 +121,8 @@ export const Main = () => {
             <div className="w-full px-4 mt-4 flex-shrink-0">
               <BalanceCard
                 title="Staked balance"
-                primaryText={`${formattedConvertedTotalRewards} MLD`}
-                secondaryText={`${formattedTotalStakedMLD} MLD`}
+                primaryText={formattedConvertedTotalRewards}
+                secondaryText={formattedTotalStakedMLD}
                 currentStep={activeIndex}
                 totalSteps={totalSlides}
               />

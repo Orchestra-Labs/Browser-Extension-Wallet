@@ -6,6 +6,7 @@ import { ChangeEvent, useEffect, useRef, useState } from 'react';
 import { GREATER_EXPONENT_DEFAULT } from '@/constants';
 import { useAtomValue } from 'jotai';
 import { receiveStateAtom, sendStateAtom } from '@/atoms';
+import { formatNumberWithCommas } from '@/helpers';
 
 interface AssetInputProps {
   isReceiveInput?: boolean;
@@ -45,17 +46,6 @@ export const AssetInput: React.FC<AssetInputProps> = ({
       setLocalInputValue('');
     }
   }, [currentState.amount]);
-
-  // Format the number with commas
-  const formatNumberWithCommas = (value: string | number): string => {
-    const stringValue = String(value);
-    const [integerPart, decimalPart] = stringValue.split('.') || ['', ''];
-    const formattedIntegerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-    const formattedNumber =
-      decimalPart !== undefined ? `${formattedIntegerPart}.${decimalPart}` : formattedIntegerPart;
-
-    return formattedNumber;
-  };
 
   // Helper function to remove all non-numeric characters (except decimal points)
   const stripNonNumerics = (value: string) => {

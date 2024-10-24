@@ -1,5 +1,5 @@
 import { LogoIcon } from '@/assets/icons';
-import { cn, selectTextColorByStatus } from '@/helpers';
+import { cn, selectTextColorByStatus, truncateString } from '@/helpers';
 
 interface ScrollTileProps {
   title: string;
@@ -25,6 +25,8 @@ export const ScrollTile = ({
   const activityBorderClass =
     'hover:bg-blue-hover-secondary hover:text-blue-dark hover:border-blue-darker active:bg-blue-pressed-secondary active:text-blue active:border-blue';
 
+  const formattedTitle = truncateString(title, 10);
+
   return (
     <div
       className={cn(
@@ -36,11 +38,11 @@ export const ScrollTile = ({
         {icon || <LogoIcon />}
       </div>
       <div className="flex flex-col ml-3">
-        <h6 className={`text-base ${textColor} text-left`}>{title}</h6>
-        <p className="text-xs text-neutral-1 text-left">{subtitle}</p>
+        <h6 className={`text-base ${textColor} text-left line-clamp-1`}>{formattedTitle}</h6>
+        <p className="text-xs text-neutral-1 text-left line-clamp-1">{subtitle}</p>
       </div>
       <div className="flex-1" />
-      <div className="text-white text-h6">{value}</div>
+      <div className="text-white text-h6 line-clamp-1">{value}</div>
     </div>
   );
 };

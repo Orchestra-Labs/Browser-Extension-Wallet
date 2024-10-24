@@ -21,9 +21,9 @@ export const BalanceCard = ({
   return (
     <div className="p-4 h-44 border rounded-xl border-neutral-4 flex flex-col items-center relative">
       <div className="text-center mb-4">
-        <p className="text-base text-neutral-1">{title}</p>
-        <h1 className="text-h2 text-white font-bold">{primaryText}</h1>
-        <p className="text-sm text-neutral-1">
+        <p className="text-base text-neutral-1 ">{title}</p>
+        <h1 className="text-h2 text-white font-bold line-clamp-1">{primaryText}</h1>
+        <p className="text-sm text-neutral-1 line-clamp-1">
           {secondaryText ? `Balance: ${secondaryText}` : <span>&nbsp;</span>}
         </p>
       </div>

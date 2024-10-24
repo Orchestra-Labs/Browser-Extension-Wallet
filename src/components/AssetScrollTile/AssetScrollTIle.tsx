@@ -4,9 +4,9 @@ import { ScrollTile } from '../ScrollTile';
 import { ReceiveDialog } from '../ReceiveDialog';
 import { useAtom, useSetAtom } from 'jotai';
 import { useNavigate } from 'react-router-dom';
-import { ROUTES } from '@/constants';
+import { DEFAULT_ASSET, ROUTES } from '@/constants';
 import { swiperIndexState, selectedAssetAtom, dialogSelectedAssetAtom } from '@/atoms/';
-import { removeTrailingZeroes } from '@/helpers';
+import { formatBalanceDisplay } from '@/helpers';
 
 interface AssetScrollTileProps {
   asset: Asset;
@@ -21,8 +21,10 @@ export const AssetScrollTile = ({ asset, isSelectable = false, onClick }: AssetS
 
   const navigate = useNavigate();
 
+  const symbol = asset.symbol || DEFAULT_ASSET.symbol || 'MLD';
+
   const title = asset.symbol || 'Unknown Asset';
-  const value = `${removeTrailingZeroes(asset.amount)} ${asset.symbol}`;
+  const value = formatBalanceDisplay(asset.amount, symbol);
   const logo = asset.logo;
 
   const handleSendClick = () => {
@@ -68,7 +70,7 @@ export const AssetScrollTile = ({ asset, isSelectable = false, onClick }: AssetS
           <>
             <div className="text-center mb-2">
               <div className="truncate text-base font-medium text-neutral-1">
-                Amount: <span className="text-blue">{asset.amount}</span>
+                Amount: <span className="text-blue line-clamp-1">{value}</span>
               </div>
               <span className="text-grey-dark text-xs text-base">
                 Current Chain: <span className="text-blue">Symphony</span>

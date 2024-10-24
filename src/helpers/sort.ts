@@ -1,5 +1,5 @@
 import { Asset, CombinedStakingInfo } from '@/types';
-import { stripNonAlphanumerics } from './utils';
+import { stripNonAlphanumerics } from './formatString';
 
 export function filterAndSortAssets(
   assets: Asset[],
