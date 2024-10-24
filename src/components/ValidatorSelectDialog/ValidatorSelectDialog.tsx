@@ -11,11 +11,7 @@ import {
   validatorDialogSortTypeAtom,
 } from '@/atoms';
 import { SearchBar } from '../SearchBar';
-import {
-  claimRewardsFromAllValidators,
-  claimAndRestakeAll,
-  unstakeFromAllValidators,
-} from '@/helpers';
+import { claimAndRestake, claimRewards, unstakeFromAllValidators } from '@/helpers';
 import { CombinedStakingInfo } from '@/types';
 
 interface ValidatorSelectDialogProps {
@@ -35,7 +31,11 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
   const [selectedValidators, setSelectedValidators] = useAtom(selectedValidatorsAtom);
   const filteredValidators = useAtomValue(filteredDialogValidatorsAtom);
 
+  const allValidatorsSelected = selectedValidators.length === filteredValidators.length;
+  const noValidatorsSelected = selectedValidators.length === 0;
+
   const resetDefaults = () => {
+    console.log('Resetting defaults');
     setSearchTerm('');
     setSortOrder('Desc');
     setSortType('name');
@@ -43,14 +43,17 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
   };
 
   const handleSelectAll = () => {
+    console.log('Selecting all validators:', filteredValidators);
     setSelectedValidators(filteredValidators);
   };
 
   const handleSelectNone = () => {
+    console.log('Deselecting all validators');
     setSelectedValidators([]);
   };
 
   const handleValidatorSelect = (validator: CombinedStakingInfo) => {
+    console.log('Toggling selection for validator:', validator);
     setSelectedValidators(prev =>
       prev.some(v => v.delegation.validator_address === validator.delegation.validator_address)
         ? prev.filter(
@@ -79,12 +82,13 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
               variant="secondary"
               className="w-full"
               disabled={selectedValidators.length === 0}
-              onClick={() =>
-                claimRewardsFromAllValidators(
+              onClick={() => {
+                console.log('Claiming rewards for selected validators:', selectedValidators);
+                claimRewards(
                   filteredValidators[0].delegation.delegator_address,
                   selectedValidators.map(v => v.delegation.validator_address),
-                )
-              }
+                );
+              }}
             >
               To Wallet
             </Button>
@@ -93,7 +97,8 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
               className="w-full"
               disabled={selectedValidators.length === 0}
               onClick={() => {
-                claimAndRestakeAll(selectedValidators);
+                console.log('Claiming and restaking for selected validators:', selectedValidators);
+                claimAndRestake(selectedValidators);
               }}
             >
               To Restake
@@ -106,7 +111,7 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
           <div className="flex items-center">
             <p className="text-sm pr-1">Select:</p>
             <Button
-              variant="selected"
+              variant={allValidatorsSelected ? 'selected' : 'unselected'}
               size="xsmall"
               className="px-1 rounded-md text-xs"
               onClick={handleSelectAll}
@@ -115,7 +120,7 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
             </Button>
             <p className="text-sm px-1">/</p>
             <Button
-              variant="unselected"
+              variant={noValidatorsSelected ? 'selected' : 'unselected'}
               size="xsmall"
               className="px-1 rounded-md text-xs"
               onClick={handleSelectNone}
@@ -128,7 +133,6 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
           </div>
         </div>
 
-        {/* Validator selection UI */}
         {/* TODO: within tilescroller, ensure overflow over halfway results in ellipses.  they can click in for more information if needed */}
         <TileScroller
           activeIndex={1}
@@ -147,6 +151,7 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
               className="mb-1 w-[44%]"
               disabled={selectedValidators.length === 0}
               onClick={() => {
+                console.log('Unstaking selected validators:', selectedValidators);
                 unstakeFromAllValidators(selectedValidators);
               }}
             >

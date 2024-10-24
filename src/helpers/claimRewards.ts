@@ -17,41 +17,70 @@ export const buildClaimMessage = ({
   denom?: string;
   delegations?: DelegationResponse[];
 }): any => {
-  return delegations
-    ? delegations.map(delegation => ({
-        typeUrl: endpoint,
-        value: {
-          delegatorAddress: delegation.delegation.delegator_address,
-          validatorAddress: delegation.delegation.validator_address,
-          amount: {
-            denom: delegation.balance.denom,
-            amount: (parseFloat(delegation.balance.amount) - 5000).toFixed(0), // Subtracting 5000 for gas fee
-          },
-        },
-      }))
-    : [
-        {
-          typeUrl: endpoint,
-          value: {
-            delegatorAddress: delegatorAddress,
-            validatorAddress: validatorAddress,
-            ...(amount && denom ? { amount: { denom, amount } } : {}),
-          },
-        },
-      ];
-};
-
-// TODO: remove magic number fees in favor of single source of truth
-// Function to claim rewards from a designated validator
-export const claimRewardsFromValidator = async (
-  delegatorAddress: string,
-  validatorAddress: string,
-) => {
-  const endpoint = CHAIN_ENDPOINTS.claimRewards;
-  const messages = buildClaimMessage({
+  console.log('Building claim message:', {
     endpoint,
     delegatorAddress,
     validatorAddress,
+    amount,
+    denom,
+    delegations,
+  });
+
+  if (delegations) {
+    // Handle multiple delegations
+    return delegations.map(delegation => ({
+      typeUrl: endpoint,
+      value: {
+        delegatorAddress: delegation.delegation.delegator_address,
+        validatorAddress: delegation.delegation.validator_address,
+        amount: {
+          denom: delegation.balance.denom,
+          // TODO: remove magic number fees in favor of single source of truth (simulate transactions)
+          // Subtracting 5000 for gas fee
+          amount: (parseFloat(delegation.balance.amount) - 5000).toFixed(0),
+        },
+      },
+    }));
+  }
+
+  // Single validator address or multiple
+  const validatorAddressesArray = Array.isArray(validatorAddress)
+    ? validatorAddress
+    : [validatorAddress];
+
+  // Create messages for each validator in the array
+  return validatorAddressesArray.map(validator => ({
+    typeUrl: endpoint,
+    value: {
+      delegatorAddress: delegatorAddress,
+      validatorAddress: validator,
+      ...(amount && denom ? { amount: { denom, amount } } : {}),
+    },
+  }));
+};
+
+// Function to claim rewards from one or multiple validators
+export const claimRewards = async (
+  delegatorAddress: string,
+  validatorAddress: string | string[],
+) => {
+  const endpoint = CHAIN_ENDPOINTS.claimRewards;
+
+  // Make sure validatorAddress is always an array
+  const validatorAddressesArray = Array.isArray(validatorAddress)
+    ? validatorAddress
+    : [validatorAddress];
+
+  const messages = buildClaimMessage({
+    endpoint,
+    delegatorAddress,
+    validatorAddress: validatorAddressesArray, // Pass array for consistency
+  });
+
+  console.log('Claiming rewards from validator(s):', {
+    delegatorAddress,
+    validatorAddressesArray,
+    messages,
   });
 
   try {
@@ -62,76 +91,34 @@ export const claimRewardsFromValidator = async (
 
     console.log('Rewards claimed successfully:', response);
   } catch (error) {
-    console.error('Error claiming rewards from the validator:', error);
+    console.error('Error claiming rewards:', error);
   }
 };
 
-// TODO: test all functions below this line
-// Function to claim rewards and then restake them to a designated validator
-export const claimAndRestake = async (delegation: DelegationResponse) => {
-  const delegatorAddress = delegation.delegation.delegator_address;
-  const validatorAddress = delegation.delegation.validator_address;
+// Function to claim rewards and restake for one or multiple validators
+export const claimAndRestake = async (delegations: DelegationResponse | DelegationResponse[]) => {
   const endpoint = CHAIN_ENDPOINTS.delegateToValidator;
+
+  // Ensure delegations is always an array
+  const delegationsArray = Array.isArray(delegations) ? delegations : [delegations];
+  const delegatorAddress = delegationsArray[0].delegation.delegator_address;
+  const validatorAddresses = delegationsArray.map(d => d.delegation.validator_address);
 
   const messages = buildClaimMessage({
     endpoint,
-    delegations: [delegation],
+    delegations: delegationsArray,
   });
 
-  try {
-    await claimRewardsFromValidator(delegatorAddress, validatorAddress);
-
-    const response = await queryRpcNode({
-      endpoint,
-      messages,
-    });
-
-    console.log('Rewards restaked successfully:', response);
-  } catch (error) {
-    console.error('Error during claim and restake:', error);
-  }
-};
-
-// Function to claim rewards from all validators
-export const claimRewardsFromAllValidators = async (
-  delegatorAddress: string,
-  validatorAddress: string[],
-) => {
-  const endpoint = CHAIN_ENDPOINTS.delegateToValidator;
-
-  const messages = buildClaimMessage({
-    endpoint,
+  console.log('Claiming and restaking rewards for validator(s):', {
     delegatorAddress,
-    validatorAddress,
+    validatorAddresses,
+    messages,
   });
 
   try {
-    const response = await queryRpcNode({
-      endpoint: CHAIN_ENDPOINTS.claimRewards,
-      messages,
-    });
+    // Use the updated claimRewards function
+    await claimRewards(delegatorAddress, validatorAddresses);
 
-    console.log('Rewards claimed successfully from all validators:', response);
-  } catch (error) {
-    console.error('Error claiming rewards from all validators:', error);
-  }
-};
-
-// Function to claim rewards from all validators and restake to designated validators
-export const claimAndRestakeAll = async (delegations: DelegationResponse[]) => {
-  const endpoint = CHAIN_ENDPOINTS.delegateToValidator;
-  const delegatorAddress = delegations[0]?.delegation.delegator_address;
-  const validatorAddresses = delegations.map(d => d.delegation.validator_address);
-
-  const messages = buildClaimMessage({
-    endpoint,
-    delegations,
-  });
-
-  try {
-    await claimRewardsFromAllValidators(delegatorAddress, validatorAddresses);
-
-    console.log('Restaking rewards to all validators...');
     const restakeResponse = await queryRpcNode({
       endpoint,
       messages,
@@ -143,10 +130,12 @@ export const claimAndRestakeAll = async (delegations: DelegationResponse[]) => {
 
     console.log('Rewards restaked successfully to all validators:', restakeResponse);
   } catch (error) {
-    console.error('Error during claim and restake all:', error);
+    console.error('Error during claim and restake:', error);
   }
 };
 
+// TODO: test all functions below this line
+// Function to stake to a validator
 export const stakeToValidator = async (
   amount: string,
   denom: string,
@@ -163,22 +152,18 @@ export const stakeToValidator = async (
   });
 
   try {
-    try {
-      const response = await queryRpcNode({
-        endpoint,
-        messages,
-      });
+    const response = await queryRpcNode({
+      endpoint,
+      messages,
+    });
 
-      console.log('Successfully staked:', response);
-    } catch (error) {
-      console.error('Failed to stake:', error);
-    }
+    console.log('Successfully staked:', response);
   } catch (error) {
     console.error('Error during staking:', error);
   }
 };
 
-// TODO: if maximum amount is unstaked, also withdraw rewards
+// Function to unstake from a validator
 export const unstakeFromValidator = async (amount: string, delegation: DelegationResponse) => {
   const endpoint = CHAIN_ENDPOINTS.undelegateFromValidator;
   const delegatorAddress = delegation.delegation.delegator_address;
@@ -205,6 +190,7 @@ export const unstakeFromValidator = async (amount: string, delegation: Delegatio
   }
 };
 
+// Function to unstake from multiple validators
 export const unstakeFromAllValidators = async (delegations: DelegationResponse[]) => {
   const endpoint = CHAIN_ENDPOINTS.undelegateFromValidator;
 

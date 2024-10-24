@@ -5,7 +5,7 @@ import { LogoIcon } from '@/assets/icons';
 import { ScrollTile } from '../ScrollTile';
 import {
   claimAndRestake,
-  claimRewardsFromValidator,
+  claimRewards,
   convertToGreaterUnit,
   isValidUrl,
   removeTrailingZeroes,
@@ -237,7 +237,7 @@ export const ValidatorScrollTile = ({
                   className="w-full"
                   onClick={() =>
                     // TODO: update this entry in the validator list after completion (fix timing first.  can extract update function from that)
-                    claimRewardsFromValidator(walletState.address, validator.operator_address)
+                    claimRewards(walletState.address, validator.operator_address)
                   }
                 >
                   Claim to Wallet
