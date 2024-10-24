@@ -1,6 +1,6 @@
 import { osmosis } from '@orchestra-labs/symphonyjs';
 import { incrementErrorCount, performRpcQuery, selectNodeProviders } from './queryNodes';
-import { SwapObject, TransactionResult } from '@/types';
+import { SwapObject, TransactionResult, RPCResponse} from '@/types';
 import { CHAIN_ENDPOINTS, DELAY_BETWEEN_NODE_ATTEMPTS, MAX_NODES_PER_QUERY } from '@/constants';
 import { createOfflineSignerFromMnemonic } from './wallet';
 import { getSigningOsmosisClient } from '@orchestra-labs/symphonyjs';
@@ -33,6 +33,11 @@ const queryWithRetry = async ({
         console.log(`Querying node ${queryMethod} with endpoint: ${endpoint}`);
 
         const sessionToken = getSessionToken();
+        if (!sessionToken){
+          console.error('Error- getSessionTokenFailed');
+          return
+          
+        }
         const offlineSigner = await createOfflineSignerFromMnemonic(sessionToken.mnemonic || '');
 
         const client = await getSigningOsmosisClient({
@@ -89,12 +94,19 @@ export const swapTransaction = async (fromAddress: string, swapObject: SwapObjec
       message: 'Swap transaction completed successfully!',
       data: response,
     };
-  } catch (error) {
-    console.error('Error during swap:', error);
+  } catch (error: any) {
+    console.error('Error during send:', error);
+    
+    //construct error response in RPCResponse type
+    const errorResponse : RPCResponse = {
+      code: error.code || 1,
+      message: error.message,
+    };
+
     return {
       success: false,
-      message: 'Error processing swap transaction. Please try again.',
-      data: error,
+      message: 'Error performing swap transaction. Please try again.',
+      data: errorResponse,
     };
   }
 };
@@ -129,12 +141,19 @@ export const multiSwapTransaction = async (fromAddress: string, swapObjects: Swa
       message: 'Multiple swap transactions completed successfully!',
       data: response,
     };
-  } catch (error) {
-    console.error('Error during multiple swaps:', error);
+  } catch (error: any) {
+    console.error('Error during multiple swap:', error);
+    
+    //construct error response in RPCResponse type
+    const errorResponse : RPCResponse = {
+      code: error.code || 1,
+      message: error.message,
+    };
+
     return {
       success: false,
-      message: 'Error processing multiple swap transactions. Please try again.',
-      data: error,
+      message: 'Error performing multipleswap transaction. Please try again.',
+      data: errorResponse,
     };
   }
 };

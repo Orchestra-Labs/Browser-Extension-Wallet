@@ -15,21 +15,38 @@ export const GREATER_EXPONENT_DEFAULT = 6;
 
 export const MAX_NODES_PER_QUERY = 3;
 // Endpoints for different network operations
+
+const isDev = import.meta.env.DEV;
+
+const DEV_PROXY = 'http://localhost:5173'; // Your Vite dev server URL
+
 export const CHAIN_NODES = {
   symphonytestnet: [
     {
-      rpc: 'https://symphony-rpc.kleomedes.network',
-      rest: 'https://symphony-api.kleomedes.network',
+      rpc: isDev 
+        ? `${DEV_PROXY}/kleomedes-rpc` 
+        : 'https://symphony-rpc.kleomedes.network',
+      rest: isDev 
+        ? `${DEV_PROXY}/kleomedes-rest` 
+        : 'https://symphony-api.kleomedes.network',
       provider: 'Kleomedes',
     },
     {
-      rpc: 'https://symphony.test.rpc.nodeshub.online/',
-      rest: 'https://symphony.test.api.nodeshub.online/',
+      rpc: isDev 
+        ? `${DEV_PROXY}/nodeshub-rpc` 
+        : 'https://symphony.test.rpc.nodeshub.online',
+      rest: isDev 
+        ? `${DEV_PROXY}/nodeshub-rest` 
+        : 'https://symphony.test.api.nodeshub.online',
       provider: 'Nodes Hub',
     },
     {
-      rpc: 'https://symphony-testnet-rpc.cogwheel.zone/',
-      rest: 'https://symphony-testnet-api.cogwheel.zone/',
+      rpc: isDev 
+        ? `${DEV_PROXY}/cogwheel-rpc` 
+        : 'https://symphony-testnet-rpc.cogwheel.zone',
+      rest: isDev 
+        ? `${DEV_PROXY}/cogwheel-rest` 
+        : 'https://symphony-testnet-api.cogwheel.zone',
       provider: 'Cogwheel',
     },
   ],

@@ -92,13 +92,26 @@ export const saveSessionToken = (sessionToken: SessionToken): void => {
   console.log('Session token saved to localStorage');
 };
 
-export const getSessionToken = (): SessionToken => {
-  const sessionJSON = getLocalStorageItem('sessionToken');
-  console.log(sessionJSON);
-  const sessionToken = sessionJSON ? JSON.parse(sessionJSON) : null;
-  console.log('Session token retrieved from localStorage');
+export const getSessionToken = (): SessionToken | null => {
+  try {
+    const tokenString = localStorage.getItem('sessionToken');
+    if (!tokenString) {
+      return null;
+    }
 
-  return sessionToken;
+    const token = JSON.parse(tokenString);
+    
+    // Validate token structure
+    if (!token || !token.mnemonic || !token.address) {
+      console.error('Invalid token structure:', token);
+      return null;
+    }
+
+    return token;
+  } catch (error) {
+    console.error('Error retrieving session token:', error);
+    return null;
+  }
 };
 
 export const removeSessionToken = (): void => {

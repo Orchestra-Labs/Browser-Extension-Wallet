@@ -8,6 +8,15 @@ import { getNodeErrorCounts, getSessionToken, storeNodeErrorCounts } from './loc
 import { SigningStargateClient, GasPrice } from '@cosmjs/stargate';
 import { createOfflineSignerFromMnemonic } from './wallet';
 import { delay } from './timer';
+import { RPCResponse } from '@/types';
+
+
+//indexer specific error - i.e tx submitted, but indexer disabled so returned incorrect 
+
+const isIndexerError = (error: any): boolean => {
+  return error?.message?.includes('transaction indexing is disabled') ||
+         error?.message?.includes('indexing is disabled');
+};
 
 // Select and prioritize node providers based on their error counts
 export const selectNodeProviders = () => {
@@ -56,7 +65,9 @@ export const performRpcQuery = async (
   walletAddress: string,
   messages: any[],
   feeDenom: string,
-) => {
+): Promise<RPCResponse> => {
+  try {
+    // TODO: modify to support multi-send
   // Set a default fee for simulation
   const defaultGasPrice = GasPrice.fromString(`0.025${feeDenom}`);
 
@@ -78,9 +89,36 @@ export const performRpcQuery = async (
     gas: gasEstimation.toString(),
   };
 
-  // Now broadcast the actual transaction with the simulated gas value
-  return await client.signAndBroadcast(walletAddress, messages, fee);
-};
+
+
+    const result = await client.signAndBroadcast(walletAddress, messages, fee);
+
+    // Check if transaction was successful
+    if (result.code === 0) {
+      return {
+        code: 0,
+        txHash: result.transactionHash,
+        gasUsed: result.gasUsed?.toString(),
+        gasWanted: result.gasWanted?.toString(),
+        message: 'Transaction success'
+      };
+    }
+
+    throw new Error(`Transaction failed with ${result.code}`);
+  } catch (error: any) {
+    // Check if it's an indexer error but the transaction was actually successful
+    if (isIndexerError(error)) {
+        return {
+          code: 0,
+          message: 'Transaction likely successful (node indexer disabled)',
+          txHash: error.txHash || 'unknown'
+        };
+      }
+  
+    // Re-throw all other errors
+    throw error;
+  }
+}
 
 // Function to query the node with retries and delay
 const queryWithRetry = async ({
@@ -95,11 +133,10 @@ const queryWithRetry = async ({
   queryType?: 'GET' | 'POST';
   messages?: any[];
   feeDenom: string;
-}): Promise<any> => {
+}): Promise<RPCResponse> => {
   const providers = selectNodeProviders();
-  console.log('Selected node providers:', providers);
-
   let numberAttempts = 0;
+  let lastError: any = null;
 
   while (numberAttempts < MAX_NODES_PER_QUERY) {
     for (const provider of providers) {
@@ -107,32 +144,37 @@ const queryWithRetry = async ({
         const queryMethod = useRPC ? provider.rpc : provider.rest;
         console.log(`Querying node ${queryMethod} with endpoint: ${endpoint}`);
 
-        console.log(`use rpc: ${useRPC}`);
         if (useRPC) {
           const sessionToken = getSessionToken();
+          if (!sessionToken) {
+            throw new Error('Session token doesnt exist');
+          }
           const mnemonic = sessionToken.mnemonic;
           const address = sessionToken.address;
           if (!mnemonic) {
-            console.error('Wallet is locked or unavailable');
-            return;
+            throw new Error('Wallet is locked or unavailable');
           }
 
-          const offlineSigner = await createOfflineSignerFromMnemonic(mnemonic || '');
+          const offlineSigner = await createOfflineSignerFromMnemonic(mnemonic);
           const client = await SigningStargateClient.connectWithSigner(queryMethod, offlineSigner);
-
+          
           const result = await performRpcQuery(client, address, messages, feeDenom);
           return result;
+        } else {
+          const result = await performRestQuery(endpoint, queryMethod, queryType);
+          return result;
         }
-
-        // REST Query
-        const response = await performRestQuery(endpoint, queryMethod, queryType);
-        return response;
       } catch (error) {
-        incrementErrorCount(provider.rpc);
+        lastError = error;
         console.error('Error querying node:', error);
+        
+        // Don't increment error count for indexer issues
+        if (!isIndexerError(error)) {
+          incrementErrorCount(provider.rpc);
+        }
       }
+      
       numberAttempts++;
-
       if (numberAttempts >= MAX_NODES_PER_QUERY) {
         break;
       }
@@ -141,7 +183,16 @@ const queryWithRetry = async ({
     }
   }
 
-  throw new Error(`All node query attempts failed after ${MAX_NODES_PER_QUERY} attempts.`);
+  // If we got here and the last error was an indexer error
+  if (isIndexerError(lastError)) {
+    return {
+      code: 0,
+      message: 'Transaction likely successful (indexer disabled)',
+      txHash: lastError?.txHash || 'unknown',
+    };
+  }
+
+  throw new Error(`All node query attempts failed after ${MAX_NODES_PER_QUERY} attempts. ${lastError?.message || ''}`);
 };
 
 // REST query function
@@ -153,14 +204,14 @@ export const queryRestNode = async ({
   endpoint: string;
   queryType?: 'GET' | 'POST';
   feeDenom?: string;
-}): Promise<any> => {
-  return await queryWithRetry({
+}) => 
+  queryWithRetry({
     endpoint,
     useRPC: false,
     queryType,
     feeDenom,
   });
-};
+
 
 // RPC query function
 export const queryRpcNode = async ({
@@ -171,11 +222,11 @@ export const queryRpcNode = async ({
   endpoint: string;
   messages?: any[];
   feeDenom?: string;
-}): Promise<any> => {
-  return await queryWithRetry({
+}) => 
+  queryWithRetry({
     endpoint,
     useRPC: true,
     messages,
     feeDenom,
   });
-};
+

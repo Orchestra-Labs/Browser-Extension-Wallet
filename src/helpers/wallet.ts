@@ -4,6 +4,7 @@ import { storePasswordHash } from './auth';
 import { NETWORK, WALLET_PREFIX } from '@/constants';
 import { storeAccessToken, storeMnemonic } from './localStorage';
 import { DirectSecp256k1HdWallet } from '@cosmjs/proto-signing';
+import { setupWalletSession } from './sessionStorage';
 
 /**
  * Create a wallet using Secp256k1HdWallet and store encrypted mnemonic and password hash.
@@ -16,26 +17,36 @@ export const createWallet = async (
   mnemonic: string,
   password: string,
 ): Promise<{ walletAddress: string; network: string }> => {
-  // Create wallet from mnemonic
-  const wallet = await Secp256k1HdWallet.fromMnemonic(mnemonic, {
-    prefix: WALLET_PREFIX,
-  });
+  try{
+    // Create wallet from mnemonic
+    const wallet = await Secp256k1HdWallet.fromMnemonic(mnemonic, {
+      prefix: WALLET_PREFIX,
+    });
 
-  // Get wallet address
-  const [{ address }] = await wallet.getAccounts();
+    // Get wallet address
+    const [{ address }] = await wallet.getAccounts();
 
-  // Store hashed password in localStorage
-  storePasswordHash(password);
+    // Store hashed password in localStorage
+    storePasswordHash(password);
 
-  // Encrypt the mnemonic using the password and store it
-  const encryptedMnemonic = encryptMnemonic(mnemonic, password);
-  storeMnemonic(encryptedMnemonic);
+    // Encrypt the mnemonic using the password and store it
+    const encryptedMnemonic = encryptMnemonic(mnemonic, password);
+    storeMnemonic(encryptedMnemonic);
 
-  // Return wallet information
-  return {
-    walletAddress: address,
-    network: NETWORK,
-  };
+    const sessionCreated = await setupWalletSession(address, mnemonic);
+    if (!sessionCreated) {
+      throw new Error('Failed to create wallet session');
+    }
+
+    // Return wallet information
+    return {
+      walletAddress: address,
+      network: NETWORK,
+    };
+  } catch (error) {
+    console.error('Error in wallet creation:', error);
+    throw error;
+  }
 };
 
 /**

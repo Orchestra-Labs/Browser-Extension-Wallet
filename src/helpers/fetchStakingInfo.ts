@@ -27,7 +27,7 @@ export const fetchDelegations = async (
     console.log('Delegation response:', response);
 
     return {
-      delegations: response.delegation_responses.map((item: any) => {
+      delegations: (response.delegation_responses ?? []).map((item: any) => {
         console.log('Delegation recorded as:', item);
 
         return {
@@ -46,6 +46,27 @@ export const fetchDelegations = async (
 //fetch all validators using an optional bond status 
 type BondStatus = 'BOND_STATUS_UNSPECIFIED' | 'BOND_STATUS_UNBONDED' | 'BOND_STATUS_UNBONDING' | 'BOND_STATUS_BONDED';
 
+  // Create default validator info matching interface
+  const defaultValidatorInfo: ValidatorInfo = {
+    operator_address: '',
+    jailed: false,
+    status: 'BOND_STATUS_UNBONDED',
+    tokens: '0',
+    delegator_shares: '0',
+    description: {
+      moniker: '',
+      website: '',
+      details: ''
+    },
+    commission: {
+      commission_rates: {
+        rate: '0',
+        max_rate: '0',
+        max_change_rate: '0'
+      }
+    }
+  };
+
 export const fetchAllValidators = async (bondStatus?: BondStatus): Promise<ValidatorInfo[]> => {
   let allValidators: ValidatorInfo[] = [];
   let nextKey: string | null = null;
@@ -63,9 +84,9 @@ export const fetchAllValidators = async (bondStatus?: BondStatus): Promise<Valid
       
       console.log('Validators response:', response);
       
-      allValidators = allValidators.concat(response.validators);
+      allValidators = allValidators.concat(response.validators ?? []);
       
-      nextKey = response.pagination.next_key;
+      nextKey = response.pagination?.next_key ?? null;
     } catch (error) {
       console.error('Error fetching validators:', error);
       throw error;
@@ -88,12 +109,14 @@ export const fetchValidators = async (
       console.log('Validator response:', response);
       
       // Filter single validator by bond status if provided
-      if (bondStatus && response.validator.status !== bondStatus) {
+      if (bondStatus && response?.validator?.status !== bondStatus) {
         return { validators: [], pagination: null };
       }
-      
+
+
+
       return {
-        validators: [response.validator],
+        validators: [response?.validator ?? defaultValidatorInfo ],
         pagination: null,
       };
     } else {
@@ -141,7 +164,7 @@ export const fetchRewards = async (
     console.log('Fetched all rewards for delegator:', response);
 
     // Process the response and map rewards for each validator
-    return response.rewards.map((reward: any) => ({
+    return (response.rewards ?? []).map((reward: any) => ({
       validator: reward.validator_address,
       rewards: reward.reward || [],
     }));
