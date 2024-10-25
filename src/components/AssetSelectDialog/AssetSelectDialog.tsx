@@ -36,7 +36,7 @@ export const AssetSelectDialog: React.FC<AssetSelectDialogProps> = ({
     setSortOrder('Desc');
     setSortType('name');
   };
-
+  console.log('AssetSelectDialog isSendDialog:', isSendDialog);
   useEffect(() => {
     setDialogSelectedAsset(currentState.asset);
   }, [currentState.asset]);
@@ -74,7 +74,7 @@ export const AssetSelectDialog: React.FC<AssetSelectDialogProps> = ({
           </div>
         </div>
 
-        <TileScroller activeIndex={0} isSelectable={true} onSelectAsset={onClick} isDialog={true} />
+        <TileScroller activeIndex={0} isSelectable={true} onSelectAsset={onClick} isDialog={true} isReceiveDialog={!isSendDialog}/>
 
         <SearchBar isDialog />
       </div>

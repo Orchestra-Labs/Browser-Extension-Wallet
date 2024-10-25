@@ -31,7 +31,11 @@ export const AssetInput: React.FC<AssetInputProps> = ({
   const currentExponent = currentAsset?.exponent ?? GREATER_EXPONENT_DEFAULT;
 
   console.log('asset input', isReceiveInput, currentAsset, currentState);
-
+    console.log('AssetInput Props:', { 
+    isReceiveInput, 
+    isDisabled, 
+    placeholder 
+  });
   const onAmountValueChange = (value: number) => {
     const roundedValue = parseFloat(value.toFixed(currentExponent));
     updateAmount(roundedValue, true); // Propagate the change
@@ -46,6 +50,17 @@ export const AssetInput: React.FC<AssetInputProps> = ({
       setLocalInputValue('');
     }
   }, [currentState.amount]);
+
+  // Format the number with commas
+  const formatNumberWithCommas = (value: string | number): string => {
+    const stringValue = String(value);
+    const [integerPart, decimalPart] = stringValue.split('.') || ['', ''];
+    const formattedIntegerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    const formattedNumber =
+      decimalPart !== undefined ? `${formattedIntegerPart}.${decimalPart}` : formattedIntegerPart;
+
+    return formattedNumber;
+  };
 
   // Helper function to remove all non-numeric characters (except decimal points)
   const stripNonNumerics = (value: string) => {
@@ -157,7 +172,7 @@ export const AssetInput: React.FC<AssetInputProps> = ({
           onBlur={handleBlur}
           // TODO: ensure onHover is removed and text colors are muted for disabled variant
           disabled={isDisabled}
-          icon={<AssetSelectDialog isSendDialog={false} onClick={updateAsset} />}
+          icon={<AssetSelectDialog isSendDialog={!isReceiveInput} onClick={updateAsset} />}
           className={cn('p-2.5 text-white border border-neutral-2 rounded-md w-full h-10')}
         />
       </div>

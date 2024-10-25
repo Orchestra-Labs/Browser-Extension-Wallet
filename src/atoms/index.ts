@@ -10,3 +10,4 @@ export * from './swiperIndexAtom';
 export * from './transactionStateAtom';
 export * from './validatorsAtom';
 export * from './walletStateAtom';
+export * from './exchangeAssetAtom';
