@@ -149,6 +149,8 @@ export const CreateWallet = () => {
   /* Interchain-compatibility TODOs */
   // TODO: integrate skip protocol or automated use of exchange to allow swapping between chains
   // TODO: modify claim, restake, and unstake functions to withdraw from all unique delegator addresses
+  // TODO: enable search function for wallet asset list by chain (on top of current functionality)
+  // TODO: enable search function to validator list by chain (on top of current functionality)
 
   /* Less Critical Auth TODOs */
   // TODO: handle error printout for create/import wallet (in place of subtitle on verify screen?)
@@ -170,8 +172,6 @@ export const CreateWallet = () => {
 
   /* Nice to have Interchain-compatibility TODOs */
   // TODO: add manual IBC (for rare cases.  hide behind dev tool enabling?)
-  // TODO: enable search function for wallet asset list by chain (on top of current functionality)
-  // TODO: enable search function to validator list by chain (on top of current functionality)
 
   // Check everything is completed properly and pass to confirmation screen
   const handleCreateWallet = async () => {
