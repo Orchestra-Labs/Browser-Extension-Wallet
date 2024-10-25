@@ -14,7 +14,12 @@ import {
   selectedAssetAtom,
 } from '@/atoms';
 import { Asset, TransactionResult } from '@/types';
-import { removeTrailingZeroes, sendTransaction, swapTransaction } from '@/helpers';
+import {
+  formatBalanceDisplay,
+  removeTrailingZeroes,
+  sendTransaction,
+  swapTransaction,
+} from '@/helpers';
 import { WalletSuccessScreen } from '@/components';
 import { loadingAtom } from '@/atoms/loadingAtom';
 import { useExchangeRate } from '@/hooks/';
@@ -357,11 +362,12 @@ export const Send = () => {
     (sendState.asset?.isIbc && sendState.asset.denom != LOCAL_ASSET_REGISTRY.note.denom);
 
   const sendAsset = sendState.asset || DEFAULT_ASSET;
+  const sendSymbol = sendAsset.symbol || 'MLD';
   const receiveAsset = receiveState.asset || DEFAULT_ASSET;
   const maxSendable = calculateMaxAvailable(sendAsset);
   const applicableExchangeRate = sendAsset.denom === receiveAsset.denom ? 1 : exchangeRate || 1;
   const maxReceivable = maxSendable * applicableExchangeRate;
-  const sendPlaceholder = `Max: ${removeTrailingZeroes(maxSendable)}${sendAsset.symbol}`;
+  const sendPlaceholder = `Max: ${formatBalanceDisplay(`${maxSendable}`, sendSymbol)}`;
   const receivePlaceholder = isNotSwappable
     ? 'No exchange on current pair'
     : `Max: ${removeTrailingZeroes(maxReceivable)}${receiveAsset.symbol}`;

@@ -2,7 +2,7 @@ import React from 'react';
 import { useAtomValue } from 'jotai';
 import { walletStateAtom } from '@/atoms';
 import { Button, CopyTextField, SlideTray } from '@/ui-kit';
-import { truncateString } from '@/helpers';
+import { truncateWalletAddress } from '@/helpers';
 import { WALLET_PREFIX } from '@/constants';
 import { QRCodeContainer } from '../QRCodeContainer';
 
@@ -10,7 +10,7 @@ export const ReceiveDialog: React.FC = () => {
   const walletState = useAtomValue(walletStateAtom);
   const walletAddress = walletState.address;
 
-  const walletDisplayAddress = truncateString(WALLET_PREFIX, walletAddress);
+  const walletDisplayAddress = truncateWalletAddress(WALLET_PREFIX, walletAddress);
 
   return (
     <SlideTray
