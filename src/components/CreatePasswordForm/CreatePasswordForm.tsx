@@ -18,6 +18,8 @@ export const CreatePasswordForm = () => {
   const [allowValidatePassword, setAllowValidatePassword] = useState(false);
   const [allowValidateConfirmPassword, setAllowValidateConfirmPassword] = useState(false);
 
+  const validPasswordLength = 8;
+
   // Validate password
   const validatePassword = () => {
     if (password === '') {
@@ -72,7 +74,7 @@ export const CreatePasswordForm = () => {
     setPassword(newPassword);
 
     // Start validating after 8 characters, paste, or blur
-    if (newPassword.length >= 8 && !allowValidatePassword) {
+    if (newPassword.length >= validPasswordLength && !allowValidatePassword) {
       setAllowValidatePassword(true);
     }
 
@@ -92,7 +94,7 @@ export const CreatePasswordForm = () => {
     setConfirmPassword(newConfirmPassword);
 
     // Start validating after blur, paste, or if password is already valid
-    if (newConfirmPassword.length >= 8 || allowValidateConfirmPassword) {
+    if (newConfirmPassword.length >= validPasswordLength || allowValidateConfirmPassword) {
       setAllowValidateConfirmPassword(true);
     }
 

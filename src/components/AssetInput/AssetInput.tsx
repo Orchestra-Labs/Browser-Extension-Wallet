@@ -4,52 +4,46 @@ import { cn } from '@/helpers/utils';
 import { Asset } from '@/types';
 import { ChangeEvent, useEffect, useRef, useState } from 'react';
 import { GREATER_EXPONENT_DEFAULT } from '@/constants';
-import { useAtomValue } from 'jotai';
-import { receiveStateAtom, sendStateAtom } from '@/atoms';
 import { formatNumberWithCommas } from '@/helpers';
 
 interface AssetInputProps {
-  isReceiveInput?: boolean;
   isDisabled?: boolean;
   placeholder: string;
-  updateAsset: (newAsset: Asset, propagateChanges?: boolean) => void;
-  updateAmount: (newReceiveAmount: number, propagateChanges?: boolean) => void;
+  variant?: 'send' | 'receive' | 'stake';
+  assetState: Asset | null;
+  amountState: number;
+  updateAsset?: (newAsset: Asset, propagateChanges?: boolean) => void;
+  updateAmount: (newAmount: number, propagateChanges?: boolean) => void;
 }
 
 export const AssetInput: React.FC<AssetInputProps> = ({
-  isReceiveInput = false,
   isDisabled = false,
   placeholder = '',
+  variant = 'stake',
+  assetState,
+  amountState,
   updateAsset,
   updateAmount,
 }) => {
-  const currentState = useAtomValue(isReceiveInput ? receiveStateAtom : sendStateAtom);
   const [localInputValue, setLocalInputValue] = useState<string>('');
   const inputRef = useRef<HTMLInputElement>(null);
   const prevValueRef = useRef<string>('');
-  const currentAsset = currentState.asset;
+  const currentAsset = assetState;
   const currentExponent = currentAsset?.exponent ?? GREATER_EXPONENT_DEFAULT;
 
-  console.log('asset input', isReceiveInput, currentAsset, currentState);
-    console.log('AssetInput Props:', { 
-    isReceiveInput, 
-    isDisabled, 
-    placeholder 
-  });
   const onAmountValueChange = (value: number) => {
     const roundedValue = parseFloat(value.toFixed(currentExponent));
     updateAmount(roundedValue, true); // Propagate the change
   };
 
-  // Effect to update local input value whenever the parent updates amountValue
   useEffect(() => {
-    if (!isNaN(currentState.amount) && currentState.amount !== null && currentState.amount !== 0) {
-      const formattedNumber = formatNumberWithCommas(currentState.amount || 0);
+    if (!isNaN(amountState) && amountState !== null && amountState !== 0) {
+      const formattedNumber = formatNumberWithCommas(amountState || 0);
       setLocalInputValue(formattedNumber);
     } else {
       setLocalInputValue('');
     }
-  }, [currentState.amount]);
+  }, [amountState]);
 
   // Format the number with commas
   const formatNumberWithCommas = (value: string | number): string => {
@@ -156,10 +150,12 @@ export const AssetInput: React.FC<AssetInputProps> = ({
   };
 
   return (
-    <div className="flex items-center mb-4 space-x-2">
-      <label className="text-sm text-neutral-1 whitespace-nowrap">
-        {isReceiveInput ? 'Receiving:' : 'Sending:'}
-      </label>
+    <div className={cn(variant === 'stake' ? '' : 'flex items-center mb-4 space-x-2')}>
+      {variant !== 'stake' && (
+        <label className="text-sm text-neutral-1 whitespace-nowrap">
+          {variant === 'receive' ? 'Receiving:' : 'Sending:'}
+        </label>
+      )}
       <div className="flex-grow">
         <Input
           variant="primary"
@@ -170,10 +166,17 @@ export const AssetInput: React.FC<AssetInputProps> = ({
           value={localInputValue || ''}
           onChange={handleAmountChange}
           onBlur={handleBlur}
-          // TODO: ensure onHover is removed and text colors are muted for disabled variant
           disabled={isDisabled}
-          icon={<AssetSelectDialog isSendDialog={!isReceiveInput} onClick={updateAsset} />}
-          className={cn('p-2.5 text-white border border-neutral-2 rounded-md w-full h-10')}
+          icon={
+            updateAsset ? (
+              <AssetSelectDialog isSendDialog={variant === 'send'} onClick={updateAsset} />
+            ) : null
+          }
+          className={cn(
+            variant === 'stake'
+              ? 'text-white mx-2'
+              : 'p-2.5 text-white border border-neutral-2 rounded-md w-full h-10',
+          )}
         />
       </div>
     </div>
