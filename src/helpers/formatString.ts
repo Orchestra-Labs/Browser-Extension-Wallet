@@ -9,6 +9,11 @@ export function stripNonAlphanumerics(input: string): string {
   return input.replace(/[^a-z0-9]/gi, '');
 }
 
+// Helper function to remove all non-numeric characters (except decimal points)
+export const stripNonNumerics = (value: string) => {
+  return value.replace(/[^\d.]/g, '');
+};
+
 // Format the number with commas
 export const formatNumberWithCommas = (value: string | number): string => {
   const stringValue = String(value);

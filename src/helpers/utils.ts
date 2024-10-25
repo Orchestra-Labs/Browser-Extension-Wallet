@@ -33,3 +33,8 @@ export const isValidUrl = (url: string): boolean => {
 
   return !!urlPattern.test(url);
 };
+
+// Validate numeric input and restrict to selectedAsset.exponent decimal places
+export const getRegexForDecimals = (exponent: number) => {
+  return new RegExp(`^\\d*\\.?\\d{0,${exponent}}$`);
+};
