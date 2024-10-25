@@ -1,5 +1,4 @@
 import { Input } from '@/ui-kit';
-import { QRCode } from '@/assets/icons';
 import { useAtom, useSetAtom } from 'jotai';
 import { addressVerifiedAtom, recipientAddressAtom } from '@/atoms';
 import { useEffect, useState } from 'react';
@@ -94,12 +93,13 @@ export const AddressInput: React.FC<AddressInputProps> = ({}) => {
           variant="primary"
           type="text"
           placeholder="Wallet Address or ICNS"
-          icon={
-            <QRCode
-              className="h-7 w-7 text-neutral-1 hover:bg-blue-hover hover:text-blue-dark cursor-pointer"
-              width={20}
-            />
-          }
+          // TODO: enable when QR code input is enabled
+          // icon={
+          //   <QRCode
+          //     className="h-7 w-7 text-neutral-1 hover:bg-blue-hover hover:text-blue-dark cursor-pointer"
+          //     width={20}
+          //   />
+          // }
           value={address}
           onChange={handleAddressChange}
           onBlur={handleAddressBlur}

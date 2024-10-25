@@ -144,8 +144,6 @@ export const CreateWallet = () => {
   /* Wallet UI TODOs */
   // TODO: add show/hide function to wallet asset list (select which assets to show.  add searchability to this)
   // TODO: add show/hide function to validator list (by activity, by chain)
-  // TODO: remove or enable connected services button <-- could be good for using firebase to transfer/remove settings data
-  // TODO: remove or enable transaction history
   // TODO: security tab enables/disables need to confirm transactions/re-entry of password on transactions (3 levels of security)
   // TODO: update transactions history button (need endpoint for this.  disable until ready)
   // TODO: show donut chart with assets rather than singular value (requires connections to exchanges)
