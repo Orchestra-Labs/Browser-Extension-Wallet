@@ -7,8 +7,8 @@ import {
   claimAndRestake,
   claimRewards,
   convertToGreaterUnit,
+  formatBalanceDisplay,
   isValidUrl,
-  removeTrailingZeroes,
   selectTextColorByStatus,
   stakeToValidator,
   unstakeFromValidator,
@@ -39,17 +39,21 @@ export const ValidatorScrollTile = ({
   const { validator, delegation, balance, rewards } = combinedStakingInfo;
   const delegationResponse = { delegation, balance };
 
+  const symbol = LOCAL_ASSET_REGISTRY.note.symbol || DEFAULT_ASSET.symbol || 'MLD';
+
+  // Aggregating the rewards (sum all reward amounts for this validator)
   const rewardAmount = rewards
     .reduce((sum, reward) => sum + parseFloat(reward.amount), 0)
     .toString();
-  const formattedRewardAmount = `${removeTrailingZeroes(
-    convertToGreaterUnit(parseFloat(rewardAmount), GREATER_EXPONENT_DEFAULT).toFixed(
-      GREATER_EXPONENT_DEFAULT,
-    ),
-  )} MLD`;
+  const strippedRewardAmount = `${convertToGreaterUnit(
+    parseFloat(rewardAmount),
+    GREATER_EXPONENT_DEFAULT,
+  ).toFixed(GREATER_EXPONENT_DEFAULT)}`;
+  const formattedRewardAmount = formatBalanceDisplay(strippedRewardAmount, symbol);
 
-  const delegatedAmount = removeTrailingZeroes(
-    convertToGreaterUnit(parseFloat(delegation.shares || '0'), GREATER_EXPONENT_DEFAULT),
+  const delegatedAmount = convertToGreaterUnit(
+    parseFloat(delegation.shares || '0'),
+    GREATER_EXPONENT_DEFAULT,
   );
 
   const title = validator.description.moniker || 'Unknown Validator';
@@ -60,11 +64,17 @@ export const ValidatorScrollTile = ({
     subTitle = 'Jailed';
   } else if (validator.status === 'BOND_STATUS_UNBONDED') {
     subTitle = 'Inactive';
-  } else if (delegatedAmount === '0') {
+  } else if (delegatedAmount === 0) {
     subTitle = 'No delegation';
   } else {
-    subTitle = `${delegatedAmount} ${LOCAL_ASSET_REGISTRY.note.symbol}`;
+    const formattedDelegatedAmount = formatBalanceDisplay(`${delegatedAmount}`, symbol);
+    subTitle = `${formattedDelegatedAmount}`;
   }
+
+  const dialogSubTitle = formatBalanceDisplay(
+    `${isNaN(delegatedAmount) ? 0 : delegatedAmount}`,
+    symbol,
+  );
 
   // TODO: pull dynamically from the validator
   const unbondingDays = 12;
@@ -149,7 +159,8 @@ export const ValidatorScrollTile = ({
               <span className={textColor}>{statusLabel}</span>
             </p>
             <p>
-              <strong>Amount Staked:</strong> <span className="text-blue">{delegatedAmount}</span>
+              <strong>Amount Staked:</strong>{' '}
+              <span className="text-blue line-clamp-1">{dialogSubTitle}</span>
             </p>
             <p>
               <strong>Validator Commission:</strong> {commission}
@@ -235,7 +246,7 @@ export const ValidatorScrollTile = ({
                     size="xs"
                     variant="unselected"
                     className="px-2 rounded-md text-xs"
-                    onClick={() => setAmount(parseFloat(delegatedAmount))}
+                    onClick={() => setAmount(delegatedAmount)}
                   >
                     Max
                   </Button>

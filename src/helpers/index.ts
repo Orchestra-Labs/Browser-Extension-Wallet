@@ -3,6 +3,7 @@ export * from './claimRewards';
 export * from './crypto';
 export * from './fetchStakingInfo';
 export * from './fetchWalletAssets';
+export * from './formatString';
 export * from './localStorage';
 export * from './queryNodes';
 export * from './sendTransactions';
