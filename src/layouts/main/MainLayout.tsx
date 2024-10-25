@@ -1,11 +1,10 @@
 import React, { ComponentType } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 
-import { Copy, History } from '@/assets/icons';
+import { Copy } from '@/assets/icons';
 import { LogoIcon } from '@/assets/icons';
-import { ConnectedServicesDialog, OptionsDialog } from '@/components';
+import { OptionsDialog } from '@/components';
 import { ROUTES } from '@/constants';
-import { Button } from '@/ui-kit';
 
 const avatarUrl = chrome?.runtime?.getURL('avatar.png');
 
@@ -26,12 +25,13 @@ const MainLayout: React.FC = () => (
       </div>
       <div className="flex-1" />
       <div className="flex gap-x-2.5">
-        <ConnectedServicesDialog />
-        <Button className="p-[7px]" variant="icon" size="rounded-default" asChild>
+        {/* TODO: enable if these become available, and are possible */}
+        {/* <ConnectedServicesDialog /> */}
+        {/* <Button className="p-[7px]" variant="icon" size="rounded-default" asChild>
           <NavLink to={ROUTES.APP.TRANSACTIONS_HISTORY}>
             <History width="100%" height="100%" />
           </NavLink>
-        </Button>
+        </Button> */}
         <OptionsDialog />
       </div>
     </header>
