@@ -126,6 +126,7 @@ export const CreateWallet = () => {
   /* ******************************************************************************************* */
 
   /* Current TODOs */
+  // TODO: show errors to user (user displayable values)
   // TODO: clean up helper functions and hooks
 
   // TODO: add fields to let user know when sending over IBC
