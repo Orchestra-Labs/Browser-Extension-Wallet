@@ -1,3 +1,4 @@
+export * from './AssetInput';
 export * from './AssetScrollTile';
 export * from './AssetSelectDialog';
 export * from './BalanceCard';
