@@ -1,4 +1,4 @@
-export const truncateString = (prefix: string, hashString: string) => {
+export const truncateWalletAddress = (prefix: string, hashString: string) => {
   const prefixExists = hashString.startsWith(prefix);
   const returningPrefix = prefixExists ? prefix : '';
   const remainingHash = prefixExists ? hashString.slice(prefix.length) : hashString;
@@ -14,4 +14,11 @@ export const truncateString = (prefix: string, hashString: string) => {
   }
 
   return truncatedString;
+};
+
+export const truncateString = (str: string, num: number): string => {
+  if (str.length <= num) {
+    return str;
+  }
+  return str.slice(0, num) + '...';
 };

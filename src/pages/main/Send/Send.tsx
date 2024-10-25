@@ -13,8 +13,13 @@ import {
   walletStateAtom,
   selectedAssetAtom,
 } from '@/atoms';
-import { Asset, TransactionResult , TransactionSuccess } from '@/types';
-import { removeTrailingZeroes, sendTransaction, swapTransaction } from '@/helpers';
+import { Asset, TransactionResult, TransactionSuccess } from '@/types';
+import {
+  formatBalanceDisplay,
+  removeTrailingZeroes,
+  sendTransaction,
+  swapTransaction,
+} from '@/helpers';
 import { WalletSuccessScreen } from '@/components';
 import { loadingAtom } from '@/atoms/loadingAtom';
 import { useExchangeRate } from '@/hooks/';
@@ -30,8 +35,8 @@ export const Send = () => {
   const [changeMap, setChangeMap] = useAtom(changeMapAtom);
   const [callbackChangeMap, setCallbackChangeMap] = useAtom(callbackChangeMapAtom);
   const [isLoading, setLoading] = useAtom(loadingAtom);
-  const recipientAddress = useAtomValue(recipientAddressAtom);
-  const selectedAsset = useAtomValue(selectedAssetAtom);
+  const [recipientAddress, setRecipientAddress] = useAtom(recipientAddressAtom);
+  const [selectedAsset, setSelectedAsset] = useAtom(selectedAssetAtom);
 
   const { exchangeRate } = useExchangeRate();
 
@@ -318,6 +323,19 @@ export const Send = () => {
     }
   };
 
+  const resetStates = () => {
+    setSendState({
+      asset: DEFAULT_ASSET,
+      amount: 0,
+    });
+    setReceiveState({
+      asset: DEFAULT_ASSET,
+      amount: 0,
+    });
+    setRecipientAddress('');
+    setSelectedAsset(DEFAULT_ASSET);
+  };
+
   useEffect(() => {
     propagateChanges();
   }, [changeMap]);
@@ -330,6 +348,11 @@ export const Send = () => {
   useEffect(() => {
     updateSendAsset(selectedAsset);
     updateReceiveAsset(selectedAsset);
+
+    return () => {
+      // Reset the states when the component is unmounted (user leaves the page)
+      resetStates();
+    };
   }, []);
 
   if (isSuccess.success) {
@@ -347,11 +370,12 @@ export const Send = () => {
     (sendState.asset?.isIbc && sendState.asset.denom != LOCAL_ASSET_REGISTRY.note.denom);
 
   const sendAsset = sendState.asset || DEFAULT_ASSET;
+  const sendSymbol = sendAsset.symbol || 'MLD';
   const receiveAsset = receiveState.asset || DEFAULT_ASSET;
   const maxSendable = calculateMaxAvailable(sendAsset);
   const applicableExchangeRate = sendAsset.denom === receiveAsset.denom ? 1 : exchangeRate || 1;
   const maxReceivable = maxSendable * applicableExchangeRate;
-  const sendPlaceholder = `Max: ${removeTrailingZeroes(maxSendable)}${sendAsset.symbol}`;
+  const sendPlaceholder = `Max: ${formatBalanceDisplay(`${maxSendable}`, sendSymbol)}`;
   const receivePlaceholder = isNotSwappable
     ? 'No exchange on current pair'
     : `Max: ${removeTrailingZeroes(maxReceivable)}${receiveAsset.symbol}`;
@@ -416,14 +440,12 @@ export const Send = () => {
           <Separator variant="top" />
 
           {/* Send Button */}
-          <Button className="w-full" onClick={handleSend} disabled={isLoading}>
-            {/* TODO: pick between spinner and loader, animate, and ensure classNames are correct */}
-            {isLoading ? <Spinner className="w-5 h-5 text-white animate-spin" /> : 'Send'}
-            {/* {isLoading && (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <Loader backgroundClass="inherit" />
-              </div>
-            )} */}
+          <Button
+            className="w-full"
+            onClick={handleSend}
+            disabled={isLoading || sendState.amount === 0}
+          >
+            {isLoading ? <Spinner className="h-8 w-8 animate-spin fill-blue" /> : 'Send'}
           </Button>
         </div>
       </div>
