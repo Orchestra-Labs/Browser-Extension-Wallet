@@ -103,21 +103,19 @@ export const CreateWallet = () => {
 
   /* ******************************************************************************************* */
   /* David Current TODOs */
+  // TODO: remove or enable connected services button <-- could be good for using firebase to transfer/remove settings data
+  // TODO: remove or enable transaction history
+  // TODO: remove or enable address field qr code (send page)
+  // TODO: add click and drag to scroll for passphrase box and tilescroller
+
   // TODO: (test on validator screen, nodeshub and large amounts) within tilescroller, ensure overflow over some value results in ellipses.  they can click in for more information if needed
-  // TODO: add onHover and onClick color changes to password and create wallet buttons
   // TODO: ensure trim on completion of password entry (such as save to storage).  same on login.  to avoid copy/paste errors
   // TODO: show green or red border for passphrase box on full verify, clear on start of typing
 
   // TODO: add option screen filter for validator list (by status.  default to not showing jailed validators)
-  // TODO: apply regional formatting to regular display numbers
-  // TODO: format numbers on balance and asset value field to user locale.  start with US format, add others
   // TODO: add option screen filter for regional display for numbers
   // TODO: add clear and max buttons to amount section
   // TODO: add search icon to search field, add onclick
-  // TODO: test validation of format of entered address for send field
-
-  // TODO: add swipe to dismiss on dialog trays
-  // TODO: add swipe to refresh on main page lists
 
   // TODO: add conclusionary action with selection in asset select dialog.  should picking close the dialog?
   // TODO: add confirm button to select dialogs.  does not need to be visible before selection
@@ -128,7 +126,7 @@ export const CreateWallet = () => {
   /* Current TODOs */
   // TODO: clean up helper functions and hooks
 
-  // TODO: add fields to let user know when sending over IBC
+  // TODO: add fields to let user know when sending over IBC (info status on Input - blue text)
   // TODO: abstract wallet prefix and mnemonic decryption
   // TODO: add link to github repo for registry
   // TODO: abstract IBC needs
@@ -144,8 +142,6 @@ export const CreateWallet = () => {
   /* Wallet UI TODOs */
   // TODO: add show/hide function to wallet asset list (select which assets to show.  add searchability to this)
   // TODO: add show/hide function to validator list (by activity, by chain)
-  // TODO: remove or enable connected services button <-- could be good for using firebase to transfer/remove settings data
-  // TODO: remove or enable transaction history
   // TODO: security tab enables/disables need to confirm transactions/re-entry of password on transactions (3 levels of security)
   // TODO: update transactions history button (need endpoint for this.  disable until ready)
   // TODO: show donut chart with assets rather than singular value (requires connections to exchanges)
@@ -170,7 +166,6 @@ export const CreateWallet = () => {
   // TODO: add password complexity bar on entry
   // TODO: add toggle option for single-click transactions and another for force accepting/declining transactions
   // TODO: add toggle option for ultra-secure mode, using password auth for on every transaction like with hardware wallets.  in that mode, no session storage is used.
-  // TODO: add click and drag to scroll for passphrase box and tilescroller
   // TODO: keep track of current page for case of re-open before timeout
 
   /* Nice to have Interchain-compatibility TODOs */
