@@ -103,8 +103,6 @@ export const CreateWallet = () => {
 
   /* ******************************************************************************************* */
   /* David Current TODOs */
-  // TODO: test validation of format of entered address for send field
-
   // TODO: add onHover and onClick color changes to password and create wallet buttons
   // TODO: ensure trim on completion of password entry (such as save to storage).  same on login.  to avoid copy/paste errors
   // TODO: show green or red border for passphrase box on full verify, clear on start of typing
