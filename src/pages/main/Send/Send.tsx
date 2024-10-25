@@ -15,10 +15,9 @@ import {
 } from '@/atoms';
 import { Asset, TransactionResult } from '@/types';
 import { removeTrailingZeroes, sendTransaction, swapTransaction } from '@/helpers';
-import { WalletSuccessScreen } from '@/components';
+import { AssetInput, WalletSuccessScreen } from '@/components';
 import { loadingAtom } from '@/atoms/loadingAtom';
 import { useExchangeRate } from '@/hooks/';
-import { AssetInput } from './AssetInput';
 import { AddressInput } from './AddressInput';
 
 export const Send = () => {
@@ -374,6 +373,9 @@ export const Send = () => {
           {/* Send Section */}
           <AssetInput
             placeholder={sendPlaceholder}
+            variant="send"
+            assetState={sendState.asset}
+            amountState={sendState.amount}
             updateAsset={updateSendAsset}
             updateAmount={updateSendAmount}
           />
@@ -387,9 +389,10 @@ export const Send = () => {
 
           {/* Receive Section */}
           <AssetInput
-            isReceiveInput={true}
-            isDisabled={isNotSwappable}
             placeholder={receivePlaceholder}
+            variant="receive"
+            assetState={receiveState.asset}
+            amountState={receiveState.amount}
             updateAsset={updateReceiveAsset}
             updateAmount={updateReceiveAmount}
           />

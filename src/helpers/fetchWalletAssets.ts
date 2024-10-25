@@ -128,11 +128,12 @@ export async function fetchWalletAssets(walletState: WalletState): Promise<Asset
             logo: resolvedLogo,
             exponent: resolvedExponent,
             amount: resolvedAmount,
+            isIbc: true,
           };
         }
 
         // Return the adjusted asset data
-        return { ...coin, symbol, logo, exponent, amount: adjustedAmount };
+        return { ...coin, symbol, logo, exponent, amount: adjustedAmount, isIbc: false };
       }),
     );
 

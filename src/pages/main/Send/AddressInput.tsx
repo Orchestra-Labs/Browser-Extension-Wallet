@@ -14,6 +14,8 @@ export const AddressInput: React.FC<AddressInputProps> = ({}) => {
   const [addressStatus, setAddressStatus] = useState<'error' | 'success' | null>(null);
   const [allowValidateAddress, setAllowValidatePassword] = useState(false);
 
+  const validAddressLength = 47;
+
   // Validate password
   const validateAddress = () => {
     if (address === '') {
@@ -21,8 +23,11 @@ export const AddressInput: React.FC<AddressInputProps> = ({}) => {
       return;
     }
 
-    const addressLength = 47;
-    const isAddressValid = address.startsWith(WALLET_PREFIX) && address.length === addressLength;
+    const hasPrefix = address.startsWith(WALLET_PREFIX);
+    const isValidLength = address.length === validAddressLength;
+    const isAlphanumeric = /^[a-zA-Z0-9]+$/.test(address);
+
+    const isAddressValid = hasPrefix && isValidLength && isAlphanumeric;
     setAddressStatus(isAddressValid ? 'success' : 'error');
   };
 
@@ -33,16 +38,15 @@ export const AddressInput: React.FC<AddressInputProps> = ({}) => {
   };
 
   const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newPassword = e.target.value;
-    setAddress(newPassword);
+    const newAddress = e.target.value;
+    setAddress(newAddress);
 
-    // Start validating after 8 characters, paste, or blur
-    if (newPassword.length >= 8 && !allowValidateAddress) {
+    if (newAddress.length >= validAddressLength && !allowValidateAddress) {
       setAllowValidatePassword(true);
     }
 
     // Reset validation when empty
-    if (newPassword === '') {
+    if (newAddress === '') {
       setAllowValidatePassword(false);
       setAddressStatus(null);
     }
@@ -93,6 +97,9 @@ export const AddressInput: React.FC<AddressInputProps> = ({}) => {
         <Input
           variant="primary"
           type="text"
+          status={addressStatus}
+          showsErrorText={true}
+          errorText={addressStatus === 'error' ? 'Address not in supported format' : ''}
           placeholder="Wallet Address or ICNS"
           icon={
             <QRCode
