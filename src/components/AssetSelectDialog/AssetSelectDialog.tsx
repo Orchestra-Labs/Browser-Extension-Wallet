@@ -1,16 +1,15 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { SlideTray } from '@/ui-kit';
 import { TileScroller } from '../TileScroller';
 import { LogoIcon } from '@/assets/icons';
 import { Asset } from '@/types';
 import { cn } from '@/helpers';
 import { SortDialog } from '../SortDialog';
-import { useAtom, useAtomValue, useSetAtom } from 'jotai';
+import { useAtomValue, useSetAtom } from 'jotai';
 import {
   assetDialogSortOrderAtom,
   assetDialogSortTypeAtom,
   dialogSearchTermAtom,
-  dialogSelectedAssetAtom,
   receiveStateAtom,
   sendStateAtom,
 } from '@/atoms';
@@ -29,14 +28,14 @@ export const AssetSelectDialog: React.FC<AssetSelectDialogProps> = ({
   const setSortOrder = useSetAtom(assetDialogSortOrderAtom);
   const setSortType = useSetAtom(assetDialogSortTypeAtom);
   const currentState = useAtomValue(isSendDialog ? sendStateAtom : receiveStateAtom);
-  const [dialogSelectedAsset, setDialogSelectedAsset] = useAtom(dialogSelectedAssetAtom);
+  const [dialogSelectedAsset, setDialogSelectedAsset] = useState(currentState.asset);
 
   const resetDefaults = () => {
     setSearchTerm('');
     setSortOrder('Desc');
     setSortType('name');
   };
-
+  console.log('AssetSelectDialog isSendDialog:', isSendDialog);
   useEffect(() => {
     setDialogSelectedAsset(currentState.asset);
   }, [currentState.asset]);
@@ -74,7 +73,7 @@ export const AssetSelectDialog: React.FC<AssetSelectDialogProps> = ({
           </div>
         </div>
 
-        <TileScroller activeIndex={0} isSelectable={true} onSelectAsset={onClick} isDialog={true} />
+        <TileScroller activeIndex={0} isSelectable={true} onSelectAsset={onClick} isDialog={true} isReceiveDialog={!isSendDialog}/>
 
         <SearchBar isDialog />
       </div>

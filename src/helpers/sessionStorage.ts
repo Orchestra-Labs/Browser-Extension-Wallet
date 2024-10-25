@@ -1,5 +1,7 @@
 import { Secp256k1HdWallet } from '@cosmjs/amino';
 import { getWallet } from './wallet';
+import { NETWORK, TOKEN_EXPIRATION_TIME } from '@/constants';
+import { SessionToken } from '@/types';
 
 let sessionWallet: Secp256k1HdWallet | null = null;
 let sessionExpiryTimeout: NodeJS.Timeout | null = null;
@@ -125,3 +127,34 @@ export const getSessionWallet = async (): Promise<Secp256k1HdWallet | null> => {
   console.log('Session wallet not found in memory, attempting to restore from sessionStorage');
   return await restoreWalletSession();
 };
+
+
+//helpers to set up the SessionToken including mnemonic after create wallet/import wallet and log in 
+
+export const setupWalletSession = async (walletAddress: string, mnemonic: string): Promise<boolean> => {
+  try {
+    const sessionToken: SessionToken = {
+      mnemonic,
+      address: walletAddress,
+      network: NETWORK,
+      expiresIn: TOKEN_EXPIRATION_TIME,
+    };
+
+    // Store session token
+    localStorage.setItem('sessionToken', JSON.stringify(sessionToken));
+
+    // Verify storage
+    const storedToken = localStorage.getItem('sessionToken');
+    if (!storedToken) {
+      throw new Error('Failed to store session token');
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error setting up wallet session:', error);
+    return false;
+  }
+};
+
+
+

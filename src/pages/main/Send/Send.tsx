@@ -13,17 +13,16 @@ import {
   walletStateAtom,
   selectedAssetAtom,
 } from '@/atoms';
-import { Asset, TransactionResult } from '@/types';
+import { Asset, TransactionResult, TransactionSuccess } from '@/types';
+import { AssetInput, WalletSuccessScreen } from '@/components';
 import {
   formatBalanceDisplay,
   removeTrailingZeroes,
   sendTransaction,
   swapTransaction,
 } from '@/helpers';
-import { WalletSuccessScreen } from '@/components';
 import { loadingAtom } from '@/atoms/loadingAtom';
 import { useExchangeRate } from '@/hooks/';
-import { AssetInput } from './AssetInput';
 import { AddressInput } from './AddressInput';
 
 export const Send = () => {
@@ -40,7 +39,7 @@ export const Send = () => {
 
   const { exchangeRate } = useExchangeRate();
 
-  const [isSuccess, setIsSuccess] = useState(false);
+  const [isSuccess, setIsSuccess] = useState<TransactionSuccess>({success: false});
 
   // TODO: write and enable function
   // const checkTransactionType = () => {
@@ -55,6 +54,7 @@ export const Send = () => {
     const sendAmount = sendState.amount;
     const receiveAsset = receiveState.asset;
 
+    if (!sendAsset || !receiveAsset) return;
     const assetToSend = walletAssets.find(a => a.denom === sendAsset.denom);
     if (!assetToSend) return;
 
@@ -72,20 +72,22 @@ export const Send = () => {
 
     try {
       let result: TransactionResult;
-      if (sendAsset.denom === receiveAsset.denom) {
+      if (sendAsset?.denom === receiveAsset?.denom) {
         result = await sendTransaction(walletState.address, sendObject);
-        // Set success state to true after transaction
-        setIsSuccess(true);
       } else if (receiveAsset) {
         // Swap transaction
         const swapObject = { sendObject, resultDenom: receiveAsset.denom };
         result = await swapTransaction(walletState.address, swapObject);
-        setIsSuccess(true);
       } else {
         throw new Error('Invalid asset configuration');
       }
-      if (!result.success) {
-        console.error('Detailed error:', result.data);
+      //check if tx successful and code = 0 (success)
+      if (result.success && result.data?.code === 0) {
+
+        setIsSuccess({success: true, txHash: result.data?.txHash});
+      }
+      else{
+        console.error('Transaction failed detailed error:', result.data);
       }
     } catch (error) {
       console.error('Error broadcasting transaction', error);
@@ -352,8 +354,13 @@ export const Send = () => {
     };
   }, []);
 
-  if (isSuccess) {
-    return <WalletSuccessScreen caption="Transaction success!" />;
+  if (isSuccess.success) {
+    return (
+    <WalletSuccessScreen 
+    caption="Transaction success!" 
+    txHash={isSuccess.txHash}
+    />
+    );
   }
 
   const isNotSwappable =
@@ -398,6 +405,9 @@ export const Send = () => {
           {/* Send Section */}
           <AssetInput
             placeholder={sendPlaceholder}
+            variant="send"
+            assetState={sendState.asset}
+            amountState={sendState.amount}
             updateAsset={updateSendAsset}
             updateAmount={updateSendAmount}
           />
@@ -411,9 +421,10 @@ export const Send = () => {
 
           {/* Receive Section */}
           <AssetInput
-            isReceiveInput={true}
-            isDisabled={isNotSwappable}
             placeholder={receivePlaceholder}
+            variant="receive"
+            assetState={receiveState.asset}
+            amountState={receiveState.amount}
             updateAsset={updateReceiveAsset}
             updateAmount={updateReceiveAmount}
           />

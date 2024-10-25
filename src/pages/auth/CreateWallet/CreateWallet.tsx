@@ -103,12 +103,6 @@ export const CreateWallet = () => {
 
   /* ******************************************************************************************* */
   /* David Current TODOs */
-  // TODO: remove or enable connected services button <-- could be good for using firebase to transfer/remove settings data
-  // TODO: remove or enable transaction history
-  // TODO: remove or enable address field qr code (send page)
-  // TODO: add click and drag to scroll for passphrase box and tilescroller
-
-  // TODO: (test on validator screen, nodeshub and large amounts) within tilescroller, ensure overflow over some value results in ellipses.  they can click in for more information if needed
   // TODO: ensure trim on completion of password entry (such as save to storage).  same on login.  to avoid copy/paste errors
   // TODO: show green or red border for passphrase box on full verify, clear on start of typing
 
@@ -124,6 +118,7 @@ export const CreateWallet = () => {
   /* ******************************************************************************************* */
 
   /* Current TODOs */
+  // TODO: show errors to user (user displayable values)
   // TODO: clean up helper functions and hooks
 
   // TODO: add fields to let user know when sending over IBC (info status on Input - blue text)

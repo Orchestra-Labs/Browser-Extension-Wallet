@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { CombinedStakingInfo } from '@/types';
-import { SlideTray, Button, Input } from '@/ui-kit';
+import { SlideTray, Button } from '@/ui-kit';
 import { LogoIcon } from '@/assets/icons';
 import { ScrollTile } from '../ScrollTile';
 import {
@@ -16,6 +16,7 @@ import {
 import { DEFAULT_ASSET, GREATER_EXPONENT_DEFAULT, LOCAL_ASSET_REGISTRY } from '@/constants';
 import { useAtomValue } from 'jotai';
 import { selectedValidatorsAtom, walletStateAtom } from '@/atoms';
+import { AssetInput } from '../AssetInput';
 
 interface ValidatorScrollTileProps {
   combinedStakingInfo: CombinedStakingInfo;
@@ -29,14 +30,12 @@ export const ValidatorScrollTile = ({
   onClick,
 }: ValidatorScrollTileProps) => {
   const selectedValidators = useAtomValue(selectedValidatorsAtom);
-
   const [selectedAction, setSelectedAction] = useState<'stake' | 'unstake' | 'claim' | null>(
     !combinedStakingInfo.delegation ? 'stake' : null,
   );
   const walletState = useAtomValue(walletStateAtom);
-  const [amount, setAmount] = useState('');
+  const [amount, setAmount] = useState(0);
 
-  // Destructure combined info
   const { validator, delegation, balance, rewards } = combinedStakingInfo;
   const delegationResponse = { delegation, balance };
 
@@ -80,7 +79,6 @@ export const ValidatorScrollTile = ({
   // TODO: pull dynamically from the validator
   const unbondingDays = 12;
 
-  // Determine validator status
   let statusLabel = '';
   let statusColor: 'good' | 'warn' | 'error' = 'good';
   if (validator.jailed) {
@@ -143,16 +141,14 @@ export const ValidatorScrollTile = ({
           status={statusColor}
         >
           {rewards && (
-            <>
-              <div className="text-center mb-2">
-                <div className="truncate text-base font-medium text-neutral-1">
-                  Reward: <span className="text-blue">{formattedRewardAmount}</span>
-                </div>
-                <span className="text-grey-dark text-xs text-base">
-                  Unstaking period <span className="text-warning">{unbondingDays} days</span>
-                </span>
+            <div className="text-center mb-2">
+              <div className="truncate text-base font-medium text-neutral-1">
+                Reward: <span className="text-blue">{formattedRewardAmount}</span>
               </div>
-            </>
+              <span className="text-grey-dark text-xs text-base">
+                Unstaking period <span className="text-warning">{unbondingDays} days</span>
+              </span>
+            </div>
           )}
 
           {/* TODO: on button press, animate collapse to 1 line / re-expansion? */}
@@ -191,7 +187,6 @@ export const ValidatorScrollTile = ({
           {/* Action Selection */}
           {delegation && (
             <div className="flex justify-between w-full px-2 mb-2">
-              {/* Apply flex here */}
               <Button className="w-full" onClick={() => setSelectedAction('stake')}>
                 Stake
               </Button>
@@ -213,12 +208,12 @@ export const ValidatorScrollTile = ({
               <>
                 <div className="flex items-center w-full">
                   <div className="flex-grow mr-2">
-                    <Input
-                      variant="primary"
-                      value={amount}
-                      onChange={e => setAmount(e.target.value)}
+                    <AssetInput
                       placeholder="Enter amount"
-                      className="text-white mx-2"
+                      variant="stake"
+                      assetState={DEFAULT_ASSET}
+                      amountState={amount}
+                      updateAmount={newAmount => setAmount(newAmount)}
                     />
                   </div>
                   <Button
@@ -227,12 +222,12 @@ export const ValidatorScrollTile = ({
                     onClick={() => {
                       selectedAction === 'stake'
                         ? stakeToValidator(
-                            amount,
+                            amount.toString(),
                             LOCAL_ASSET_REGISTRY.note.denom,
                             walletState.address,
                             validator.operator_address,
                           )
-                        : unstakeFromValidator(amount, delegationResponse);
+                        : unstakeFromValidator(amount.toString(), delegationResponse);
                     }}
                   >
                     {selectedAction === 'stake' ? 'Stake' : 'Unstake'}
@@ -243,7 +238,7 @@ export const ValidatorScrollTile = ({
                     size="xs"
                     variant="unselected"
                     className="px-2 rounded-md text-xs"
-                    onClick={() => setAmount('')}
+                    onClick={() => setAmount(0)}
                   >
                     Clear
                   </Button>
@@ -251,7 +246,7 @@ export const ValidatorScrollTile = ({
                     size="xs"
                     variant="unselected"
                     className="px-2 rounded-md text-xs"
-                    onClick={() => setAmount(subTitle)}
+                    onClick={() => setAmount(delegatedAmount)}
                   >
                     Max
                   </Button>
