@@ -116,6 +116,7 @@ export const LOCAL_ASSET_REGISTRY: AssetRegistry = {
     logo: 'https://raw.githubusercontent.com/cosmos/chain-registry/master/testnets/symphonytestnet/images/mld.png',
     symbol: 'MLD',
     exponent: GREATER_EXPONENT_DEFAULT,
+    isFeeToken: true,
   },
   ustars: {
     denom: 'stars',

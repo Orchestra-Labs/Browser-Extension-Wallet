@@ -12,6 +12,7 @@ export interface Asset {
   logo?: string;
   symbol?: string;
   exponent?: number;
+  isFeeToken?: boolean;
 }
 
 export interface WalletAssets {

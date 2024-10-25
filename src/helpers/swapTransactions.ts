@@ -6,6 +6,7 @@ import { createOfflineSignerFromMnemonic } from './wallet';
 import { getSigningOsmosisClient } from '@orchestra-labs/symphonyjs';
 import { delay } from './timer';
 import { getSessionToken } from './localStorage';
+import { getValidFeeDenom } from './feeDenom';
 
 const { swapSend } = osmosis.market.v1beta1.MessageComposer.withTypeUrl;
 
@@ -81,11 +82,12 @@ export const swapTransaction = async (fromAddress: string, swapObject: SwapObjec
   ];
 
   try {
+    const feeDenom = getValidFeeDenom(swapObject.sendObject.denom)
     const response = await queryWithRetry({
       endpoint,
       walletAddress: fromAddress,
       messages,
-      feeDenom: swapObject.sendObject.denom,
+      feeDenom
     });
 
     console.log('Successfully sent:', response);
@@ -128,11 +130,12 @@ export const multiSwapTransaction = async (fromAddress: string, swapObjects: Swa
   );
 
   try {
+    const feeDenom = getValidFeeDenom(swapObjects[0].sendObject.denom)
     const response = await queryWithRetry({
       endpoint,
       walletAddress: fromAddress,
       messages,
-      feeDenom: swapObjects[0].sendObject.denom,
+      feeDenom,
     });
 
     console.log('Successfully sent to all recipients:', response);
