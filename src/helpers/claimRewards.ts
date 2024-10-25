@@ -138,10 +138,7 @@ export const claimAndRestake = async (delegations: DelegationResponse | Delegati
       if (parseFloat(amount) <= 0) return [];
 
       // Format the amount according to the asset's exponent
-      const formattedAmount = (
-        parseFloat(amount) *
-        Math.pow(10, LOCAL_ASSET_REGISTRY[denom]?.exponent || GREATER_EXPONENT_DEFAULT)
-      ).toFixed(0);
+      const formattedAmount = amount.split('.')[0]; // Remove any decimal places if present
 
       return buildClaimMessage({
         endpoint: delegateEndpoint,
