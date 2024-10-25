@@ -46,6 +46,7 @@ export const CHAIN_ENDPOINTS = {
   undelegateFromValidator: '/cosmos.staking.v1beta1.MsgUndelegate',
   sendMessage: '/cosmos.bank.v1beta1.MsgSend',
   swap: '/osmosis/market/v1beta1/swap?',
+  exchangeRequirements: '/osmosis/market/v1beta1/exchange_requirements',
 };
 
 // Time constants

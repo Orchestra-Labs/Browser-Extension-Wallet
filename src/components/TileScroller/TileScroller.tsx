@@ -10,6 +10,7 @@ interface TileScrollerProps {
   onSelectAsset?: (asset: Asset) => void;
   onSelectValidator?: (validator: CombinedStakingInfo) => void;
   isDialog?: boolean;
+  isReceiveDialog?: boolean;
 }
 
 export const TileScroller: React.FC<TileScrollerProps> = ({
@@ -18,6 +19,7 @@ export const TileScroller: React.FC<TileScrollerProps> = ({
   onSelectAsset,
   onSelectValidator,
   isDialog = false,
+  isReceiveDialog = false,
 }) => {
   return (
     <ScrollArea
@@ -27,7 +29,7 @@ export const TileScroller: React.FC<TileScrollerProps> = ({
     >
       <div className="pr-3">
         {activeIndex === 0 ? (
-          <AssetTiles isSelectable={isSelectable} onClick={onSelectAsset} isDialog={isDialog} />
+          <AssetTiles isSelectable={isSelectable} onClick={onSelectAsset} isDialog={isDialog} isReceiveDialog={isReceiveDialog} />
         ) : (
           <ValidatorTiles
             isSelectable={isSelectable}
