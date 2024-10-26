@@ -269,7 +269,11 @@ export const ValidatorScrollTile = ({
                 >
                   Claim to Wallet
                 </Button>
-                <Button className="w-full ml-2" onClick={() => claimAndRestake(delegationResponse)}>
+                <Button className="w-full ml-2" onClick={() => claimAndRestake(delegationResponse, [{
+                  validator: validator.operator_address, 
+                  rewards: rewards
+                }
+                ])}>
                   Claim to Restake
                 </Button>
               </div>
