@@ -98,7 +98,18 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
               disabled={selectedValidators.length === 0}
               onClick={() => {
                 console.log('Claiming and restaking for selected validators:', selectedValidators);
-                claimAndRestake(selectedValidators);
+                const validatorRewards = selectedValidators.map(v => ({
+                  validator: v.delegation.validator_address,
+                  rewards: v.rewards
+                }));
+                
+                claimAndRestake(
+                  selectedValidators.map(v => ({ 
+                    delegation: v.delegation,
+                    balance: v.balance 
+                  })),
+                  validatorRewards
+                );
               }}
             >
               To Restake

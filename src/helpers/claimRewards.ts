@@ -1,6 +1,7 @@
 import { CHAIN_ENDPOINTS, GREATER_EXPONENT_DEFAULT, LOCAL_ASSET_REGISTRY } from '@/constants';
 import { queryRpcNode } from './queryNodes';
 import { DelegationResponse } from '@/types';
+import { fetchRewards } from './fetchStakingInfo';
 
 export const buildClaimMessage = ({
   endpoint,
@@ -96,41 +97,77 @@ export const claimRewards = async (
 };
 
 // Function to claim rewards and restake for one or multiple validators
-export const claimAndRestake = async (delegations: DelegationResponse | DelegationResponse[]) => {
-  const endpoint = CHAIN_ENDPOINTS.delegateToValidator;
+export const claimAndRestake = async (delegations: DelegationResponse | DelegationResponse[], rewards?: {
+  validator: string;
+  rewards: { denom: string; amount: string }[];
+}[]) => {
+  const delegateEndpoint = CHAIN_ENDPOINTS.delegateToValidator;
 
   // Ensure delegations is always an array
   const delegationsArray = Array.isArray(delegations) ? delegations : [delegations];
   const delegatorAddress = delegationsArray[0].delegation.delegator_address;
   const validatorAddresses = delegationsArray.map(d => d.delegation.validator_address);
 
-  const messages = buildClaimMessage({
-    endpoint,
-    delegations: delegationsArray,
-  });
-
-  console.log('Claiming and restaking rewards for validator(s):', {
-    delegatorAddress,
-    validatorAddresses,
-    messages,
-  });
-
   try {
-    // Use the updated claimRewards function
-    await claimRewards(delegatorAddress, validatorAddresses);
+    // If rewards weren't passed in, fetch them
+    const validatorRewards = rewards || await fetchRewards(
+      delegatorAddress,
+      validatorAddresses.map(addr => ({ validator_address: addr }))
+    );
 
-    const restakeResponse = await queryRpcNode({
-      endpoint,
-      messages,
+    // Check if there are any non-zero rewards
+    const hasRewards = validatorRewards.some(reward => {
+      if (!reward.rewards || reward.rewards.length === 0) return false;
+      const amount = parseFloat(reward.rewards[0].amount);
+      return amount > 0;
     });
 
-    if (restakeResponse.code !== 0) {
-      throw new Error(`Failed to restake rewards: ${restakeResponse.rawLog}`);
+    if (!hasRewards) {
+      console.log('No non-zero rewards to claim and delegate');
+      return null;
     }
 
-    console.log('Rewards restaked successfully to all validators:', restakeResponse);
+    // Claim rewards first
+    await claimRewards(delegatorAddress, validatorAddresses);
+
+    // Create delegation messages for each validator with their respective reward amounts
+    const delegateMessages = validatorRewards.flatMap(reward => {
+      // Skip if no rewards or zero rewards
+      if (!reward.rewards || reward.rewards.length === 0) return [];
+
+      const { denom, amount } = reward.rewards[0];
+      
+      // Skip if reward amount is zero
+      if (parseFloat(amount) <= 0) return [];
+
+      // Format the amount according to the asset's exponent
+      const formattedAmount = amount.split('.')[0]; // Remove any decimal places if present
+
+      return buildClaimMessage({
+        endpoint: delegateEndpoint,
+        delegatorAddress,
+        validatorAddress: reward.validator,
+        amount: formattedAmount,
+        denom,
+      });
+    });
+
+    // Only proceed with delegation if there are messages (implying non-zero rewards)
+    if (delegateMessages.length > 0) {
+      const restakeResponse = await queryRpcNode({
+        endpoint: delegateEndpoint,
+        messages: delegateMessages.flat(),
+      });
+
+      console.log('Rewards claimed and delegated successfully:', restakeResponse);
+      return restakeResponse;
+    } else {
+      console.log('No rewards to delegate after filtering zero amounts');
+      return null;
+    }
   } catch (error) {
     console.error('Error during claim and restake:', error);
+    throw error;
   }
 };
 
