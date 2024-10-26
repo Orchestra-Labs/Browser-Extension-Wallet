@@ -91,8 +91,10 @@ export const claimRewards = async (
     });
 
     console.log('Rewards claimed successfully:', response);
+    return response;
   } catch (error) {
     console.error('Error claiming rewards:', error);
+    throw error;
   }
 };
 
@@ -127,46 +129,65 @@ export const claimAndRestake = async (delegations: DelegationResponse | Delegati
       return null;
     }
 
-    // Claim rewards first
-    await claimRewards(delegatorAddress, validatorAddresses);
-
-    // Create delegation messages for each validator with their respective reward amounts
-    const delegateMessages = validatorRewards.flatMap(reward => {
-      // Skip if no rewards or zero rewards
-      if (!reward.rewards || reward.rewards.length === 0) return [];
-
-      const { denom, amount } = reward.rewards[0];
+    // Claim rewards first and check for success
+    let claimResponse;
+    try {
+      claimResponse = await claimRewards(delegatorAddress, validatorAddresses);
       
-      // Skip if reward amount is zero
-      if (parseFloat(amount) <= 0) return [];
+      // Check if the claim was successful
+      if (!claimResponse) {
+        throw new Error('No response received from claim transaction');
+      }
 
-      // Format the amount according to the asset's exponent
-      const formattedAmount = amount.split('.')[0]; // Remove any decimal places if present
+      if (claimResponse.code !== 0) {
+        throw new Error(`Claim failed: ${claimResponse.rawLog || 'Unknown error'}`);
+      }
 
-      return buildClaimMessage({
-        endpoint: delegateEndpoint,
-        delegatorAddress,
-        validatorAddress: reward.validator,
-        amount: formattedAmount,
-        denom,
+      // Create delegation messages for each validator with their respective reward amounts
+      const delegateMessages = validatorRewards.flatMap(reward => {
+        // Skip if no rewards or zero rewards
+        if (!reward.rewards || reward.rewards.length === 0) return [];
+
+        const { denom, amount } = reward.rewards[0];
+        
+        // Skip if reward amount is zero
+        if (parseFloat(amount) <= 0) return [];
+
+        // Format the amount according to the asset's exponent
+        const formattedAmount = amount.split('.')[0]; // Remove any decimal places if present
+
+        return buildClaimMessage({
+          endpoint: delegateEndpoint,
+          delegatorAddress,
+          validatorAddress: reward.validator,
+          amount: formattedAmount,
+          denom,
+        });
       });
-    });
 
-    // Only proceed with delegation if there are messages (implying non-zero rewards)
-    if (delegateMessages.length > 0) {
-      const restakeResponse = await queryRpcNode({
-        endpoint: delegateEndpoint,
-        messages: delegateMessages.flat(),
-      });
+      // Only proceed with delegation if there are messages (implying non-zero rewards)
+      if (delegateMessages.length > 0) {
+        const restakeResponse = await queryRpcNode({
+          endpoint: delegateEndpoint,
+          messages: delegateMessages.flat(),
+        });
 
-      console.log('Rewards claimed and delegated successfully:', restakeResponse);
-      return restakeResponse;
-    } else {
-      console.log('No rewards to delegate after filtering zero amounts');
-      return null;
+        if (restakeResponse.code !== 0) {
+          throw new Error(`Failed to restake rewards: ${restakeResponse.rawLog}`);
+        }
+
+        console.log('Rewards claimed and delegated successfully:', restakeResponse);
+        return restakeResponse;
+      } else {
+        console.log('No rewards to delegate after filtering zero amounts');
+        return null;
+      }
+    } catch (error) {
+      console.error('Error during claim or restake:', error);
+      throw error;
     }
   } catch (error) {
-    console.error('Error during claim and restake:', error);
+    console.error('Error during claim and restake process:', error);
     throw error;
   }
 };
@@ -199,8 +220,10 @@ export const stakeToValidator = async (
     });
 
     console.log('Successfully staked:', response);
+    return response;
   } catch (error) {
     console.error('Error during staking:', error);
+    throw error;
   }
 };
 
@@ -211,14 +234,12 @@ export const unstakeFromValidator = async (amount: string, delegation: Delegatio
   const validatorAddress = delegation.delegation.validator_address;
   const denom = delegation.balance.denom;
 
-  // TODO: format according to passed asset
   // Convert the amount to the smallest unit by multiplying by 10^exponent
   const formattedAmount = (
     parseFloat(amount) *
     Math.pow(10, LOCAL_ASSET_REGISTRY[denom].exponent || GREATER_EXPONENT_DEFAULT)
   ).toFixed(0);
 
-  // Log the formatted amount to ensure it is correct
   console.log('Formatted amount (in smallest unit):', formattedAmount);
 
   const messages = buildClaimMessage({
@@ -236,8 +257,10 @@ export const unstakeFromValidator = async (amount: string, delegation: Delegatio
     });
 
     console.log('Successfully unstaked:', response);
+    return response;
   } catch (error) {
     console.error('Error during unstaking:', error);
+    throw error;
   }
 };
 
@@ -256,7 +279,9 @@ export const unstakeFromAllValidators = async (delegations: DelegationResponse[]
       messages,
     });
     console.log('Successfully unstaked:', unstakeResponse);
+    return unstakeResponse;
   } catch (error) {
     console.error('Error during unstaking:', error);
+    throw error;
   }
 };
