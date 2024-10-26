@@ -1,6 +1,7 @@
 import { CHAIN_ENDPOINTS } from '@/constants';
 import { queryRpcNode } from './queryNodes';
 import { SendObject, TransactionResult , RPCResponse } from '@/types';
+import { getValidFeeDenom } from './feeDenom';
 
 export const sendTransaction = async (fromAddress: string, sendObject: SendObject) : Promise<TransactionResult> => {
   const endpoint = CHAIN_ENDPOINTS.sendMessage;
@@ -17,10 +18,12 @@ export const sendTransaction = async (fromAddress: string, sendObject: SendObjec
   ];
 
   try {
+
+    const feeDenom = getValidFeeDenom(sendObject.denom)
     const response = await queryRpcNode({
       endpoint,
       messages,
-      feeDenom: sendObject.denom,
+      feeDenom,
     });
 
     console.log('Successfully sent:', response);
@@ -59,12 +62,12 @@ export const multiSendTransaction = async (fromAddress: string, sendObjects: Sen
       amount: [{ denom: sendObject.denom, amount: sendObject.amount }],
     },
   }));
-
+  const feeDenom = getValidFeeDenom(sendObjects[0].denom)
   try {
     const response = await queryRpcNode({
       endpoint,
       messages,
-      feeDenom: sendObjects[0].denom,
+      feeDenom,
     });
 
     console.log('Successfully sent to all recipients:', response);
