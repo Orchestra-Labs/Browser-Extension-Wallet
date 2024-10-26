@@ -158,6 +158,7 @@ export const CreateWallet = () => {
   // TODO: create add wallet screen to allow management of multiple accounts
   // TODO: add save wallet screen for saving preferred received assets per wallet and wallet name/identifier (for those user sends to)
   // TODO: add qr code screen for transfer data (including account data).  or from google
+  // TODO: ensure refresh only queries once (currently 4 times per pull)
 
   /* Nice to have TODOs */
   // TODO: add password complexity bar on entry

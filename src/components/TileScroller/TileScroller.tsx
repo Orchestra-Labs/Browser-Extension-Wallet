@@ -1,4 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useAtom } from 'jotai';
+import { isRefreshingAtom } from '@/atoms';
 import { ScrollArea } from '@/ui-kit';
 import { Asset, CombinedStakingInfo } from '@/types';
 import { useDrag } from '@use-gesture/react';
@@ -6,9 +8,8 @@ import { animated, useSpring } from 'react-spring';
 import { Loader } from '../Loader';
 import { ValidatorTiles } from '../TileScroller/ValidatorTiles';
 import { AssetTiles } from '../TileScroller/AssetTiles';
-import { fetchWalletAssets } from '@/helpers';
-import { walletStateAtom } from '@/atoms';
-import { useAtom } from 'jotai';
+import { useWalletAssetsRefresh } from '@/hooks/useWalletAssetsRefresh';
+import { useValidatorDataRefresh } from '@/hooks/useValidatorDataRefresh';
 
 interface TileScrollerProps {
   activeIndex: number;
@@ -27,13 +28,14 @@ export const TileScroller: React.FC<TileScrollerProps> = ({
   isDialog = false,
   isReceiveDialog = false,
 }) => {
-  const [walletState, setWalletState] = useAtom(walletStateAtom);
+  const [isRefreshing, setIsRefreshing] = useAtom(isRefreshingAtom);
 
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [triggerRefresh, setTriggerRefresh] = useState(false);
   const [isMouseDown, setIsMouseDown] = useState(false);
   const [dragStarted, setDragStarted] = useState(false);
   const viewportRef = useRef<HTMLDivElement>(null);
+
+  const { refreshWalletAssets } = useWalletAssetsRefresh();
+  const { refreshValidatorData } = useValidatorDataRefresh();
 
   const TOP_OVERSCROLL_LIMIT = 52;
   const OVERSCROLL_ACTIVATION_THRESHOLD = TOP_OVERSCROLL_LIMIT * 0.75;
@@ -42,27 +44,21 @@ export const TileScroller: React.FC<TileScrollerProps> = ({
 
   const [{ y, loaderOpacity }, api] = useSpring(() => ({ y: 0, loaderOpacity: 0 }));
 
-  const handleRefresh = async () => {
-    console.log('Refreshing...');
-    setIsRefreshing(true);
-    api.start({ loaderOpacity: 1 });
-
-    const newAssets = await fetchWalletAssets(walletState);
-    setWalletState(prevState => ({
-      ...prevState,
-      assets: newAssets,
-    }));
-
-    setIsRefreshing(false);
-    api.start({ y: 0, loaderOpacity: 0 });
-  };
+  useEffect(() => {
+    if (isRefreshing) {
+      if (activeIndex === 0) {
+        refreshWalletAssets();
+      } else {
+        refreshValidatorData();
+      }
+    }
+  }, [isRefreshing, activeIndex]);
 
   useEffect(() => {
-    if (triggerRefresh) {
-      handleRefresh();
-      setTriggerRefresh(false);
+    if (!isRefreshing) {
+      api.start({ y: 0, loaderOpacity: 0 });
     }
-  }, [triggerRefresh]);
+  }, [isRefreshing, api]);
 
   const bind = useDrag(
     ({
@@ -91,11 +87,6 @@ export const TileScroller: React.FC<TileScrollerProps> = ({
 
         if (dragging) {
           if ((atTop && my > 0) || (atBottom && my < 0)) {
-            const overscrollPercentage = (limitedOverscroll / TOP_OVERSCROLL_LIMIT) * 100;
-            console.log(
-              `Overscroll Value: ${limitedOverscroll}px, Percentage: ${overscrollPercentage.toFixed(2)}%, Threshold: ${OVERSCROLL_ACTIVATION_THRESHOLD}`,
-            );
-
             api.start({
               y: limitedOverscroll,
               loaderOpacity: atTop ? limitedOverscroll / TOP_OVERSCROLL_LIMIT : 0,
@@ -106,18 +97,18 @@ export const TileScroller: React.FC<TileScrollerProps> = ({
           }
         } else if (last && !isRefreshing) {
           const velocityMagnitude = Math.sqrt(velocity[0] ** 2 + velocity[1] ** 2);
-          console.log('hit overscroll?', limitedOverscroll > OVERSCROLL_ACTIVATION_THRESHOLD);
-          console.log('exceeded velocity?', velocityMagnitude < MAX_REFRESH_VELOCITY);
+
           if (
             atTop &&
             limitedOverscroll > OVERSCROLL_ACTIVATION_THRESHOLD &&
             velocityMagnitude < MAX_REFRESH_VELOCITY
           ) {
+            setIsRefreshing(true);
             api.start({ y: TOP_OVERSCROLL_LIMIT, loaderOpacity: 1 });
-            setTriggerRefresh(true);
           } else {
             api.start({ y: 0, loaderOpacity: 0 });
           }
+
           setDragStarted(false);
         }
       }
@@ -155,8 +146,6 @@ export const TileScroller: React.FC<TileScrollerProps> = ({
     };
   }, [api, isRefreshing]);
 
-  // TODO: on refresh, re-query for data
-  // TODO: on refresh completion, re-populate data and remove loader
   return (
     <ScrollArea
       // TODO: move select-none to top level, add select option to specific areas of app that allow it (inputs)
