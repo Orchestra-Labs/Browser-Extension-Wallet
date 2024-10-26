@@ -6,6 +6,9 @@ import { animated, useSpring } from 'react-spring';
 import { Loader } from '../Loader';
 import { ValidatorTiles } from '../TileScroller/ValidatorTiles';
 import { AssetTiles } from '../TileScroller/AssetTiles';
+import { fetchWalletAssets } from '@/helpers';
+import { walletStateAtom } from '@/atoms';
+import { useAtom } from 'jotai';
 
 interface TileScrollerProps {
   activeIndex: number;
@@ -24,6 +27,8 @@ export const TileScroller: React.FC<TileScrollerProps> = ({
   isDialog = false,
   isReceiveDialog = false,
 }) => {
+  const [walletState, setWalletState] = useAtom(walletStateAtom);
+
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [triggerRefresh, setTriggerRefresh] = useState(false);
   const [isMouseDown, setIsMouseDown] = useState(false);
@@ -31,8 +36,8 @@ export const TileScroller: React.FC<TileScrollerProps> = ({
   const viewportRef = useRef<HTMLDivElement>(null);
 
   const TOP_OVERSCROLL_LIMIT = 52;
-  const OVERSCROLL_ACTIVATION_THRESHOLD = TOP_OVERSCROLL_LIMIT * 0.8;
-  const BOTTOM_OVERSCROLL_PERCENTAGE = 0.15;
+  const OVERSCROLL_ACTIVATION_THRESHOLD = TOP_OVERSCROLL_LIMIT * 0.75;
+  const BOTTOM_OVERSCROLL_PERCENTAGE = 0.075;
   const MAX_REFRESH_VELOCITY = 0.5;
 
   const [{ y, loaderOpacity }, api] = useSpring(() => ({ y: 0, loaderOpacity: 0 }));
@@ -41,7 +46,13 @@ export const TileScroller: React.FC<TileScrollerProps> = ({
     console.log('Refreshing...');
     setIsRefreshing(true);
     api.start({ loaderOpacity: 1 });
-    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    const newAssets = await fetchWalletAssets(walletState);
+    setWalletState(prevState => ({
+      ...prevState,
+      assets: newAssets,
+    }));
+
     setIsRefreshing(false);
     api.start({ y: 0, loaderOpacity: 0 });
   };
@@ -95,7 +106,8 @@ export const TileScroller: React.FC<TileScrollerProps> = ({
           }
         } else if (last && !isRefreshing) {
           const velocityMagnitude = Math.sqrt(velocity[0] ** 2 + velocity[1] ** 2);
-          // Only trigger refresh if velocity is below threshold
+          console.log('hit overscroll?', limitedOverscroll > OVERSCROLL_ACTIVATION_THRESHOLD);
+          console.log('exceeded velocity?', velocityMagnitude < MAX_REFRESH_VELOCITY);
           if (
             atTop &&
             limitedOverscroll > OVERSCROLL_ACTIVATION_THRESHOLD &&

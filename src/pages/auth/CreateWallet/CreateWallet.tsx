@@ -164,6 +164,8 @@ export const CreateWallet = () => {
   // TODO: add toggle option for single-click transactions and another for force accepting/declining transactions
   // TODO: add toggle option for ultra-secure mode, using password auth for on every transaction like with hardware wallets.  in that mode, no session storage is used.
   // TODO: keep track of current page for case of re-open before timeout
+  // TODO: loader coming in late and tries to catch up.  make more uniform.
+  // TODO: loader should spin in line with its percent pulled
 
   /* Nice to have Interchain-compatibility TODOs */
   // TODO: add manual IBC (for rare cases.  hide behind dev tool enabling?)
