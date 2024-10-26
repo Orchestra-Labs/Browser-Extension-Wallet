@@ -1,11 +1,10 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ScrollArea } from '@/ui-kit';
 import { AssetTiles } from './AssetTiles';
 import { ValidatorTiles } from './ValidatorTiles';
 import { Asset, CombinedStakingInfo } from '@/types';
 import { useDrag } from '@use-gesture/react';
 import { animated, useSpring } from 'react-spring';
-import { useState, useRef } from 'react';
 
 interface TileScrollerProps {
   activeIndex: number;
@@ -25,6 +24,8 @@ export const TileScroller: React.FC<TileScrollerProps> = ({
   isReceiveDialog = false,
 }) => {
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isMouseDown, setIsMouseDown] = useState(false);
+  const [dragStarted, setDragStarted] = useState(false);
   const viewportRef = useRef<HTMLDivElement>(null);
 
   // Using react-spring to control bounce effect
@@ -39,7 +40,17 @@ export const TileScroller: React.FC<TileScrollerProps> = ({
 
   const bind = useDrag(
     ({ movement: [, my], memo = viewportRef.current?.scrollTop || 0, event, dragging, last }) => {
-      if (!event.target || (event.target as HTMLElement).closest('.slide-tray')) return memo;
+      console.log(
+        `Dragging: ${dragging}, Last: ${last}, MouseY: ${my}, Memo: ${memo}, DragStarted: ${dragStarted}, isMouseDown: ${isMouseDown}`,
+      );
+
+      // Only start dragging if the mouse is down
+      if (!isMouseDown || !event.target || (event.target as HTMLElement).closest('.slide-tray')) {
+        console.log('Drag ignored due to slide tray, invalid target, or mouse not being down.');
+        return memo;
+      }
+
+      if (!dragStarted && my !== 0) setDragStarted(true); // Only set dragStarted if there's movement
 
       if (viewportRef.current) {
         const viewport = viewportRef.current;
@@ -48,23 +59,20 @@ export const TileScroller: React.FC<TileScrollerProps> = ({
 
         if (dragging) {
           if ((atTop && my > 0) || (atBottom && my < 0)) {
-            // Overscroll effect: move the content without actually scrolling
-            api.start({ y: my / 2 }); // Divide by 2 for a dampened pull effect
+            api.start({ y: my / 2 });
           } else {
-            // Regular scroll behavior
             viewport.scrollTop = memo - my;
-            api.start({ y: 0 }); // Ensure bounce resets when in bounds
+            api.start({ y: 0 });
           }
         } else if (last) {
-          // If drag ended, animate back to original position if overscrolled
           if (atTop && my > 0) {
             api.start({ y: 0, immediate: false });
           } else if (atBottom && my < 0) {
             api.start({ y: 0, immediate: false });
           }
+          setDragStarted(false); // Reset dragStarted on drag end
         }
 
-        // Trigger refresh if dragged down from top position
         if (atTop && my > 100 && !isRefreshing) {
           console.log('Triggering refresh');
           handleRefresh();
@@ -75,21 +83,56 @@ export const TileScroller: React.FC<TileScrollerProps> = ({
     },
   );
 
+  // Handle mouse down/up to track if mouse is actively pressed
+  const handleMouseDown = () => {
+    setIsMouseDown(true);
+    console.log('Mouse down - ready to start drag.');
+  };
+
+  const handleMouseUp = () => {
+    setIsMouseDown(false);
+    setDragStarted(false);
+    api.start({ y: 0 });
+    console.log('Mouse up - reset drag state.');
+  };
+
+  useEffect(() => {
+    const resetDrag = () => {
+      console.log('Global reset drag - Mouse or pointer left window.');
+      setIsMouseDown(false);
+      setDragStarted(false);
+      api.start({ y: 0 });
+    };
+
+    window.addEventListener('mouseup', resetDrag);
+    window.addEventListener('mouseleave', resetDrag);
+    window.addEventListener('pointercancel', resetDrag);
+
+    return () => {
+      window.removeEventListener('mouseup', resetDrag);
+      window.removeEventListener('mouseleave', resetDrag);
+      window.removeEventListener('pointercancel', resetDrag);
+    };
+  }, [api]);
+
   // TODO: enable swipe to refresh
   // animate drag into position of loader above scroll area
   // re-query for data
-  // re-populate data and animate away loader
+  // re-populate data and remove loader
+  // add max overscroll to bottom?
   return (
     <ScrollArea
-      className="flex-grow w-full overflow-y-auto border border-neutral-3 rounded-md"
+      className="select-none flex-grow w-full overflow-y-auto border border-neutral-3 rounded-md"
       type="always"
       scrollbarProps={{}}
       viewportRef={viewportRef}
+      onMouseDown={handleMouseDown}
+      onMouseUp={handleMouseUp}
     >
       <animated.div
         className="pr-3"
         style={{
-          transform: y.to(v => `translateY(${v}px)`), // Apply spring animation for bounce effect
+          transform: y.to(v => `translateY(${v}px)`),
         }}
         {...bind()}
       >
