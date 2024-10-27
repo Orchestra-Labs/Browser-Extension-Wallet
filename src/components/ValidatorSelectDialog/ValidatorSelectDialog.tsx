@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Button, SlideTray } from '@/ui-kit';
 import { TileScroller } from '../TileScroller';
 import { SortDialog } from '../SortDialog';
+import { Spinner } from '@/assets/icons';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import {
   dialogSearchTermAtom,
@@ -14,6 +15,8 @@ import { SearchBar } from '../SearchBar';
 import { claimAndRestake, claimRewards, unstakeFromAllValidators } from '@/helpers';
 import { CombinedStakingInfo } from '@/types';
 import { WalletSuccessScreen } from '@/components';
+import { LoadingAction } from '@/types';
+
 
 interface ValidatorSelectDialogProps {
   buttonText: string;
@@ -34,6 +37,7 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
   const [transactionSuccess, setTransactionSuccess] = useState<{ success: boolean; txHash?: string }>({
     success: false,
   });
+  const [loadingAction, setLoadingAction] = useState<LoadingAction>(null);
 
   const allValidatorsSelected = selectedValidators.length === filteredValidators.length;
   const noValidatorsSelected = selectedValidators.length === 0;
@@ -68,6 +72,7 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
   };
 
   const handleClaimToWallet = async () => {
+    setLoadingAction('claim-wallet');
     try {
       const result = await claimRewards(
         filteredValidators[0].delegation.delegator_address,
@@ -87,10 +92,13 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
       }
     } catch (error) {
       console.error('Error claiming rewards:', error);
+    } finally {
+      setLoadingAction(null);
     }
   };
 
   const handleClaimAndRestake = async () => {
+    setLoadingAction('claim-restake');
     try {
       const validatorRewards = selectedValidators.map(v => ({
         validator: v.delegation.validator_address,
@@ -118,10 +126,13 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
       }
     } catch (error) {
       console.error('Error claiming and restaking:', error);
+    } finally {
+      setLoadingAction(null);
     }
   };
 
   const handleUnstake = async () => {
+    setLoadingAction('unstake');
     try {
       const result = await unstakeFromAllValidators(selectedValidators);
       
@@ -138,6 +149,8 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
       }
     } catch (error) {
       console.error('Error during unstaking:', error);
+    } finally {
+      setLoadingAction(null);
     }
   };
 
@@ -167,18 +180,26 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
                 size="small"
                 variant="secondary"
                 className="w-full"
-                disabled={selectedValidators.length === 0}
+                disabled={selectedValidators.length === 0 || loadingAction !== null}
                 onClick={handleClaimToWallet}
               >
-                To Wallet
+                {loadingAction === 'claim-wallet' ? (
+                  <Spinner className="h-4 w-4 animate-spin fill-blue" />
+                ) : (
+                  'To Wallet'
+                )}
               </Button>
               <Button
                 size="small"
                 className="w-full"
-                disabled={selectedValidators.length === 0}
+                disabled={selectedValidators.length === 0 || loadingAction !== null}
                 onClick={handleClaimAndRestake}
               >
-                To Restake
+                {loadingAction === 'claim-restake' ? (
+                  <Spinner className="h-4 w-4 animate-spin fill-blue" />
+                ) : (
+                  'To Restake'
+                )}
               </Button>
             </div>
           )}
@@ -192,6 +213,7 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
                 size="xsmall"
                 className="px-1 rounded-md text-xs"
                 onClick={handleSelectAll}
+                disabled={loadingAction !== null}
               >
                 All
               </Button>
@@ -201,6 +223,7 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
                 size="xsmall"
                 className="px-1 rounded-md text-xs"
                 onClick={handleSelectNone}
+                disabled={loadingAction !== null}
               >
                 None
               </Button>
@@ -225,10 +248,14 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
                 variant="secondary"
                 size="small"
                 className="mb-1 w-[44%] h-8"
-                disabled={selectedValidators.length === 0}
+                disabled={selectedValidators.length === 0 || loadingAction !== null}
                 onClick={handleUnstake}
               >
-                Unstake
+                {loadingAction === 'unstake' ? (
+                  <Spinner className="h-4 w-4 animate-spin fill-blue" />
+                ) : (
+                  'Unstake'
+                )}
               </Button>
             </div>
           )}

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { CombinedStakingInfo } from '@/types';
 import { SlideTray, Button } from '@/ui-kit';
-import { LogoIcon } from '@/assets/icons';
+import { LogoIcon , Spinner } from '@/assets/icons';
 import { ScrollTile } from '../ScrollTile';
 import { WalletSuccessScreen } from '@/components';
 import {
@@ -18,6 +18,7 @@ import { DEFAULT_ASSET, GREATER_EXPONENT_DEFAULT, LOCAL_ASSET_REGISTRY } from '@
 import { useAtomValue } from 'jotai';
 import { selectedValidatorsAtom, walletStateAtom } from '@/atoms';
 import { AssetInput } from '../AssetInput';
+import { LoadingAction } from '@/types';
 
 interface ValidatorScrollTileProps {
   combinedStakingInfo: CombinedStakingInfo;
@@ -39,6 +40,7 @@ export const ValidatorScrollTile = ({
   const [transactionSuccess, setTransactionSuccess] = useState<{ success: boolean; txHash?: string }>({
     success: false,
   });
+  const [loadingAction, setLoadingAction] = useState<LoadingAction>(null);
 
   const { validator, delegation, balance, rewards } = combinedStakingInfo;
   const delegationResponse = { delegation, balance };
@@ -112,6 +114,7 @@ export const ValidatorScrollTile = ({
   };
 
   const handleStake = async (amount: string) => {
+    setLoadingAction('stake');
     try {
       const result = await stakeToValidator(
         amount,
@@ -133,10 +136,13 @@ export const ValidatorScrollTile = ({
       }
     } catch (error) {
       console.error('Error during staking:', error);
+    } finally {
+      setLoadingAction(null);
     }
   };
 
   const handleUnstake = async (amount: string) => {
+    setLoadingAction('unstake');
     try {
       const result = await unstakeFromValidator(amount, delegationResponse);
       
@@ -153,10 +159,13 @@ export const ValidatorScrollTile = ({
       }
     } catch (error) {
       console.error('Error during unstaking:', error);
+    } finally {
+      setLoadingAction(null);
     }
   };
 
   const handleClaimToWallet = async () => {
+    setLoadingAction('claim-wallet');
     try {
       const result = await claimRewards(walletState.address, validator.operator_address);
       
@@ -173,10 +182,13 @@ export const ValidatorScrollTile = ({
       }
     } catch (error) {
       console.error('Error claiming rewards:', error);
+    } finally {
+      setLoadingAction(null);
     }
   };
 
   const handleClaimAndRestake = async () => {
+    setLoadingAction('claim-restake');
     try {
       const result = await claimAndRestake(delegationResponse, [{
         validator: validator.operator_address,
@@ -196,6 +208,8 @@ export const ValidatorScrollTile = ({
       }
     } catch (error) {
       console.error('Error claiming and restaking:', error);
+    } finally {
+      setLoadingAction(null);
     }
   };
 
@@ -288,17 +302,26 @@ export const ValidatorScrollTile = ({
               {/* Action Selection */}
               {delegation && (
                 <div className="flex justify-between w-full px-2 mb-2">
-                  <Button className="w-full" onClick={() => setSelectedAction('stake')}>
+                  <Button 
+                    className="w-full" 
+                    onClick={() => setSelectedAction('stake')}
+                    disabled={loadingAction !== null}
+                  >
                     Stake
                   </Button>
                   <Button
                     variant="secondary"
                     className="w-full mx-2"
                     onClick={() => setSelectedAction('unstake')}
+                    disabled={loadingAction !== null}
                   >
                     Unstake
                   </Button>
-                  <Button className="w-full" onClick={() => setSelectedAction('claim')}>
+                  <Button 
+                    className="w-full" 
+                    onClick={() => setSelectedAction('claim')}
+                    disabled={loadingAction !== null}
+                  >
                     Claim
                   </Button>
                 </div>
@@ -320,13 +343,20 @@ export const ValidatorScrollTile = ({
                       <Button
                         size="sm"
                         className="ml-2 px-2 py-1 rounded-md w-16"
+                        disabled={loadingAction !== null}
                         onClick={() => {
                           selectedAction === 'stake'
                             ? handleStake(amount.toString())
                             : handleUnstake(amount.toString());
                         }}
                       >
-                        {selectedAction === 'stake' ? 'Stake' : 'Unstake'}
+                        {loadingAction === 'stake' || loadingAction === 'unstake' ? (
+                          <Spinner className="h-4 w-4 animate-spin fill-blue" />
+                        ) : selectedAction === 'stake' ? (
+                          'Stake'
+                        ) : (
+                          'Unstake'
+                        )}
                       </Button>
                     </div>
                     <div className="flex justify-between w-full mt-1">
@@ -334,6 +364,7 @@ export const ValidatorScrollTile = ({
                         size="xs"
                         variant="unselected"
                         className="px-2 rounded-md text-xs"
+                        disabled={loadingAction !== null}
                         onClick={() => setAmount(0)}
                       >
                         Clear
@@ -342,6 +373,7 @@ export const ValidatorScrollTile = ({
                         size="xs"
                         variant="unselected"
                         className="px-2 rounded-md text-xs"
+                        disabled={loadingAction !== null}
                         onClick={() => setAmount(delegatedAmount)}
                       >
                         Max
@@ -355,16 +387,25 @@ export const ValidatorScrollTile = ({
                     <Button
                       variant="secondary"
                       className="w-full"
-                      // TODO: update this entry in the validator list after completion
+                      disabled={loadingAction !== null}
                       onClick={handleClaimToWallet}
                     >
-                      Claim to Wallet
+                      {loadingAction === 'claim-wallet' ? (
+                        <Spinner className="h-4 w-4 animate-spin fill-blue" />
+                      ) : (
+                        'Claim to Wallet'
+                      )}
                     </Button>
                     <Button 
-                      className="w-full ml-2" 
+                      className="w-full ml-2"
+                      disabled={loadingAction !== null}
                       onClick={handleClaimAndRestake}
                     >
-                      Claim to Restake
+                      {loadingAction === 'claim-restake' ? (
+                        <Spinner className="h-4 w-4 animate-spin fill-blue" />
+                      ) : (
+                        'Claim to Restake'
+                      )}
                     </Button>
                   </div>
                 )}
