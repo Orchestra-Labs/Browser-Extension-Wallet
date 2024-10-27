@@ -1,6 +1,6 @@
 import { CHAIN_ENDPOINTS, GREATER_EXPONENT_DEFAULT, LOCAL_ASSET_REGISTRY } from '@/constants';
 import { queryRpcNode } from './queryNodes';
-import { DelegationResponse } from '@/types';
+import { DelegationResponse, TransactionResult } from '@/types';
 import { fetchRewards } from './fetchStakingInfo';
 
 export const buildClaimMessage = ({
@@ -64,7 +64,7 @@ export const buildClaimMessage = ({
 export const claimRewards = async (
   delegatorAddress: string,
   validatorAddress: string | string[],
-) => {
+): Promise<TransactionResult> => {
   const endpoint = CHAIN_ENDPOINTS.claimRewards;
 
   // Make sure validatorAddress is always an array
@@ -90,19 +90,48 @@ export const claimRewards = async (
       messages,
     });
 
+    if (!response) {
+      return {
+        success: false,
+        message: 'No response received from transaction',
+        data: {
+          code: 1
+        }
+      };
+    }
+
     console.log('Rewards claimed successfully:', response);
-    return response;
+    return {
+      success: true,
+      message: 'Transaction successful',
+      data: {
+        code: response.code || 0,
+        txHash: response.txhash,
+        gasUsed: response.gasUsed,
+        gasWanted: response.gasWanted,
+        height: response.height
+      }
+    };
   } catch (error) {
     console.error('Error claiming rewards:', error);
-    throw error;
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : 'Unknown error occurred',
+      data: {
+        code: 1
+      }
+    };
   }
 };
 
 // Function to claim rewards and restake for one or multiple validators
-export const claimAndRestake = async (delegations: DelegationResponse | DelegationResponse[], rewards?: {
-  validator: string;
-  rewards: { denom: string; amount: string }[];
-}[]) => {
+export const claimAndRestake = async (
+  delegations: DelegationResponse | DelegationResponse[],
+  rewards?: {
+    validator: string;
+    rewards: { denom: string; amount: string }[];
+  }[]
+): Promise<TransactionResult> => {
   const delegateEndpoint = CHAIN_ENDPOINTS.delegateToValidator;
 
   // Ensure delegations is always an array
@@ -126,69 +155,92 @@ export const claimAndRestake = async (delegations: DelegationResponse | Delegati
 
     if (!hasRewards) {
       console.log('No non-zero rewards to claim and delegate');
-      return null;
+      return {
+        success: false,
+        message: 'No rewards to claim',
+        data: {
+          code: 1
+        }
+      };
     }
 
     // Claim rewards first and check for success
-    let claimResponse;
-    try {
-      claimResponse = await claimRewards(delegatorAddress, validatorAddresses);
+    const claimResponse = await claimRewards(delegatorAddress, validatorAddresses);
+    
+    if (!claimResponse.success || claimResponse.data?.code !== 0) {
+      return claimResponse;
+    }
+
+    // Create delegation messages for each validator with their respective reward amounts
+    const delegateMessages = validatorRewards.flatMap(reward => {
+      // Skip if no rewards or zero rewards
+      if (!reward.rewards || reward.rewards.length === 0) return [];
+
+      const { denom, amount } = reward.rewards[0];
       
-      // Check if the claim was successful
-      if (!claimResponse) {
-        throw new Error('No response received from claim transaction');
-      }
+      // Skip if reward amount is zero
+      if (parseFloat(amount) <= 0) return [];
 
-      if (claimResponse.code !== 0) {
-        throw new Error(`Claim failed: ${claimResponse.rawLog || 'Unknown error'}`);
-      }
+      // Format the amount according to the asset's exponent
+      const formattedAmount = amount.split('.')[0]; // Remove any decimal places if present
 
-      // Create delegation messages for each validator with their respective reward amounts
-      const delegateMessages = validatorRewards.flatMap(reward => {
-        // Skip if no rewards or zero rewards
-        if (!reward.rewards || reward.rewards.length === 0) return [];
+      return buildClaimMessage({
+        endpoint: delegateEndpoint,
+        delegatorAddress,
+        validatorAddress: reward.validator,
+        amount: formattedAmount,
+        denom,
+      });
+    });
 
-        const { denom, amount } = reward.rewards[0];
-        
-        // Skip if reward amount is zero
-        if (parseFloat(amount) <= 0) return [];
-
-        // Format the amount according to the asset's exponent
-        const formattedAmount = amount.split('.')[0]; // Remove any decimal places if present
-
-        return buildClaimMessage({
-          endpoint: delegateEndpoint,
-          delegatorAddress,
-          validatorAddress: reward.validator,
-          amount: formattedAmount,
-          denom,
-        });
+    // Only proceed with delegation if there are messages (implying non-zero rewards)
+    if (delegateMessages.length > 0) {
+      const response = await queryRpcNode({
+        endpoint: delegateEndpoint,
+        messages: delegateMessages.flat(),
       });
 
-      // Only proceed with delegation if there are messages (implying non-zero rewards)
-      if (delegateMessages.length > 0) {
-        const restakeResponse = await queryRpcNode({
-          endpoint: delegateEndpoint,
-          messages: delegateMessages.flat(),
-        });
-
-        if (restakeResponse.code !== 0) {
-          throw new Error(`Failed to restake rewards: ${restakeResponse.rawLog}`);
-        }
-
-        console.log('Rewards claimed and delegated successfully:', restakeResponse);
-        return restakeResponse;
-      } else {
-        console.log('No rewards to delegate after filtering zero amounts');
-        return null;
+      if (!response) {
+        return {
+          success: false,
+          message: 'No response received from restake transaction',
+          data: {
+            code: 1
+          }
+        };
       }
-    } catch (error) {
-      console.error('Error during claim or restake:', error);
-      throw error;
+
+      console.log('Rewards claimed and delegated successfully:', response);
+      return {
+        success: true,
+        message: 'Transaction successful',
+        data: {
+          code: response.code || 0,
+          txHash: response.txhash,
+          gasUsed: response.gasUsed,
+          gasWanted: response.gasWanted,
+          height: response.height
+        }
+      };
+    } else {
+      console.log('No rewards to delegate after filtering zero amounts');
+      return {
+        success: false,
+        message: 'No rewards to delegate',
+        data: {
+          code: 1
+        }
+      };
     }
   } catch (error) {
     console.error('Error during claim and restake process:', error);
-    throw error;
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : 'Unknown error occurred',
+      data: {
+        code: 1
+      }
+    };
   }
 };
 
@@ -198,7 +250,7 @@ export const stakeToValidator = async (
   denom: string,
   walletAddress: string,
   validatorAddress: string,
-) => {
+): Promise<TransactionResult> => {
   const endpoint = CHAIN_ENDPOINTS.delegateToValidator;
   const formattedAmount = (
     parseFloat(amount) *
@@ -219,16 +271,45 @@ export const stakeToValidator = async (
       messages,
     });
 
+    if (!response) {
+      return {
+        success: false,
+        message: 'No response received from transaction',
+        data: {
+          code: 1
+        }
+      };
+    }
+
     console.log('Successfully staked:', response);
-    return response;
+    return {
+      success: true,
+      message: 'Transaction successful',
+      data: {
+        code: response.code || 0,
+        txHash: response.txhash,
+        gasUsed: response.gasUsed,
+        gasWanted: response.gasWanted,
+        height: response.height
+      }
+    };
   } catch (error) {
     console.error('Error during staking:', error);
-    throw error;
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : 'Unknown error occurred',
+      data: {
+        code: 1
+      }
+    };
   }
 };
 
 // Function to unstake from a validator
-export const unstakeFromValidator = async (amount: string, delegation: DelegationResponse) => {
+export const unstakeFromValidator = async (
+  amount: string, 
+  delegation: DelegationResponse
+): Promise<TransactionResult> => {
   const endpoint = CHAIN_ENDPOINTS.undelegateFromValidator;
   const delegatorAddress = delegation.delegation.delegator_address;
   const validatorAddress = delegation.delegation.validator_address;
@@ -256,16 +337,44 @@ export const unstakeFromValidator = async (amount: string, delegation: Delegatio
       messages,
     });
 
+    if (!response) {
+      return {
+        success: false,
+        message: 'No response received from transaction',
+        data: {
+          code: 1
+        }
+      };
+    }
+
     console.log('Successfully unstaked:', response);
-    return response;
+    return {
+      success: true,
+      message: 'Transaction successful',
+      data: {
+        code: response.code || 0,
+        txHash: response.txhash,
+        gasUsed: response.gasUsed,
+        gasWanted: response.gasWanted,
+        height: response.height
+      }
+    };
   } catch (error) {
     console.error('Error during unstaking:', error);
-    throw error;
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : 'Unknown error occurred',
+      data: {
+        code: 1
+      }
+    };
   }
 };
 
 // Function to unstake from multiple validators
-export const unstakeFromAllValidators = async (delegations: DelegationResponse[]) => {
+export const unstakeFromAllValidators = async (
+  delegations: DelegationResponse[]
+): Promise<TransactionResult> => {
   const endpoint = CHAIN_ENDPOINTS.undelegateFromValidator;
 
   const messages = buildClaimMessage({
@@ -274,14 +383,41 @@ export const unstakeFromAllValidators = async (delegations: DelegationResponse[]
   });
 
   try {
-    const unstakeResponse = await queryRpcNode({
+    const response = await queryRpcNode({
       endpoint,
       messages,
     });
-    console.log('Successfully unstaked:', unstakeResponse);
-    return unstakeResponse;
+
+    if (!response) {
+      return {
+        success: false,
+        message: 'No response received from transaction',
+        data: {
+          code: 1
+        }
+      };
+    }
+
+    console.log('Successfully unstaked:', response);
+    return {
+      success: true,
+      message: 'Transaction successful',
+      data: {
+        code: response.code || 0,
+        txHash: response.txhash,
+        gasUsed: response.gasUsed,
+        gasWanted: response.gasWanted,
+        height: response.height
+      }
+    };
   } catch (error) {
     console.error('Error during unstaking:', error);
-    throw error;
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : 'Unknown error occurred',
+      data: {
+        code: 1
+      }
+    };
   }
 };
