@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { CombinedStakingInfo } from '@/types';
 import { SlideTray, Button } from '@/ui-kit';
-import { LogoIcon , Spinner } from '@/assets/icons';
+import { LogoIcon, Spinner } from '@/assets/icons';
 import { ScrollTile } from '../ScrollTile';
 import { WalletSuccessScreen } from '@/components';
 import {
@@ -219,42 +219,42 @@ export const ValidatorScrollTile = ({
 
   return (
     <>
-      {transactionSuccess.success ? (
-        <div className="fixed top-0 left-0 w-screen h-screen z-[9999] bg-black">
-          <WalletSuccessScreen 
-            caption="Transaction success!" 
-            txHash={transactionSuccess.txHash}
-          />
-        </div>
+      {isSelectable ? (
+        <ScrollTile
+          title={title}
+          subtitle={subTitle}
+          value={formattedRewardAmount}
+          icon={<LogoIcon />}
+          status={statusColor}
+          selected={isSelected}
+          onClick={handleClick}
+        />
       ) : (
-        <>
-          {isSelectable ? (
-            <ScrollTile
-              title={title}
-              subtitle={subTitle}
-              value={formattedRewardAmount}
-              icon={<LogoIcon />}
-              status={statusColor}
-              selected={isSelected}
-              onClick={handleClick}
-            />
+        <SlideTray
+          triggerComponent={
+            <div>
+              <ScrollTile
+                title={title}
+                subtitle={subTitle}
+                value={formattedRewardAmount}
+                icon={<LogoIcon />}
+                status={statusColor}
+              />
+            </div>
+          }
+          title={title}
+          showBottomBorder
+          status={statusColor}
+        >
+          {transactionSuccess.success ? (
+            <div className="fixed top-0 left-0 w-screen h-screen z-[9999] bg-black">
+              <WalletSuccessScreen 
+                caption="Transaction success!" 
+                txHash={transactionSuccess.txHash}
+              />
+            </div>
           ) : (
-            <SlideTray
-              triggerComponent={
-                <div>
-                  <ScrollTile
-                    title={title}
-                    subtitle={subTitle}
-                    value={formattedRewardAmount}
-                    icon={<LogoIcon />}
-                    status={statusColor}
-                  />
-                </div>
-              }
-              title={title}
-              showBottomBorder
-              status={statusColor}
-            >
+            <>
               {rewards && (
                 <div className="text-center mb-2">
                   <div className="truncate text-base font-medium text-neutral-1">
@@ -410,9 +410,9 @@ export const ValidatorScrollTile = ({
                   </div>
                 )}
               </div>
-            </SlideTray>
+            </>
           )}
-        </>
+        </SlideTray>
       )}
     </>
   );
