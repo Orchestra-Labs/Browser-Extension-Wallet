@@ -1,8 +1,13 @@
 import React from 'react';
-import {useEffect} from 'react';
+import { useEffect } from 'react';
 import { AssetScrollTile } from '../AssetScrollTile';
 import { useSetAtom, useAtomValue } from 'jotai';
-import { filteredAssetsAtom, filteredDialogAssetsAtom , exchangeAssetsAtom, filteredExchangeAssetsAtom } from '@/atoms';
+import {
+  filteredAssetsAtom,
+  filteredDialogAssetsAtom,
+  exchangeAssetsAtom,
+  filteredExchangeAssetsAtom,
+} from '@/atoms';
 import { Asset } from '@/types';
 import { useExchangeAssets } from '@/hooks/useExchangeAssets';
 
@@ -17,17 +22,20 @@ export const AssetTiles: React.FC<AssetTilesProps> = ({
   isSelectable = false,
   onClick,
   isDialog = false,
-  isReceiveDialog = false
+  isReceiveDialog = false,
 }) => {
   const filteredAssets = useAtomValue(
-    isDialog 
-      ? (isReceiveDialog ? filteredExchangeAssetsAtom : filteredDialogAssetsAtom)
-      : filteredAssetsAtom
+    isDialog
+      ? isReceiveDialog
+        ? filteredExchangeAssetsAtom
+        : filteredDialogAssetsAtom
+      : filteredAssetsAtom,
   );
 
+  // TODO: call this earlier, not in asset tiles.  currently causing visible reload state.  on send page with timeout?
   const { availableAssets, isLoading } = useExchangeAssets();
   const setExchangeAssets = useSetAtom(exchangeAssetsAtom);
-  
+
   useEffect(() => {
     if (isReceiveDialog && availableAssets.length > 0) {
       setExchangeAssets(availableAssets);

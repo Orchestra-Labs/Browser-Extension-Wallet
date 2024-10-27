@@ -7,9 +7,9 @@ import { cn } from '@/helpers/utils';
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   variant?: 'primary' | 'unstyled';
   label?: string;
-  showsErrorText?: boolean;
-  status?: 'error' | 'success' | null;
-  errorText?: string;
+  showMessageText?: boolean;
+  status?: 'error' | 'success' | 'info' | null;
+  messageText?: string;
   icon?: ReactNode;
   wrapperClass?: string;
   iconRole?: string;
@@ -23,9 +23,9 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
       className,
       type,
       label,
-      showsErrorText = false,
+      showMessageText = false,
       status = null,
-      errorText,
+      messageText,
       icon,
       wrapperClass,
       iconRole,
@@ -36,6 +36,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
   ) => {
     const isError = status === 'error';
     const isSuccess = status === 'success';
+    const isInfo = status === 'info';
 
     switch (variant) {
       case 'primary': {
@@ -67,6 +68,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
                   'text-neutral-3 hover:text-neutral-1 focus:text-white',
                   isError && 'text-error hover:text-error focus:text-error',
                   isSuccess && 'text-success hover:text-success focus:text-success',
+                  isInfo && 'text-blue hover:text-blue-hover focus:text-blue-pressed',
                 )}
                 onClick={onIconClick}
               >
@@ -74,9 +76,9 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
               </div>
             )}
             {/* Ensure the span always has content, even if it's just a space */}
-            {showsErrorText && (
+            {showMessageText && (
               <span className="mt-1.5 text-sm text-error min-h-[20px] mb-4">
-                {errorText || '\u00A0'}
+                {messageText || '\u00A0'}
               </span>
             )}
           </div>
@@ -86,7 +88,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         return (
           <>
             <input className={cn('bg-transparent', className as string)} ref={ref} {...props} />
-            {showsErrorText && <span className="mt-1.5 text-sm min-h-[20px] mb-4">&nbsp;</span>}
+            {showMessageText && <span className="mt-1.5 text-sm min-h-[20px] mb-4">&nbsp;</span>}
           </>
         );
       }

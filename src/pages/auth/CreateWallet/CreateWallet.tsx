@@ -103,6 +103,8 @@ export const CreateWallet = () => {
 
   /* ******************************************************************************************* */
   /* David Current TODOs */
+  // TODO: get fee estimations for non-send transactions.  stake, unstake, claim
+
   // TODO: add onHover and onClick color changes to password and create wallet buttons
   // TODO: ensure trim on completion of password entry (such as save to storage).  same on login.  to avoid copy/paste errors
   // TODO: show green or red border for passphrase box on full verify, clear on start of typing
@@ -114,9 +116,6 @@ export const CreateWallet = () => {
   // TODO: add clear and max buttons to amount section
   // TODO: add search icon to search field, add onclick
 
-  // TODO: add swipe to dismiss on dialog trays
-  // TODO: add swipe to refresh on main page lists
-
   // TODO: add conclusionary action with selection in asset select dialog.  should picking close the dialog?
   // TODO: add confirm button to select dialogs.  does not need to be visible before selection
   // TODO: make "clear" and "max" button placement and appearance more uniform (send and unstake sections)
@@ -124,7 +123,6 @@ export const CreateWallet = () => {
   /* ******************************************************************************************* */
 
   /* Current TODOs */
-  // TODO: show errors to user (user displayable values)
   // TODO: clean up helper functions and hooks
 
   // TODO: add fields to let user know when sending over IBC

@@ -51,9 +51,9 @@ export const Login: React.FC = () => {
         <form className="mt-9 flex-1">
           <Input
             variant="primary"
-            showsErrorText={true}
+            showMessageText={true}
             status={passwordStatus}
-            errorText={passwordStatus === 'error' ? 'Incorrect password' : ''}
+            messageText={passwordStatus === 'error' ? 'Incorrect password' : ''}
             className="w-full"
             wrapperClass="mb-4"
             label="Password"

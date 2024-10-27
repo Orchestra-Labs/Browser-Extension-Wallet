@@ -10,12 +10,13 @@ import { createOfflineSignerFromMnemonic } from './wallet';
 import { delay } from './timer';
 import { RPCResponse } from '@/types';
 
-
-//indexer specific error - i.e tx submitted, but indexer disabled so returned incorrect 
+//indexer specific error - i.e tx submitted, but indexer disabled so returned incorrect
 
 const isIndexerError = (error: any): boolean => {
-  return error?.message?.includes('transaction indexing is disabled') ||
-         error?.message?.includes('indexing is disabled');
+  return (
+    error?.message?.includes('transaction indexing is disabled') ||
+    error?.message?.includes('indexing is disabled')
+  );
 };
 
 // Select and prioritize node providers based on their error counts
@@ -65,60 +66,64 @@ export const performRpcQuery = async (
   walletAddress: string,
   messages: any[],
   feeDenom: string,
+  simulateOnly = false,
 ): Promise<RPCResponse> => {
   try {
     // TODO: modify to support multi-send
-  // Set a default fee for simulation
-  const defaultGasPrice = GasPrice.fromString(`0.025${feeDenom}`);
+    // Set a default fee for simulation
+    const defaultGasPrice = GasPrice.fromString(`0.025${feeDenom}`);
 
-  // TODO: add simulation parameter to functions to be able to update user on estimates in real time before real query
-  // Simulate transaction to estimate gas
-  let gasEstimation = await client.simulate(walletAddress, messages, '');
-  // Apply a 10% buffer for safety
-  gasEstimation = Math.ceil(gasEstimation * 1.1);
-  console.log('Simulated Gas Estimation:', gasEstimation);
+    // TODO: add simulation parameter to functions to be able to update user on estimates in real time before real query
+    // Simulate transaction to estimate gas
+    let gasEstimation = await client.simulate(walletAddress, messages, '');
+    // Apply a 10% buffer for safety
+    gasEstimation = Math.ceil(gasEstimation * 1.1);
 
-  // Calculate the fee based on the gas estimation
-  const fee = {
-    amount: [
-      {
-        denom: feeDenom,
-        amount: (gasEstimation * defaultGasPrice.amount.toFloatApproximation()).toFixed(0),
-      },
-    ],
-    gas: gasEstimation.toString(),
-  };
+    // Calculate the fee based on the gas estimation
+    const fee = {
+      amount: [
+        {
+          denom: feeDenom,
+          amount: (gasEstimation * defaultGasPrice.amount.toFloatApproximation()).toFixed(0),
+        },
+      ],
+      gas: gasEstimation.toString(),
+    };
 
+    // If simulation-only, estimate the gas and return without broadcasting
+    if (simulateOnly) {
+      return { code: 0, message: 'Simulation success', fee, gasWanted: gasEstimation.toString() };
+    }
 
-
+    // Otherwise, proceed with full transaction
     const result = await client.signAndBroadcast(walletAddress, messages, fee);
 
-    // Check if transaction was successful
     if (result.code === 0) {
       return {
         code: 0,
         txHash: result.transactionHash,
         gasUsed: result.gasUsed?.toString(),
         gasWanted: result.gasWanted?.toString(),
-        message: 'Transaction success'
+        message: 'Transaction success',
       };
     }
 
     throw new Error(`Transaction failed with ${result.code}`);
   } catch (error: any) {
-    // Check if it's an indexer error but the transaction was actually successful
+    // TODO: find another way to verify transaction success.
+    // TODO: log indexer errors, changeover to backups (can be original endpoints).  no single points of failure
     if (isIndexerError(error)) {
-        return {
-          code: 0,
-          message: 'Transaction likely successful (node indexer disabled)',
-          txHash: error.txHash || 'unknown'
-        };
-      }
-  
+      return {
+        code: 1,
+        message: 'Node indexer disabled',
+        txHash: error.txHash || 'unknown',
+      };
+    }
+
     // Re-throw all other errors
     throw error;
   }
-}
+};
 
 // Function to query the node with retries and delay
 const queryWithRetry = async ({
@@ -127,12 +132,14 @@ const queryWithRetry = async ({
   queryType = 'GET',
   messages = [],
   feeDenom,
+  simulateOnly = false,
 }: {
   endpoint: string;
   useRPC?: boolean;
   queryType?: 'GET' | 'POST';
   messages?: any[];
   feeDenom: string;
+  simulateOnly?: boolean;
 }): Promise<RPCResponse> => {
   const providers = selectNodeProviders();
   let numberAttempts = 0;
@@ -157,8 +164,9 @@ const queryWithRetry = async ({
 
           const offlineSigner = await createOfflineSignerFromMnemonic(mnemonic);
           const client = await SigningStargateClient.connectWithSigner(queryMethod, offlineSigner);
-          
-          const result = await performRpcQuery(client, address, messages, feeDenom);
+
+          // Pass `simulateOnly` to determine if we are simulating or fully querying
+          const result = await performRpcQuery(client, address, messages, feeDenom, simulateOnly);
           return result;
         } else {
           const result = await performRestQuery(endpoint, queryMethod, queryType);
@@ -167,18 +175,15 @@ const queryWithRetry = async ({
       } catch (error) {
         lastError = error;
         console.error('Error querying node:', error);
-        
+
         // Don't increment error count for indexer issues
         if (!isIndexerError(error)) {
           incrementErrorCount(provider.rpc);
         }
       }
-      
-      numberAttempts++;
-      if (numberAttempts >= MAX_NODES_PER_QUERY) {
-        break;
-      }
 
+      numberAttempts++;
+      if (numberAttempts >= MAX_NODES_PER_QUERY) break;
       await delay(DELAY_BETWEEN_NODE_ATTEMPTS);
     }
   }
@@ -192,7 +197,9 @@ const queryWithRetry = async ({
     };
   }
 
-  throw new Error(`All node query attempts failed after ${MAX_NODES_PER_QUERY} attempts. ${lastError?.message || ''}`);
+  throw new Error(
+    `All node query attempts failed after ${MAX_NODES_PER_QUERY} attempts. ${lastError?.message || ''}`,
+  );
 };
 
 // REST query function
@@ -204,7 +211,7 @@ export const queryRestNode = async ({
   endpoint: string;
   queryType?: 'GET' | 'POST';
   feeDenom?: string;
-}) => 
+}) =>
   queryWithRetry({
     endpoint,
     useRPC: false,
@@ -212,21 +219,22 @@ export const queryRestNode = async ({
     feeDenom,
   });
 
-
 // RPC query function
 export const queryRpcNode = async ({
   endpoint,
   messages,
   feeDenom = LOCAL_ASSET_REGISTRY.note.denom,
+  simulateOnly = false,
 }: {
   endpoint: string;
   messages?: any[];
   feeDenom?: string;
-}) => 
+  simulateOnly?: boolean;
+}) =>
   queryWithRetry({
     endpoint,
     useRPC: true,
     messages,
     feeDenom,
+    simulateOnly,
   });
-

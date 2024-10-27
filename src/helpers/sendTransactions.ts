@@ -1,9 +1,13 @@
 import { CHAIN_ENDPOINTS } from '@/constants';
 import { queryRpcNode } from './queryNodes';
-import { SendObject, TransactionResult , RPCResponse } from '@/types';
+import { SendObject, TransactionResult, RPCResponse } from '@/types';
 import { getValidFeeDenom } from './feeDenom';
 
-export const sendTransaction = async (fromAddress: string, sendObject: SendObject) : Promise<TransactionResult> => {
+export const sendTransaction = async (
+  fromAddress: string,
+  sendObject: SendObject,
+  simulateOnly: boolean = false,
+): Promise<TransactionResult> => {
   const endpoint = CHAIN_ENDPOINTS.sendMessage;
 
   const messages = [
@@ -18,13 +22,22 @@ export const sendTransaction = async (fromAddress: string, sendObject: SendObjec
   ];
 
   try {
-
-    const feeDenom = getValidFeeDenom(sendObject.denom)
+    const feeDenom = getValidFeeDenom(sendObject.denom);
     const response = await queryRpcNode({
       endpoint,
       messages,
       feeDenom,
+      simulateOnly,
     });
+
+    if (simulateOnly) {
+      console.log('Simulation result:', response);
+      return {
+        success: true,
+        message: 'Simulation completed successfully!',
+        data: response,
+      };
+    }
 
     console.log('Successfully sent:', response);
     return {
@@ -34,9 +47,9 @@ export const sendTransaction = async (fromAddress: string, sendObject: SendObjec
     };
   } catch (error: any) {
     console.error('Error during send:', error);
-    
-    //construct error response in RPCResponse type
-    const errorResponse : RPCResponse = {
+
+    // Construct error response in RPCResponse type
+    const errorResponse: RPCResponse = {
       code: error.code || 1,
       message: error.message,
     };
@@ -49,10 +62,14 @@ export const sendTransaction = async (fromAddress: string, sendObject: SendObjec
   }
 };
 
-// TODO: suppose sends of multiple different currencies
-export const multiSendTransaction = async (fromAddress: string, sendObjects: SendObject[]) : Promise<TransactionResult> => {
-    const endpoint = CHAIN_ENDPOINTS.sendMessage;
-
+// TODO: Fix for case of sending of multiple different currencies
+// Function to send multiple transactions, with optional simulation mode
+export const multiSendTransaction = async (
+  fromAddress: string,
+  sendObjects: SendObject[],
+  simulateOnly: boolean = false, // New parameter for simulation
+): Promise<TransactionResult> => {
+  const endpoint = CHAIN_ENDPOINTS.sendMessage;
 
   const messages = sendObjects.map(sendObject => ({
     typeUrl: endpoint,
@@ -62,13 +79,25 @@ export const multiSendTransaction = async (fromAddress: string, sendObjects: Sen
       amount: [{ denom: sendObject.denom, amount: sendObject.amount }],
     },
   }));
-  const feeDenom = getValidFeeDenom(sendObjects[0].denom)
+
+  const feeDenom = getValidFeeDenom(sendObjects[0].denom);
+
   try {
     const response = await queryRpcNode({
       endpoint,
       messages,
       feeDenom,
+      simulateOnly,
     });
+
+    if (simulateOnly) {
+      console.log('Multi-send simulation result:', response);
+      return {
+        success: true,
+        message: 'Simulation of multi-send completed successfully!',
+        data: response,
+      };
+    }
 
     console.log('Successfully sent to all recipients:', response);
     return {
@@ -77,19 +106,18 @@ export const multiSendTransaction = async (fromAddress: string, sendObjects: Sen
       data: response,
     };
   } catch (error: any) {
-    console.error('Error during send:', error);
-    
+    console.error('Error during multi-send:', error);
+
     //construct error response in RPCResponse type
-    const errorResponse : RPCResponse = {
+    const errorResponse: RPCResponse = {
       code: error.code || 1,
       message: error.message,
     };
 
     return {
       success: false,
-      message: 'Error sending transaction. Please try again.',
+      message: 'Error sending transactions. Please try again.',
       data: errorResponse,
     };
   }
 };
-

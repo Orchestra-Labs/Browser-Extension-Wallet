@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { ArrowLeft, Spinner, Swap } from '@/assets/icons';
-import { DEFAULT_ASSET, GREATER_EXPONENT_DEFAULT, LOCAL_ASSET_REGISTRY, ROUTES } from '@/constants';
+import { DEFAULT_ASSET, GREATER_EXPONENT_DEFAULT, ROUTES } from '@/constants';
 import { Button, Separator } from '@/ui-kit';
 import { useAtom, useAtomValue } from 'jotai';
 import {
@@ -16,6 +16,7 @@ import {
 import { Asset, TransactionResult, TransactionSuccess } from '@/types';
 import { AssetInput, WalletSuccessScreen } from '@/components';
 import {
+  cn,
   formatBalanceDisplay,
   removeTrailingZeroes,
   sendTransaction,
@@ -37,19 +38,28 @@ export const Send = () => {
   const [recipientAddress, setRecipientAddress] = useAtom(recipientAddressAtom);
   const [selectedAsset, setSelectedAsset] = useAtom(selectedAssetAtom);
 
+  // TODO: only query for exchange rate on transaction type swap
   const { exchangeRate } = useExchangeRate();
 
-  const [isSuccess, setIsSuccess] = useState<TransactionSuccess>({success: false});
+  // TODO: handle bridge types such as IBC
+  const [transactionType, setTransactionType] = useState({
+    isSwap: false,
+    isValid: true,
+  });
+  const [simulatedFee, setSimulatedFee] = useState<{
+    fee: string;
+    textClass: 'text-error' | 'text-warn' | '';
+  } | null>({ fee: '0', textClass: '' });
+  const [sendPlaceholder, setSendPlaceholder] = useState<string>('');
+  const [receivePlaceholder, setReceivePlaceholder] = useState<string>('');
+  const [transactionMessage, setTransactionMessage] = useState<string>('');
+  const [isSuccess, setIsSuccess] = useState<TransactionSuccess>({ success: false });
 
-  // TODO: write and enable function
-  // const checkTransactionType = () => {
-  // regular transaction
-  // swap transaction
-  // ibc (cross-chain transaction)
-  // ibc and swap transaction (change both asset and chain)
-  // };
+  const handleTransaction = async ({ simulateTransaction = false } = {}) => {
+    if (!transactionType.isValid) return;
+    // TODO: simulate against user's own address (build one if none exists)
+    if (!recipientAddress) return;
 
-  const handleSend = async () => {
     const sendAsset = sendState.asset;
     const sendAmount = sendState.amount;
     const receiveAsset = receiveState.asset;
@@ -60,7 +70,7 @@ export const Send = () => {
 
     const adjustedAmount = (
       sendAmount * Math.pow(10, assetToSend.exponent || GREATER_EXPONENT_DEFAULT)
-    ).toFixed(0); // No decimals, as this is sending the minor unit, not the greater.
+    ).toFixed(0); // No decimals, minor unit
 
     const sendObject = {
       recipientAddress,
@@ -68,45 +78,51 @@ export const Send = () => {
       denom: sendAsset.denom,
     };
 
-    setLoading(true);
+    if (!simulateTransaction) setLoading(true);
 
     try {
       let result: TransactionResult;
-      if (sendAsset?.denom === receiveAsset?.denom) {
-        result = await sendTransaction(walletState.address, sendObject);
-      } else if (receiveAsset) {
-        // Swap transaction
+      // Routing logic based on transactionType
+      if (!transactionType.isSwap) {
+        result = await sendTransaction(walletState.address, sendObject, simulateTransaction);
+      } else if (transactionType.isSwap) {
         const swapObject = { sendObject, resultDenom: receiveAsset.denom };
-        result = await swapTransaction(walletState.address, swapObject);
+        result = await swapTransaction(walletState.address, swapObject, simulateTransaction);
       } else {
-        throw new Error('Invalid asset configuration');
+        throw new Error('Invalid transaction type');
       }
-      //check if tx successful and code = 0 (success)
-      if (result.success && result.data?.code === 0) {
 
-        setIsSuccess({success: true, txHash: result.data?.txHash});
-      }
-      else{
-        console.error('Transaction failed detailed error:', result.data);
+      // Process result for simulation or actual transaction
+      if (simulateTransaction && result?.data?.code === 0) {
+        return result;
+      } else if (result.success && result.data?.code === 0) {
+        setIsSuccess({ success: true, txHash: result.data.txHash });
+      } else {
+        console.error('Transaction failed', result.data);
       }
     } catch (error) {
-      console.error('Error broadcasting transaction', error);
+      console.error('Error in transaction handling', error);
+    } finally {
+      if (!simulateTransaction) setLoading(false);
     }
     // TODO: also put refetch after the stake and unstake functions
     // TODO: re-apply refetch if helpers are changed into hooks
     // refetch();
-    setLoading(false);
+    return null;
   };
 
   const calculateMaxAvailable = (sendAsset: Asset) => {
-    // Find the wallet asset that matches the send asset's denom
     const walletAsset = walletAssets.find(asset => asset.denom === sendAsset.denom);
-    if (!walletAsset) {
-      return 0;
-    }
+    console.log('Wallet Asset:', walletAsset); // Check asset details
+    if (!walletAsset) return 0;
 
-    const maxAmount = parseFloat(walletAsset?.amount ?? '0');
-    return maxAmount;
+    const maxAmount = parseFloat(walletAsset.amount || '0');
+    const feeAmount = simulatedFee ? parseFloat(simulatedFee.fee) : 0;
+    console.log('Max Amount:', maxAmount, 'Fee Amount:', feeAmount); // Verify both
+
+    const maxAvailable = Math.max(0, maxAmount - feeAmount);
+    console.log('Max Available:', maxAvailable); // Final max available
+    return maxAvailable;
   };
 
   const updateSendAsset = (newAsset: Asset, propagateChanges: boolean = false) => {
@@ -151,6 +167,7 @@ export const Send = () => {
   };
 
   const updateSendAmount = (newSendAmount: number, propagateChanges: boolean = false) => {
+    console.log('New Send Amount (before rounding):', newSendAmount);
     const sendAsset = sendState.asset;
     if (!sendAsset) {
       return;
@@ -166,6 +183,7 @@ export const Send = () => {
         amount: roundedSendAmount,
       };
     });
+    console.log('Updated send with (send update function):', newSendAmount);
 
     // Handle propagation of changes if required
     if (propagateChanges) {
@@ -184,6 +202,7 @@ export const Send = () => {
   };
 
   const updateReceiveAmount = (newReceiveAmount: number, propagateChanges: boolean = false) => {
+    console.log('New Receive Amount (before rounding):', newReceiveAmount);
     const receiveAsset = receiveState.asset;
     if (!receiveAsset) return;
 
@@ -194,6 +213,7 @@ export const Send = () => {
       ...prevState,
       amount: roundedReceiveAmount,
     }));
+    console.log('Updated receive with (receive update function):', newReceiveAmount);
 
     if (propagateChanges) {
       setChangeMap(prevMap => ({
@@ -209,6 +229,71 @@ export const Send = () => {
     }
   };
 
+  const updateFee = async () => {
+    const simulationResponse = await handleTransaction({ simulateTransaction: true });
+
+    if (simulationResponse && simulationResponse.data) {
+      const gasWanted = parseInt(simulationResponse.data.gasWanted || '0', 10);
+
+      const defaultGasPrice = 0.025;
+      const exponent = sendState.asset?.exponent || GREATER_EXPONENT_DEFAULT;
+      const symbol = sendState.asset.symbol || DEFAULT_ASSET.symbol || 'MLD';
+      const feeAmount = gasWanted * defaultGasPrice;
+      const feeInGreaterUnit = feeAmount / Math.pow(10, exponent);
+
+      const feePercentage = feeInGreaterUnit ? (feeInGreaterUnit / sendState.amount) * 100 : 0;
+
+      setSimulatedFee({
+        fee: formatBalanceDisplay(feeInGreaterUnit.toFixed(exponent), symbol),
+        textClass: feePercentage > 1 ? 'text-error' : feePercentage > 0.75 ? 'text-warn' : '',
+      });
+    } else {
+      // TODO: handle error on fee return
+      console.log('Simulation did not return gas details');
+    }
+  };
+
+  const updateTransactionType = () => {
+    const sendAsset = sendState.asset;
+    const receiveAsset = receiveState.asset;
+
+    if (!sendAsset || !receiveAsset) return;
+
+    let newTransactionType = {
+      isSwap: false,
+      isValid: true,
+    };
+
+    if (sendAsset.denom === receiveAsset.denom) {
+      newTransactionType.isSwap = false;
+      setTransactionMessage(`Sending ${sendAsset.symbol} through Symphony.`);
+    } else if (!sendAsset.isIbc && !receiveAsset.isIbc && sendAsset.denom !== receiveAsset.denom) {
+      newTransactionType.isSwap = true;
+      setTransactionMessage(
+        newTransactionType.isValid
+          ? `Sending ${sendAsset.symbol} into ${receiveAsset.symbol} on Symphony.`
+          : `No exchange on current pair`,
+      );
+    } else {
+      newTransactionType.isValid = false;
+      setTransactionMessage('Not yet supported');
+    }
+
+    setTransactionType(newTransactionType);
+
+    // Update send and receive placeholders based on max values and exchange rate
+    const maxSendable = calculateMaxAvailable(sendAsset);
+    const applicableExchangeRate = sendAsset.denom === receiveAsset.denom ? 1 : exchangeRate || 1;
+    const maxReceivable = maxSendable * applicableExchangeRate;
+
+    setSendPlaceholder(`Max: ${formatBalanceDisplay(`${maxSendable}`, sendAsset.symbol || 'MLD')}`);
+    setReceivePlaceholder(
+      !newTransactionType.isSwap
+        ? 'No exchange on current pair'
+        : `Max: ${removeTrailingZeroes(maxReceivable)}${receiveAsset.symbol}`,
+    );
+  };
+
   const propagateChanges = (
     map = changeMap,
     setMap = setChangeMap,
@@ -217,10 +302,7 @@ export const Send = () => {
     if (map.sendAsset) {
       const sendAsset = sendState.asset;
       const sendAmount = sendState.amount;
-
-      if (sendAsset == null) {
-        return;
-      }
+      if (!sendAsset) return;
 
       const maxAvailable = calculateMaxAvailable(sendAsset);
 
@@ -253,26 +335,30 @@ export const Send = () => {
 
     if (map.sendAmount) {
       const sendAsset = sendState.asset;
-
-      if (!sendAsset) {
-        return;
-      }
+      if (!sendAsset) return;
 
       const sendAmount = sendState.amount;
       const maxAvailable = calculateMaxAvailable(sendAsset);
+      console.log('Max Available sendable (send changed in propagateChanges):', maxAvailable);
+      const verifiedSendAmount = Math.min(sendState.amount, maxAvailable);
+      console.log('Verified send amount (send changed in propagateChanges):', verifiedSendAmount);
 
-      let verifiedSendAmount = sendAmount > maxAvailable ? maxAvailable : sendAmount;
-
-      if (sendAmount > maxAvailable) {
-        updateSendAmount(maxAvailable);
-        verifiedSendAmount = maxAvailable;
+      if (verifiedSendAmount != sendAmount) {
+        updateSendAmount(verifiedSendAmount);
       }
 
       const applicableExchangeRate =
         sendAsset.denom === receiveState.asset?.denom ? 1 : exchangeRate || 1;
+      console.log('Exchange rate (send changed in propagateChanges):', exchangeRate);
+      console.log(
+        'Applicable exchange rate (send changed in propagateChanges):',
+        applicableExchangeRate,
+      );
       const newReceiveAmount = verifiedSendAmount * applicableExchangeRate;
+      console.log('New receive amount (send changed in propagateChanges):', newReceiveAmount);
 
       updateReceiveAmount(newReceiveAmount);
+      console.log('Updated receive with (send changed in propagateChanges):', newReceiveAmount);
 
       if (!isExchangeRateUpdate) {
         setMap(prevMap => ({ ...prevMap, sendAmount: false }));
@@ -281,10 +367,7 @@ export const Send = () => {
 
     if (map.receiveAmount) {
       const sendAsset = sendState.asset;
-
-      if (!sendAsset) {
-        return;
-      }
+      if (!sendAsset) return;
 
       const receiveAmount = receiveState.amount;
 
@@ -293,14 +376,29 @@ export const Send = () => {
       let newSendAmount = receiveAmount * applicableExchangeRate;
 
       const maxAvailable = calculateMaxAvailable(sendAsset);
+      console.log('Max Available sendable (receive changed in propagateChanges):', maxAvailable);
 
       if (newSendAmount > maxAvailable) {
         newSendAmount = maxAvailable;
+        console.log('New send amount (receive changed in propagateChanges):', newSendAmount);
         const adjustedReceiveAmount = newSendAmount * (exchangeRate || 1);
-
+        console.log('Exchange rate (receive changed in propagateChanges):', exchangeRate);
+        console.log(
+          'Adjusted receive amount (receive changed in propagateChanges):',
+          adjustedReceiveAmount,
+        );
         updateSendAmount(newSendAmount);
         updateReceiveAmount(adjustedReceiveAmount);
+        console.log(
+          'updated send and receive with (receive changed in propagateChanges):',
+          newSendAmount,
+          adjustedReceiveAmount,
+        );
       } else {
+        console.log(
+          'New send amount [else statement] (receive changed in propagateChanges):',
+          newSendAmount,
+        );
         updateSendAmount(newSendAmount);
       }
 
@@ -308,6 +406,10 @@ export const Send = () => {
         setMap(prevMap => ({ ...prevMap, receiveAmount: false }));
       }
     }
+
+    // TODO: add fee update to changemap?
+    updateFee();
+    updateTransactionType();
   };
 
   const switchFields = () => {
@@ -347,6 +449,7 @@ export const Send = () => {
   useEffect(() => {
     updateSendAsset(selectedAsset);
     updateReceiveAsset(selectedAsset);
+    updateTransactionType();
 
     return () => {
       // Reset the states when the component is unmounted (user leaves the page)
@@ -355,29 +458,8 @@ export const Send = () => {
   }, []);
 
   if (isSuccess.success) {
-    return (
-    <WalletSuccessScreen 
-    caption="Transaction success!" 
-    txHash={isSuccess.txHash}
-    />
-    );
+    return <WalletSuccessScreen caption="Transaction success!" txHash={isSuccess.txHash} />;
   }
-
-  const isNotSwappable =
-    sendState.asset?.denom === receiveState.asset?.denom ||
-    (receiveState.asset?.isIbc && receiveState.asset.denom != LOCAL_ASSET_REGISTRY.note.denom) ||
-    (sendState.asset?.isIbc && sendState.asset.denom != LOCAL_ASSET_REGISTRY.note.denom);
-
-  const sendAsset = sendState.asset || DEFAULT_ASSET;
-  const sendSymbol = sendAsset.symbol || 'MLD';
-  const receiveAsset = receiveState.asset || DEFAULT_ASSET;
-  const maxSendable = calculateMaxAvailable(sendAsset);
-  const applicableExchangeRate = sendAsset.denom === receiveAsset.denom ? 1 : exchangeRate || 1;
-  const maxReceivable = maxSendable * applicableExchangeRate;
-  const sendPlaceholder = `Max: ${formatBalanceDisplay(`${maxSendable}`, sendSymbol)}`;
-  const receivePlaceholder = isNotSwappable
-    ? 'No exchange on current pair'
-    : `Max: ${removeTrailingZeroes(maxReceivable)}${receiveAsset.symbol}`;
 
   return (
     <div className="h-screen flex flex-col bg-black text-white">
@@ -389,7 +471,12 @@ export const Send = () => {
         >
           <ArrowLeft className="w-full h-full text-white" />
         </NavLink>
-        <h1 className="text-h5 text-white font-bold">Send</h1>
+        <div>
+          <h1 className="text-h5 text-white font-bold">Send</h1>
+          <div className={cn(`${transactionType.isValid ? 'text-neutral-1' : 'text-error'}`)}>
+            {transactionMessage}
+          </div>
+        </div>
         <div className="max-w-5 w-full max-h-5" />
       </div>
 
@@ -397,7 +484,7 @@ export const Send = () => {
       <div className="flex flex-col justify-between flex-grow p-4 border border-neutral-2 rounded-lg overflow-y-auto">
         <>
           {/* Address Input */}
-          <AddressInput />
+          <AddressInput addBottomMargin={false} />
 
           {/* Separator */}
           <Separator variant="top" />
@@ -435,7 +522,9 @@ export const Send = () => {
         {/* Fee Section */}
         <div className="flex justify-between items-center text-blue text-sm font-bold">
           <p>Fee</p>
-          <p>0.0004 MLD</p>
+          <p className={simulatedFee?.textClass}>
+            {simulatedFee ? simulatedFee.fee : 'Unknown...'}
+          </p>
         </div>
 
         {/* Separator */}
@@ -445,7 +534,7 @@ export const Send = () => {
           {/* Send Button */}
           <Button
             className="w-full"
-            onClick={handleSend}
+            onClick={() => handleTransaction()}
             disabled={isLoading || sendState.amount === 0}
           >
             {isLoading ? <Spinner className="h-8 w-8 animate-spin fill-blue" /> : 'Send'}

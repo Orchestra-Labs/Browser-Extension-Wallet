@@ -1,6 +1,6 @@
 import { osmosis } from '@orchestra-labs/symphonyjs';
 import { incrementErrorCount, performRpcQuery, selectNodeProviders } from './queryNodes';
-import { SwapObject, TransactionResult, RPCResponse} from '@/types';
+import { SwapObject, TransactionResult, RPCResponse } from '@/types';
 import { CHAIN_ENDPOINTS, DELAY_BETWEEN_NODE_ATTEMPTS, MAX_NODES_PER_QUERY } from '@/constants';
 import { createOfflineSignerFromMnemonic } from './wallet';
 import { getSigningOsmosisClient } from '@orchestra-labs/symphonyjs';
@@ -16,11 +16,13 @@ const queryWithRetry = async ({
   walletAddress,
   messages = [],
   feeDenom,
+  simulateOnly = false,
 }: {
   endpoint: string;
   walletAddress: string;
   messages?: any[];
   feeDenom: string;
+  simulateOnly?: boolean;
 }): Promise<any> => {
   const providers = selectNodeProviders();
   console.log('Selected node providers:', providers);
@@ -34,10 +36,9 @@ const queryWithRetry = async ({
         console.log(`Querying node ${queryMethod} with endpoint: ${endpoint}`);
 
         const sessionToken = getSessionToken();
-        if (!sessionToken){
+        if (!sessionToken) {
           console.error('Error- getSessionTokenFailed');
-          return
-          
+          return;
         }
         const offlineSigner = await createOfflineSignerFromMnemonic(sessionToken.mnemonic || '');
 
@@ -46,7 +47,13 @@ const queryWithRetry = async ({
           signer: offlineSigner,
         });
 
-        const result = await performRpcQuery(client, walletAddress, messages, feeDenom);
+        const result = await performRpcQuery(
+          client,
+          walletAddress,
+          messages,
+          feeDenom,
+          simulateOnly,
+        );
         return result;
       } catch (error) {
         incrementErrorCount(provider.rpc);
@@ -65,9 +72,12 @@ const queryWithRetry = async ({
   throw new Error(`All node query attempts failed after ${MAX_NODES_PER_QUERY} attempts.`);
 };
 
-export const swapTransaction = async (fromAddress: string, swapObject: SwapObject): Promise<TransactionResult> => {
-    const endpoint = CHAIN_ENDPOINTS.sendMessage;
-
+export const swapTransaction = async (
+  fromAddress: string,
+  swapObject: SwapObject,
+  simulateOnly: boolean = false,
+): Promise<TransactionResult> => {
+  const endpoint = CHAIN_ENDPOINTS.sendMessage;
 
   const messages = [
     swapSend({
@@ -82,25 +92,34 @@ export const swapTransaction = async (fromAddress: string, swapObject: SwapObjec
   ];
 
   try {
-    const feeDenom = getValidFeeDenom(swapObject.sendObject.denom)
+    const feeDenom = getValidFeeDenom(swapObject.sendObject.denom);
     const response = await queryWithRetry({
       endpoint,
       walletAddress: fromAddress,
       messages,
-      feeDenom
+      feeDenom,
+      simulateOnly,
     });
 
-    console.log('Successfully sent:', response);
+    if (simulateOnly) {
+      console.log('Swap simulation result:', response);
+      return {
+        success: true,
+        message: 'Simulation of swap transaction completed successfully!',
+        data: response,
+      };
+    }
+
+    console.log('Successfully sent swap:', response);
     return {
       success: true,
       message: 'Swap transaction completed successfully!',
       data: response,
     };
   } catch (error: any) {
-    console.error('Error during send:', error);
-    
-    //construct error response in RPCResponse type
-    const errorResponse : RPCResponse = {
+    console.error('Error during swap transaction:', error);
+
+    const errorResponse: RPCResponse = {
       code: error.code || 1,
       message: error.message,
     };
@@ -114,7 +133,11 @@ export const swapTransaction = async (fromAddress: string, swapObject: SwapObjec
 };
 
 // TODO: support swapping multiple tramsactons (fee is currently a blocker)
-export const multiSwapTransaction = async (fromAddress: string, swapObjects: SwapObject[]): Promise<TransactionResult> => {
+export const multiSwapTransaction = async (
+  fromAddress: string,
+  swapObjects: SwapObject[],
+  simulateOnly: boolean = false,
+): Promise<TransactionResult> => {
   const endpoint = CHAIN_ENDPOINTS.sendMessage;
 
   const messages = swapObjects.map(swapObject =>
@@ -130,13 +153,23 @@ export const multiSwapTransaction = async (fromAddress: string, swapObjects: Swa
   );
 
   try {
-    const feeDenom = getValidFeeDenom(swapObjects[0].sendObject.denom)
+    const feeDenom = getValidFeeDenom(swapObjects[0].sendObject.denom);
     const response = await queryWithRetry({
       endpoint,
       walletAddress: fromAddress,
       messages,
       feeDenom,
+      simulateOnly,
     });
+
+    if (simulateOnly) {
+      console.log('Multi-swap simulation result:', response);
+      return {
+        success: true,
+        message: 'Simulation of multi-swap transaction completed successfully!',
+        data: response,
+      };
+    }
 
     console.log('Successfully sent to all recipients:', response);
     return {
@@ -146,16 +179,15 @@ export const multiSwapTransaction = async (fromAddress: string, swapObjects: Swa
     };
   } catch (error: any) {
     console.error('Error during multiple swap:', error);
-    
-    //construct error response in RPCResponse type
-    const errorResponse : RPCResponse = {
+
+    const errorResponse: RPCResponse = {
       code: error.code || 1,
       message: error.message,
     };
 
     return {
       success: false,
-      message: 'Error performing multipleswap transaction. Please try again.',
+      message: 'Error performing multiple swap transaction. Please try again.',
       data: errorResponse,
     };
   }

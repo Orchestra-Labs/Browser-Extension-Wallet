@@ -45,17 +45,6 @@ export const AssetInput: React.FC<AssetInputProps> = ({
     }
   }, [amountState]);
 
-  // Format the number with commas
-  const formatNumberWithCommas = (value: string | number): string => {
-    const stringValue = String(value);
-    const [integerPart, decimalPart] = stringValue.split('.') || ['', ''];
-    const formattedIntegerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-    const formattedNumber =
-      decimalPart !== undefined ? `${formattedIntegerPart}.${decimalPart}` : formattedIntegerPart;
-
-    return formattedNumber;
-  };
-
   // Helper function to remove all non-numeric characters (except decimal points)
   const stripNonNumerics = (value: string) => {
     return value.replace(/[^\d.]/g, '');

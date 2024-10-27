@@ -3,10 +3,13 @@ import { useAtom, useSetAtom } from 'jotai';
 import { addressVerifiedAtom, recipientAddressAtom } from '@/atoms';
 import { useEffect, useState } from 'react';
 import { WALLET_PREFIX } from '@/constants';
+import { cn } from '@/helpers';
 
-interface AddressInputProps {}
+interface AddressInputProps {
+  addBottomMargin?: boolean;
+}
 
-export const AddressInput: React.FC<AddressInputProps> = ({}) => {
+export const AddressInput: React.FC<AddressInputProps> = ({ addBottomMargin = true }) => {
   const [address, setAddress] = useAtom(recipientAddressAtom);
   const setAddressVerified = useSetAtom(addressVerifiedAtom);
 
@@ -90,15 +93,15 @@ export const AddressInput: React.FC<AddressInputProps> = ({}) => {
   }, []);
 
   return (
-    <div className="flex items-center mb-4 space-x-2">
+    <div className={cn(`flex items-baseline ${addBottomMargin ? 'mb-4' : ''} space-x-2`)}>
       <label className="text-sm text-neutral-1 whitespace-nowrap">Send to:</label>
       <div className="flex-grow">
         <Input
           variant="primary"
           type="text"
           status={addressStatus}
-          showsErrorText={true}
-          errorText={addressStatus === 'error' ? 'Address not in supported format' : ''}
+          showMessageText={true}
+          messageText={addressStatus === 'error' ? 'Address not in supported format' : ''}
           placeholder="Wallet Address or ICNS"
           // TODO: enable when QR code input is enabled
           // icon={
