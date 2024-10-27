@@ -220,7 +220,7 @@ export const ValidatorScrollTile = ({
   return (
     <>
       {transactionSuccess.success ? (
-        <div className="fixed inset-0 z-50 bg-black">
+        <div className="fixed top-0 left-0 w-screen h-screen z-[9999] bg-black">
           <WalletSuccessScreen 
             caption="Transaction success!" 
             txHash={transactionSuccess.txHash}
