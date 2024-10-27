@@ -30,10 +30,10 @@ export const useExchangeAssets = () => {
     setError(null);
 
     try {
-      const response = await queryRestNode({
+      const response = (await queryRestNode({
         endpoint: `${CHAIN_ENDPOINTS.exchangeRequirements}`,
         queryType: 'GET',
-      }) as ExchangeRequirementResponse;
+      })) as unknown as ExchangeRequirementResponse;
 
       if (!response.exchange_requirements) {
         throw new Error('Invalid response format');
@@ -44,7 +44,7 @@ export const useExchangeAssets = () => {
         .filter(req => req.base_currency.denom !== 'note')
         .reduce<Asset[]>((acc, req) => {
           const registryAsset = LOCAL_ASSET_REGISTRY[req.base_currency.denom];
-          
+
           if (!registryAsset) {
             console.warn(`Asset ${req.base_currency.denom} not found in registry`);
             return acc;
@@ -53,7 +53,7 @@ export const useExchangeAssets = () => {
           // Just use registry asset properties with the new amount
           const newAsset: Asset = {
             ...registryAsset,
-            amount: req.base_currency.amount
+            amount: req.base_currency.amount,
           };
 
           return [...acc, newAsset];
@@ -61,23 +61,17 @@ export const useExchangeAssets = () => {
 
       // Combine wallet assets and exchange assets
       const walletAssets = walletState?.assets || [];
-      
+
       // Create a map of existing denoms to avoid duplicates
       const existingDenoms = new Set(walletAssets.map(asset => asset.denom));
-      
+
       // Only add exchange assets that aren't in the wallet
-      const uniqueExchangeAssets = exchangeAssets.filter(
-        asset => !existingDenoms.has(asset.denom)
-      );
+      const uniqueExchangeAssets = exchangeAssets.filter(asset => !existingDenoms.has(asset.denom));
 
       // Combine all assets
-      const combinedAssets = [
-        ...walletAssets,
-        ...uniqueExchangeAssets
-      ];
+      const combinedAssets = [...walletAssets, ...uniqueExchangeAssets];
 
       setAvailableAssets(combinedAssets);
-
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch exchange assets');
       console.error('Error fetching exchange assets:', err);
@@ -94,6 +88,6 @@ export const useExchangeAssets = () => {
     availableAssets,
     isLoading,
     error,
-    refetch: fetchExchangeAssets
+    refetch: fetchExchangeAssets,
   };
 };

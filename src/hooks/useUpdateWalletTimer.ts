@@ -1,27 +1,18 @@
 import { useEffect, useRef } from 'react';
-import { fetchWalletAssets } from '@/helpers';
 import { walletStateAtom } from '@/atoms';
 import { useAtom } from 'jotai';
 import { DATA_FRESHNESS_TIMEOUT } from '@/constants';
+import { useWalletAssetsRefresh } from './useWalletAssetsRefresh';
 
 export const useUpdateWalletTimer = () => {
-  const [walletState, setWalletState] = useAtom(walletStateAtom);
-  const timerRef = useRef<NodeJS.Timeout | null>(null); // Using a ref to hold the timer
+  const [walletState] = useAtom(walletStateAtom);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const { refreshWalletAssets } = useWalletAssetsRefresh();
 
   const updateWalletAssets = () => {
     if (walletState.address) {
-      console.log('Fetching wallet assets on interval for', walletState);
-      fetchWalletAssets(walletState)
-        .then(assets => {
-          console.log('Assets fetched on interval:', assets);
-          setWalletState(prevState => ({
-            ...prevState,
-            assets,
-          }));
-        })
-        .catch(error => {
-          console.error('Error refetching wallet assets:', error);
-        });
+      console.log('Refreshing wallet assets on interval for', walletState);
+      refreshWalletAssets(); // Use shared refresh function
     }
   };
 
@@ -34,21 +25,21 @@ export const useUpdateWalletTimer = () => {
   };
 
   const startTimer = () => {
-    clearExistingTimer(); // Ensure no existing timer is running
+    clearExistingTimer();
 
     if (walletState.address) {
-      console.log('Setting new timer to refetch wallet assets every', DATA_FRESHNESS_TIMEOUT, 'ms');
+      console.log('Setting new timer to refresh wallet assets every', DATA_FRESHNESS_TIMEOUT, 'ms');
       timerRef.current = setInterval(updateWalletAssets, DATA_FRESHNESS_TIMEOUT);
     }
   };
 
   useEffect(() => {
     if (walletState.address !== '') {
-      startTimer(); // Start the timer only if a wallet address exists
+      startTimer();
     }
 
     return () => {
-      clearExistingTimer(); // Clean up the timer on component unmount or address change
+      clearExistingTimer();
     };
-  }, [walletState.address]);
+  }, [walletState.address, refreshWalletAssets]);
 };
