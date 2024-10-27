@@ -106,7 +106,7 @@ export const claimRewards = async (
       message: 'Transaction successful',
       data: {
         code: response.code || 0,
-        txHash: response.txhash,
+        txHash: response.txHash,
         gasUsed: response.gasUsed,
         gasWanted: response.gasWanted,
         height: response.height
@@ -216,7 +216,7 @@ export const claimAndRestake = async (
         message: 'Transaction successful',
         data: {
           code: response.code || 0,
-          txHash: response.txhash,
+          txHash: response.txHash,
           gasUsed: response.gasUsed,
           gasWanted: response.gasWanted,
           height: response.height
@@ -287,7 +287,7 @@ export const stakeToValidator = async (
       message: 'Transaction successful',
       data: {
         code: response.code || 0,
-        txHash: response.txhash,
+        txHash: response.txHash,
         gasUsed: response.gasUsed,
         gasWanted: response.gasWanted,
         height: response.height
@@ -353,7 +353,7 @@ export const unstakeFromValidator = async (
       message: 'Transaction successful',
       data: {
         code: response.code || 0,
-        txHash: response.txhash,
+        txHash: response.txHash,
         gasUsed: response.gasUsed,
         gasWanted: response.gasWanted,
         height: response.height
@@ -404,7 +404,7 @@ export const unstakeFromAllValidators = async (
       message: 'Transaction successful',
       data: {
         code: response.code || 0,
-        txHash: response.txhash,
+        txHash: response.txHash,
         gasUsed: response.gasUsed,
         gasWanted: response.gasWanted,
         height: response.height
