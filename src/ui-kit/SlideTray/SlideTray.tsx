@@ -4,6 +4,8 @@ import { cn } from '@/helpers/utils';
 import { X } from '@/assets/icons';
 import { Button } from '../Button';
 import { Separator } from '../Separator';
+import { useRef, useState } from 'react';
+import { useGesture } from '@use-gesture/react';
 
 interface SlideTrayProps {
   triggerComponent: React.ReactNode;
@@ -28,6 +30,12 @@ export const SlideTray: React.FC<SlideTrayProps> = ({
   status = 'good',
   onClose,
 }) => {
+  const trayRef = useRef<HTMLDivElement>(null);
+  const [open, setOpen] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isMouseDown, setIsMouseDown] = useState(false); // New state to track mouse down
+  const startY = useRef<number>(0);
+
   let titleColor = 'text-white';
   if (status === 'warn') {
     titleColor = 'text-warning';
@@ -35,19 +43,133 @@ export const SlideTray: React.FC<SlideTrayProps> = ({
     titleColor = 'text-error';
   }
 
-  return (
-    // TODO: darken SlideTray.
-    <DialogPrimitive.Root onOpenChange={open => !open && onClose?.()}>
-      <DialogPrimitive.Trigger asChild>{triggerComponent}</DialogPrimitive.Trigger>
+  const dismissThresholdPercentage = 0.3; // 30% of tray height
 
+  const resetTrayPosition = () => {
+    if (trayRef.current) {
+      console.log('Resetting tray position...');
+      trayRef.current.style.transition = 'transform 0.3s ease';
+      trayRef.current.style.transform = 'translateY(0px)';
+    }
+  };
+
+  const dismissTray = () => {
+    if (trayRef.current) {
+      console.log('Dismissing tray...');
+      trayRef.current.style.transition = 'transform 0.3s ease';
+      trayRef.current.style.transform = `translateY(${trayRef.current.clientHeight}px)`;
+      setTimeout(() => {
+        console.log('Tray closed.');
+        setOpen(false);
+        onClose?.();
+      }, 300);
+    }
+  };
+
+  const calculateDismissThreshold = () => {
+    if (trayRef.current) {
+      const threshold = trayRef.current.clientHeight * dismissThresholdPercentage;
+      console.log(`Dismiss threshold calculated: ${threshold}px`);
+      return threshold;
+    }
+    return 0;
+  };
+
+  // Gesture handling for swipe to dismiss
+  const bind = useGesture({
+    onDrag: ({ movement: [, my], memo = trayRef.current?.getBoundingClientRect().top, event }) => {
+      event.stopPropagation(); // Prevent event bubbling to outer elements
+      console.log(`Dragging... Movement Y: ${my}`);
+
+      if (isMouseDown) {
+        setIsDragging(true); // Only set dragging if mouse is down
+      }
+
+      if (trayRef.current) {
+        trayRef.current.style.transform = `translateY(${Math.max(0, my)}px)`;
+        trayRef.current.style.transition = ''; // Disable animation while dragging
+      }
+      return memo;
+    },
+    onDragEnd: ({ movement: [, my] }) => {
+      console.log('Drag ended.');
+      setIsDragging(false); // End of drag
+
+      if (trayRef.current) {
+        const threshold = calculateDismissThreshold();
+        if (my > threshold) {
+          console.log('Movement exceeds threshold. Dismissing tray.');
+          dismissTray();
+        } else {
+          console.log('Movement below threshold. Resetting tray position.');
+          resetTrayPosition();
+        }
+      }
+    },
+  });
+
+  // Detect scrolling or clicking in the trigger component
+  const handleMouseDown = (e: React.MouseEvent) => {
+    startY.current = e.clientY;
+    setIsMouseDown(true); // Set mouse down state
+    console.log(
+      `Mouse down at Y: ${startY.current}, open state: ${open}, isDragging: ${isDragging}`,
+    );
+  };
+
+  const handleMouseUp = (e: React.MouseEvent) => {
+    const endY = e.clientY;
+    const diff = Math.abs(startY.current - endY);
+
+    console.log(
+      `Mouse up at Y: ${endY}, Movement difference: ${diff}px, open state before click: ${open}`,
+    );
+
+    // If there's minimal movement and no dragging
+    if (diff < 5 && !isDragging) {
+      console.log('Click detected. Opening tray.');
+      setOpen(true);
+    } else {
+      console.log(`Click ignored. Movement difference: ${diff}px, isDragging: ${isDragging}`);
+    }
+
+    setIsDragging(false); // Reset dragging status on mouse up
+    setIsMouseDown(false); // Reset mouse down state on mouse up
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    const endY = e.clientY;
+    const diff = Math.abs(startY.current - endY);
+
+    if (isMouseDown && diff > 5) {
+      console.log(`Mouse move detected. Dragging started. Movement difference: ${diff}px`);
+      setIsDragging(true);
+    }
+  };
+
+  // TODO: darken slidetray
+  return (
+    <DialogPrimitive.Root
+      open={open}
+      onOpenChange={newOpenState => {
+        console.log(`DialogPrimitive Root onOpenChange called. New open state: ${newOpenState}`);
+        setOpen(newOpenState);
+      }}
+    >
+      <div
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        tabIndex={-1}
+        role="presentation"
+      >
+        {triggerComponent}
+      </div>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay
-          className={cn(
-            'fixed inset-0 z-50 bg-background-dialog-overlay',
-            'data-[state=open]:animate-fade-in-0 data-[state=closed]:animate-fade-out-0',
-          )}
-        />
+        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-background-dialog-overlay" />
         <DialogPrimitive.Content
+          ref={trayRef}
+          {...bind()}
           className={cn(
             'fixed bottom-0 left-0 right-0 z-50 w-full mx-auto p-6 bg-background-dialog-bg rounded-t-2xl flex flex-col',
             'data-[state=open]:animate-slide-in-from-bottom data-[state=closed]:animate-slide-out-to-bottom',
@@ -55,27 +177,20 @@ export const SlideTray: React.FC<SlideTrayProps> = ({
           )}
           style={{ height }}
         >
-          {/* Container with flex layout */}
           <div className="relative flex flex-col h-full">
-            {/* Title section */}
             {title && (
               <>
                 <h2 className={`text-h5 font-bold ${titleColor} text-center mb-2`}>{title}</h2>
                 <Separator variant="top" />
               </>
             )}
-
-            {/* Children take up the remaining space with flex-1 */}
             <div className="flex-1 overflow-y-auto">{children}</div>
-
-            {/* Close button handling */}
             {closeButtonVariant === 'top-right' && (
               <DialogPrimitive.Close className="absolute right-4 top-4 focus:outline-none">
                 <X width={18} height={18} />
                 <span className="sr-only">Close</span>
               </DialogPrimitive.Close>
             )}
-
             {closeButtonVariant === 'bottom-center' && (
               <>
                 <Separator variant="bottom" showBorder={showBottomBorder} />

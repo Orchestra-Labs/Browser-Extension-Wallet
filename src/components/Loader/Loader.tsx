@@ -1,7 +1,12 @@
 import { Spinner } from '@/assets/icons';
+import { cn } from '@/helpers';
 
-export const Loader = () => (
+interface LoaderProps {
+  isSpinning?: boolean;
+}
+
+export const Loader = ({ isSpinning = false }: LoaderProps) => (
   <div className="bg-background-dark-grey w-full h-full flex items-center justify-center">
-    <Spinner className="w-12 h-12 animate-spin fill-blue" />
+    <Spinner className={cn(`w-12 h-12 fill-blue ${isSpinning ? `animate-spin` : ''}`)} />
   </div>
 );

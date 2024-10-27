@@ -110,8 +110,6 @@ export const CreateWallet = () => {
   // TODO: show green or red border for passphrase box on full verify, clear on start of typing
 
   // TODO: add option screen filter for validator list (by status.  default to not showing jailed validators)
-  // TODO: apply regional formatting to regular display numbers
-  // TODO: format numbers on balance and asset value field to user locale.  start with US format, add others
   // TODO: add option screen filter for regional display for numbers
   // TODO: add clear and max buttons to amount section
   // TODO: add search icon to search field, add onclick
@@ -125,7 +123,7 @@ export const CreateWallet = () => {
   /* Current TODOs */
   // TODO: clean up helper functions and hooks
 
-  // TODO: add fields to let user know when sending over IBC
+  // TODO: add fields to let user know when sending over IBC (info status on Input - blue text)
   // TODO: abstract wallet prefix and mnemonic decryption
   // TODO: add link to github repo for registry
   // TODO: abstract IBC needs
@@ -148,6 +146,8 @@ export const CreateWallet = () => {
   /* Interchain-compatibility TODOs */
   // TODO: integrate skip protocol or automated use of exchange to allow swapping between chains
   // TODO: modify claim, restake, and unstake functions to withdraw from all unique delegator addresses
+  // TODO: enable search function for wallet asset list by chain (on top of current functionality)
+  // TODO: enable search function to validator list by chain (on top of current functionality)
 
   /* Less Critical Auth TODOs */
   // TODO: handle error printout for create/import wallet (in place of subtitle on verify screen?)
@@ -160,18 +160,18 @@ export const CreateWallet = () => {
   // TODO: create add wallet screen to allow management of multiple accounts
   // TODO: add save wallet screen for saving preferred received assets per wallet and wallet name/identifier (for those user sends to)
   // TODO: add qr code screen for transfer data (including account data).  or from google
+  // TODO: ensure refresh only queries once (currently 4 times per pull)
 
   /* Nice to have TODOs */
   // TODO: add password complexity bar on entry
   // TODO: add toggle option for single-click transactions and another for force accepting/declining transactions
   // TODO: add toggle option for ultra-secure mode, using password auth for on every transaction like with hardware wallets.  in that mode, no session storage is used.
-  // TODO: add click and drag to scroll for passphrase box and tilescroller
   // TODO: keep track of current page for case of re-open before timeout
+  // TODO: loader coming in late and tries to catch up.  make more uniform.
+  // TODO: loader should spin in line with its percent pulled
 
   /* Nice to have Interchain-compatibility TODOs */
   // TODO: add manual IBC (for rare cases.  hide behind dev tool enabling?)
-  // TODO: enable search function for wallet asset list by chain (on top of current functionality)
-  // TODO: enable search function to validator list by chain (on top of current functionality)
 
   // Check everything is completed properly and pass to confirmation screen
   const handleCreateWallet = async () => {

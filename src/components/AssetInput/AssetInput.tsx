@@ -1,10 +1,10 @@
 import { Input } from '@/ui-kit';
 import { AssetSelectDialog } from '@/components';
-import { cn } from '@/helpers/utils';
+import { cn, getRegexForDecimals } from '@/helpers/utils';
 import { Asset } from '@/types';
 import { ChangeEvent, useEffect, useRef, useState } from 'react';
 import { GREATER_EXPONENT_DEFAULT } from '@/constants';
-import { formatNumberWithCommas } from '@/helpers';
+import { formatNumberWithCommas, stripNonNumerics } from '@/helpers';
 
 interface AssetInputProps {
   isDisabled?: boolean;
@@ -44,16 +44,6 @@ export const AssetInput: React.FC<AssetInputProps> = ({
       setLocalInputValue('');
     }
   }, [amountState]);
-
-  // Helper function to remove all non-numeric characters (except decimal points)
-  const stripNonNumerics = (value: string) => {
-    return value.replace(/[^\d.]/g, '');
-  };
-
-  // Validate numeric input and restrict to selectedAsset.exponent decimal places
-  const getRegexForDecimals = (exponent: number) => {
-    return new RegExp(`^\\d*\\.?\\d{0,${exponent}}$`);
-  };
 
   // Handle user input change, strip non-numerics, add the new character, and reformat
   const handleAmountChange = (event: ChangeEvent<HTMLInputElement>) => {
