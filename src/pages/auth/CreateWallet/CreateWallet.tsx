@@ -135,6 +135,7 @@ export const CreateWallet = () => {
   // TODO: ensure new encrypted mnemonic overwrites old in case of same password and name (but let user know first)
 
   /* Wallet UI TODOs */
+  // TODO: Add Maestro-only QR code that also shows preferred rerceive asset (requires preferred receive asset)
   // TODO: add show/hide function to wallet asset list (select which assets to show.  add searchability to this)
   // TODO: add show/hide function to validator list (by activity, by chain)
   // TODO: security tab enables/disables need to confirm transactions/re-entry of password on transactions (3 levels of security)
@@ -151,7 +152,6 @@ export const CreateWallet = () => {
   // TODO: handle error printout for create/import wallet (in place of subtitle on verify screen?)
   // TODO: for default on text, ensure no focus and basic mouse onHover (no change)
   // TODO: test path and create error for no wallet exists and user attempts login
-  // TODO: Add Manual RPC changes in-app (both selection in list and form entry.  one or both of these should be kept behind dev-mode toggle)
 
   /* Less Critical Wallet TODOs */
   // TODO: add QR code input to address on send screen (drag and drop/image selection)
@@ -170,6 +170,11 @@ export const CreateWallet = () => {
 
   /* Nice to have Interchain-compatibility TODOs */
   // TODO: add manual IBC (for rare cases.  hide behind dev tool enabling?)
+
+  /* Dev Mode TODOs */
+  // TODO: add dev mode options (additional views and manual use screens).  these persist after close of dev mode (just hide options toggles)
+  // TODO: include "add network" screen (dev mode)
+  // TODO: Add Manual RPC changes in-app (both selection in list and form entry.  one or both of these should be kept behind dev-mode toggle)
 
   // Check everything is completed properly and pass to confirmation screen
   const handleCreateWallet = async () => {
