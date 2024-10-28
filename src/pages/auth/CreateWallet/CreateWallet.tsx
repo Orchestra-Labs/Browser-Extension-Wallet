@@ -135,12 +135,19 @@ export const CreateWallet = () => {
   // TODO: ensure new encrypted mnemonic overwrites old in case of same password and name (but let user know first)
 
   /* Wallet UI TODOs */
-  // TODO: Add Maestro-only QR code that also shows preferred rerceive asset (requires preferred receive asset)
+  // TODO: Add QR code intake methods (camera, file selection/drag and drop option)
+  // TODO: Add Maestro-only QR code that also shows preferred receive asset (requires preferred receive asset)
   // TODO: add show/hide function to wallet asset list (select which assets to show.  add searchability to this)
   // TODO: add show/hide function to validator list (by activity, by chain)
   // TODO: security tab enables/disables need to confirm transactions/re-entry of password on transactions (3 levels of security)
   // TODO: update transactions history button (need endpoint for this.  disable until ready)
   // TODO: show donut chart with assets rather than singular value (requires connections to exchanges)
+  // TODO: Add on-ramp / off-ramp page
+  // TODO: If at lease one on-ramp connection exists, include fiat in send options
+  // TODO: If at lease one off-ramp connection exists, include fiat in receive options
+  // TODO: Add dApp page
+  // TODO: Add NFT page
+  // TODO: Add page view selection in options
 
   /* Interchain-compatibility TODOs */
   // TODO: integrate skip protocol or automated use of exchange to allow swapping between chains
