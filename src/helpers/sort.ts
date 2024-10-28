@@ -1,5 +1,6 @@
 import { Asset, CombinedStakingInfo } from '@/types';
 import { stripNonAlphanumerics } from './formatString';
+import { BondStatus, ValidatorStatusFilter } from '@/constants';
 
 export function filterAndSortAssets(
   assets: Asset[],
@@ -53,11 +54,23 @@ export function filterAndSortValidators(
   sortType: 'name' | 'delegation' | 'rewards' | 'apr' | 'votingPower',
   sortOrder: 'Asc' | 'Desc',
   showCurrentValidators: boolean,
+  statusFilter: ValidatorStatusFilter,
 ): typeof validators {
   const lowercasedSearchTerm = searchTerm.toLowerCase();
 
+  const filteredByStatus = validators.filter(validator => {
+    // Ensure user always sees their own delegations
+    const isDelegatedTo = parseFloat(validator.balance.amount) > 0;
+    if (statusFilter === ValidatorStatusFilter.STATUS_ACTIVE) {
+      return validator.validator.status === BondStatus.BONDED || isDelegatedTo;
+    } else if (statusFilter === ValidatorStatusFilter.STATUS_NON_JAILED || isDelegatedTo) {
+      return !validator.validator.jailed;
+    }
+    return true;
+  });
+
   // Filter validators based on search term
-  const filteredValidators = validators.filter(validator =>
+  const filteredValidators = filteredByStatus.filter(validator =>
     validator.validator.description.moniker.toLowerCase().includes(lowercasedSearchTerm),
   );
 
