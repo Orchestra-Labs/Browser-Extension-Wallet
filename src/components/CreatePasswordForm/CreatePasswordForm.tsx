@@ -126,7 +126,7 @@ export const CreatePasswordForm = () => {
   const handlePasswordPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
     e.preventDefault();
     const pastedText = e.clipboardData.getData('text');
-    setPassword(pastedText);
+    setPassword(pastedText.trim());
 
     // Start validating immediately after paste
     if (pastedText.length > 0) {
@@ -138,7 +138,7 @@ export const CreatePasswordForm = () => {
   const handleConfirmPasswordPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
     const pastedText = e.clipboardData.getData('text');
     e.preventDefault();
-    setConfirmPassword(pastedText);
+    setConfirmPassword(pastedText.trim());
 
     // Start validating immediately after paste
     if (pastedText.length > 0) {
@@ -153,9 +153,9 @@ export const CreatePasswordForm = () => {
         {/* New Password Input */}
         <Input
           variant="primary"
-          showsErrorText={true}
+          showMessageText={true}
           status={passwordStatus}
-          errorText={passwordStatus === 'error' ? 'Password must be at least 8 characters' : ''}
+          messageText={passwordStatus === 'error' ? 'Password must be at least 8 characters' : ''}
           label="New password (8 characters min)"
           placeholder="Enter password"
           type={passwordVisible ? 'text' : 'password'}
@@ -172,9 +172,9 @@ export const CreatePasswordForm = () => {
         {/* Confirm Password Input */}
         <Input
           variant="primary"
-          showsErrorText={true}
+          showMessageText={true}
           status={confirmPasswordStatus}
-          errorText={confirmPasswordStatus === 'error' ? 'Passwords do not match' : ''}
+          messageText={confirmPasswordStatus === 'error' ? 'Passwords do not match' : ''}
           label="Confirm password"
           placeholder="Repeat password"
           type={confirmPasswordVisible ? 'text' : 'password'}

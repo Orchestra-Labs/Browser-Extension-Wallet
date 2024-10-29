@@ -103,73 +103,79 @@ export const CreateWallet = () => {
 
   /* ******************************************************************************************* */
   /* David Current TODOs */
-  // TODO: ensure trim on completion of password entry (such as save to storage).  same on login.  to avoid copy/paste errors
-  // TODO: show green or red border for passphrase box on full verify, clear on start of typing
+  // TODO: add drag to scroll to recovery phrase grid
+  // TODO: for default on text, ensure no focus and basic mouse onHover (no change)
+  // TODO: Add QR code intake methods (camera, file selection/drag and drop option)
+  // TODO: Add Maestro-only QR code that also shows preferred receive asset (requires preferred receive asset)
 
-  // TODO: add option screen filter for validator list (by status.  default to not showing jailed validators)
-  // TODO: add option screen filter for regional display for numbers
-  // TODO: add clear and max buttons to amount section
+  // TODO: pull unbonding days dynamically from the validator
+  // TODO: add fee display and updates for stake, unstake, and claim
+
+  // TODO: make "clear" and "max" button placement and appearance more uniform (send and unstake sections)
   // TODO: add search icon to search field, add onclick
 
-  // TODO: add conclusionary action with selection in asset select dialog.  should picking close the dialog?
-  // TODO: add confirm button to select dialogs.  does not need to be visible before selection
-  // TODO: make "clear" and "max" button placement and appearance more uniform (send and unstake sections)
-  // TODO: change "options" to settings?
+  // TODO: clean up helper functions and hooks
   /* ******************************************************************************************* */
 
   /* Current TODOs */
-  // TODO: show errors to user (user displayable values)
-  // TODO: clean up helper functions and hooks
+  // TODO: keep track of current page for case of re-open before timeout
+  // TODO: ensure logout after blur (click outside application to close).  to remove sensitive data after time period
+  // TODO: prevent re-building auth every time wallet updates
 
-  // TODO: add fields to let user know when sending over IBC (info status on Input - blue text)
+  /* Less Critical Auth TODOs */
+  // TODO: ensure new encrypted mnemonic overwrites old in case of same password and name (but let user know first)
+  // TODO: test path and create error for no wallet exists and user attempts login
+  // TODO: handle error printout for create/import wallet (in place of subtitle on verify screen?)
+
+  /* Interchain-compatibility TODOs (mobile version before this) */
+  // TODO: add button to "add chain" at bottom of Holdings list
   // TODO: abstract wallet prefix and mnemonic decryption
   // TODO: add link to github repo for registry
   // TODO: abstract IBC needs
   // TODO: ensure pipeline to other registries is functional.  change here auto-PRs there
-
-  // TODO: ensure logout after blur (click outside application to close).  to remove sensitive data after time period
-  // TODO: prevent re-building auth every time wallet updates
-
-  /* Inside wallet TODOs */
-  // TODO: add button to "add chain" at bottom of Holdings list
-  // TODO: ensure new encrypted mnemonic overwrites old in case of same password and name (but let user know first)
-
-  /* Wallet UI TODOs */
-  // TODO: add show/hide function to wallet asset list (select which assets to show.  add searchability to this)
-  // TODO: add show/hide function to validator list (by activity, by chain)
-  // TODO: security tab enables/disables need to confirm transactions/re-entry of password on transactions (3 levels of security)
-  // TODO: update transactions history button (need endpoint for this.  disable until ready)
-  // TODO: show donut chart with assets rather than singular value (requires connections to exchanges)
-
-  /* Interchain-compatibility TODOs */
   // TODO: integrate skip protocol or automated use of exchange to allow swapping between chains
   // TODO: modify claim, restake, and unstake functions to withdraw from all unique delegator addresses
   // TODO: enable search function for wallet asset list by chain (on top of current functionality)
   // TODO: enable search function to validator list by chain (on top of current functionality)
+  // TODO: add show/hide function to validator list (by chain)
 
-  /* Less Critical Auth TODOs */
-  // TODO: handle error printout for create/import wallet (in place of subtitle on verify screen?)
-  // TODO: for default on text, ensure no focus and basic mouse onHover (no change)
-  // TODO: test path and create error for no wallet exists and user attempts login
-  // TODO: Add Manual RPC changes in-app (both selection in list and form entry.  one or both of these should be kept behind dev-mode toggle)
-
-  /* Less Critical Wallet TODOs */
-  // TODO: add QR code input to address on send screen (drag and drop/image selection)
+  /* Wallet UI TODOs */
   // TODO: create add wallet screen to allow management of multiple accounts
   // TODO: add save wallet screen for saving preferred received assets per wallet and wallet name/identifier (for those user sends to)
-  // TODO: add qr code screen for transfer data (including account data).  or from google
+  // TODO: add show/hide function to wallet asset list (select which assets to show.  add searchability to this)
+  // TODO: security tab enables/disables need to confirm transactions/re-entry of password on transactions (3 levels of security)
+  // TODO: update transactions history button (need endpoint for this.  disable until ready)
+  // TODO: show donut chart with assets rather than singular value (requires connections to exchanges)
+  // TODO: Add on-ramp / off-ramp page
+  // TODO: If at least one on-ramp connection exists, include fiat in send options
+  // TODO: If at least one off-ramp connection exists, include fiat in receive options
+  // TODO: Add dApp page
+  // TODO: Add NFT page
+  // TODO: Add page view selection in options
+
+  /* Less Critical Wallet TODOs */
+  // TODO: add data transfer method for extension to wallet or back (including account data)
   // TODO: ensure refresh only queries once (currently 4 times per pull)
+
+  /* Internationalization TODOs */
+  // TODO: add translations for all strings (pull from string file/translation file)
+  // TODO: add option screen filter for regional display for numbers
 
   /* Nice to have TODOs */
   // TODO: add password complexity bar on entry
   // TODO: add toggle option for single-click transactions and another for force accepting/declining transactions
   // TODO: add toggle option for ultra-secure mode, using password auth for on every transaction like with hardware wallets.  in that mode, no session storage is used.
-  // TODO: keep track of current page for case of re-open before timeout
-  // TODO: loader coming in late and tries to catch up.  make more uniform.
-  // TODO: loader should spin in line with its percent pulled
+  // TODO: loader on tilescroller swipe-to-refresh coming in late and tries to catch up.  make more uniform.
+  // TODO: loader on tilescroller swipe-to-refresh should spin in line with its percent pulled
+  // TODO: add option screen filter for validator list (by status.  default to not showing jailed validators.  check fetchAllValidators function and validatorsAtom (currently filters here))
 
   /* Nice to have Interchain-compatibility TODOs */
   // TODO: add manual IBC (for rare cases.  hide behind dev tool enabling?)
+
+  /* Dev Mode TODOs */
+  // TODO: add dev mode options (additional views and manual use screens).  these persist after close of dev mode (just hide options toggles)
+  // TODO: include "add network" screen (dev mode)
+  // TODO: Add Manual RPC changes in-app (both selection in list and form entry.  one or both of these should be kept behind dev-mode toggle)
 
   // Check everything is completed properly and pass to confirmation screen
   const handleCreateWallet = async () => {

@@ -6,7 +6,7 @@ import { cn } from '@/helpers/utils';
 
 type ScrollAreaProps = {
   scrollbarProps?: React.ComponentProps<typeof ScrollBar>;
-  viewportRef?: React.Ref<HTMLDivElement>; // Accept a ref for the viewport
+  viewportRef?: React.Ref<HTMLDivElement>;
 } & React.ComponentPropsWithoutRef<typeof ScrollAreaPrimitive.Root>;
 
 const ScrollArea = React.forwardRef<

@@ -5,6 +5,7 @@ import { Button, CopyTextField, Input } from '@/ui-kit';
 import { EnglishMnemonic } from '@cosmjs/crypto';
 import { useAtom, useSetAtom } from 'jotai';
 import { mnemonic12State, mnemonic24State, mnemonicVerifiedState, use24WordsState } from '@/atoms';
+import { useDrag } from '@use-gesture/react';
 
 type RecoveryPhraseGridProps = {
   isVerifyMode?: boolean;
@@ -34,6 +35,7 @@ export const RecoveryPhraseGrid: React.FC<RecoveryPhraseGridProps> = ({
   const [allowValidation12, setAllowValidation12] = useState<{ [key: number]: boolean }>({});
   const [allowValidation24, setAllowValidation24] = useState<{ [key: number]: boolean }>({});
   const [isFocused, setIsFocused] = useState<number | null>(null);
+  const [isMouseDown, setIsMouseDown] = useState(false);
 
   const getCurrentMnemonic = () => (use24Words ? mnemonic24 : mnemonic12);
   const maxWords = use24Words ? 24 : 12;
@@ -46,28 +48,66 @@ export const RecoveryPhraseGrid: React.FC<RecoveryPhraseGridProps> = ({
 
   const handleShowPhrase = () => setIsShown(prev => !prev);
 
-  const validateWord = (word: string) => EnglishMnemonic.wordlist.includes(word);
+  const validateWord = (word: string, index?: number) => {
+    const isValidInWordlist = EnglishMnemonic.wordlist.includes(word);
+
+    // If index is supplied, check if the word matches the correct order
+    if (typeof index === 'number') {
+      const correctMnemonic = getCurrentMnemonic(); // Get the correct mnemonic array (12 or 24 words)
+      const isCorrectOrder = word === correctMnemonic[index];
+      return isValidInWordlist && isCorrectOrder;
+    }
+
+    // If no index is provided, just check if it's a valid word
+    return isValidInWordlist;
+  };
 
   // Copy local state to global state
   const updateMnemonic = (mnemonic: string[]) => {
     use24Words ? setMnemonic24(mnemonic) : setMnemonic12(mnemonic);
   };
 
-  // Validate all of local mnemonic
   const validateFullMnemonic = () => {
+    const correctMnemonic = getCurrentMnemonic();
+
     try {
       new EnglishMnemonic(localMnemonic.join(' '));
       setMnemonicVerified(true);
-      setInputBorderColors(
-        localMnemonic.reduce((acc, _, index) => ({ ...acc, [index]: 'border-success' }), {}),
-      );
+
+      if (isVerifyMode) {
+        // If verify mode is on, check each word’s order
+        const isCorrectOrder = localMnemonic.every(
+          (word, index) => word === correctMnemonic[index],
+        );
+
+        // Set the border colors based on order correctness
+        setInputBorderColors(
+          localMnemonic.reduce(
+            (acc, _, index) => ({
+              ...acc,
+              [index]: isCorrectOrder
+                ? 'border-success'
+                : localMnemonic[index] === correctMnemonic[index]
+                  ? 'border-success'
+                  : 'border-error',
+            }),
+            {},
+          ),
+        );
+
+        // Update mnemonic verified status based on order
+        setMnemonicVerified(isCorrectOrder);
+      } else {
+        // Mnemonic already checked for validity, no need to check order
+        setInputBorderColors(
+          localMnemonic.reduce((acc, _, index) => ({ ...acc, [index]: 'border-success' }), {}),
+        );
+      }
     } catch (error) {
+      // Case of invalid mnemonic
       setMnemonicVerified(false);
       setInputBorderColors(
-        localMnemonic.reduce((acc, word, index) => {
-          const isValid = validateWord(word);
-          return { ...acc, [index]: isValid ? 'border-success' : 'border-error' };
-        }, {}),
+        localMnemonic.reduce((acc, _, index) => ({ ...acc, [index]: 'border-error' }), {}),
       );
     }
   };
@@ -138,7 +178,7 @@ export const RecoveryPhraseGrid: React.FC<RecoveryPhraseGridProps> = ({
 
   // Update allow validation status for specific index
   const checkVerifyStatus = (index: number, value: string) => {
-    const isValidWord = validateWord(value);
+    const isValidWord = validateWord(value, isVerifyMode ? index : undefined);
     updateSingleWordVerification(index, value, isValidWord);
 
     if (!allowValidation[index] && (isValidWord || value.length > 3)) {
@@ -159,7 +199,7 @@ export const RecoveryPhraseGrid: React.FC<RecoveryPhraseGridProps> = ({
       return updated;
     });
 
-    const isValid = validateWord(trimmedValue);
+    const isValid = validateWord(trimmedValue, isVerifyMode ? index : undefined);
     updateSingleWordVerification(index, value, isValid);
 
     checkVerifyStatus(index, trimmedValue);
@@ -196,7 +236,7 @@ export const RecoveryPhraseGrid: React.FC<RecoveryPhraseGridProps> = ({
 
       updated.forEach((word, idx) => {
         if (pastedIndices.includes(idx)) {
-          const isValid = validateWord(word);
+          const isValid = validateWord(word, isVerifyMode ? idx : undefined);
           updateSingleWordVerification(idx, word, isValid);
         }
       });
@@ -221,7 +261,7 @@ export const RecoveryPhraseGrid: React.FC<RecoveryPhraseGridProps> = ({
     const trimmedValue = value.trim();
     setIsFocused(null);
 
-    const isValidWord = validateWord(trimmedValue);
+    const isValidWord = validateWord(trimmedValue, isVerifyMode ? index : undefined);
     updateSingleWordVerification(index, value, isValidWord);
 
     if (!isValidWord) {
@@ -239,6 +279,26 @@ export const RecoveryPhraseGrid: React.FC<RecoveryPhraseGridProps> = ({
     }
   };
 
+  const bind = useDrag(
+    ({ movement: [, my], memo = phraseBoxRef.current?.scrollTop || 0 }) => {
+      if (isMouseDown && phraseBoxRef.current) {
+        phraseBoxRef.current.scrollTop = memo - my;
+      }
+      return memo;
+    },
+    { filterTaps: true },
+  );
+
+  const handleMouseDown = () => setIsMouseDown(true);
+  const handleMouseUp = () => setIsMouseDown(false);
+
+  useEffect(() => {
+    const resetDrag = () => setIsMouseDown(false);
+    window.addEventListener('mouseup', resetDrag);
+    return () => window.removeEventListener('mouseup', resetDrag);
+  }, []);
+
+  // TODO: add drag to scroll
   useLayoutEffect(() => {
     const handleScroll = () => {
       const el = phraseBoxRef.current;
@@ -299,6 +359,9 @@ export const RecoveryPhraseGrid: React.FC<RecoveryPhraseGridProps> = ({
             ref={phraseBoxRef}
             className="overflow-auto min-h-[160px] max-h-[160px] border border-grey rounded-lg p-2.5 hide-scrollbar"
             style={{ boxShadow: shadow }}
+            {...bind()}
+            onMouseDown={handleMouseDown}
+            onMouseUp={handleMouseUp}
           >
             <ul className="grid grid-cols-3 gap-y-3.5 gap-x-2.5">
               {localMnemonic.map((word, index) => (

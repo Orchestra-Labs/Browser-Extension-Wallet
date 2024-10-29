@@ -79,14 +79,13 @@ export interface CombinedStakingInfo {
   rewards: ValidatorReward['rewards'];
 }
 
-
 //Create base RPC response interface
 export interface BaseRPCResponse {
   code: number;
   message?: string;
 }
 
-//Extend specifically for tx's 
+//Extend specifically for tx's
 export interface TransactionRPCResponse extends BaseRPCResponse {
   txHash?: string;
   gasUsed?: string;
@@ -94,11 +93,11 @@ export interface TransactionRPCResponse extends BaseRPCResponse {
   height?: number;
 }
 
-//TX result incl the response 
+//TX result incl the response
 export interface TransactionResult {
   success: boolean;
   message: string;
-  data?: TransactionRPCResponse
+  data?: TransactionRPCResponse;
 }
 
 export interface TransactionSuccess {
@@ -114,7 +113,7 @@ export interface RPCResponse {
   message?: string;
   rawLog?: string;
   height?: number;
-  
+
   // REST responses
   delegation_responses?: Array<{
     delegation: {
@@ -127,24 +126,26 @@ export interface RPCResponse {
       amount: string;
     };
   }>;
-  
+
   // Validator fields
   validators?: ValidatorInfo[];
   validator?: ValidatorInfo;
-  
+
   // Pagination fields
   pagination?: {
     next_key: string | null;
     total: string;
   };
-  
+
   // Rewards fields
-  rewards?: Array<{
-    validator_address: string;
-    reward: any[];
-  }> | any[];  // Allow both formats of rewards
-  reward?: any[];  // For single validator rewards
-  
+  rewards?:
+    | Array<{
+        validator_address: string;
+        reward: any[];
+      }>
+    | any[]; // Allow both formats of rewards
+  reward?: any[]; // For single validator rewards
+
   // Catch-all
   [key: string]: any;
 }

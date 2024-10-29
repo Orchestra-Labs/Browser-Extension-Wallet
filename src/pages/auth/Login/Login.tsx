@@ -23,6 +23,17 @@ export const Login: React.FC = () => {
     }
   };
 
+  const handlePasswordPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    const pastedText = e.clipboardData.getData('text');
+    setPassword(pastedText.trim());
+
+    // Only reset the error state if the user had an error before
+    if (passwordStatus === 'error') {
+      setPasswordStatus(null);
+    }
+  };
+
   const handleUnlock = async () => {
     // TOOD: include error message if no wallet exists on this device
     const isAuthorized = await tryAuthorizeWalletAccess(password);
@@ -51,9 +62,9 @@ export const Login: React.FC = () => {
         <form className="mt-9 flex-1">
           <Input
             variant="primary"
-            showsErrorText={true}
+            showMessageText={true}
             status={passwordStatus}
-            errorText={passwordStatus === 'error' ? 'Incorrect password' : ''}
+            messageText={passwordStatus === 'error' ? 'Incorrect password' : ''}
             className="w-full"
             wrapperClass="mb-4"
             label="Password"
@@ -62,6 +73,7 @@ export const Login: React.FC = () => {
             value={password}
             onChange={handlePasswordChange}
             onKeyDown={e => handleKeyDown(e)}
+            onPaste={handlePasswordPaste}
             icon={passwordVisible ? <EyeOpen width={20} /> : <EyeClose width={20} />}
             iconRole="button"
             onIconClick={() => setPasswordVisible(!passwordVisible)}

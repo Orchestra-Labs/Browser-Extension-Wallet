@@ -33,6 +33,12 @@ export function useExchangeRate() {
         endpoint: `${CHAIN_ENDPOINTS.swap}offerCoin=${formattedOfferAmount}${sendAsset}&askDenom=${receiveAsset}`,
         queryType: 'GET',
       });
+      console.log('Exchange rate update (useExchangeRate function):', response);
+      console.log(
+        'Exchange rate params (useExchangeRate function):',
+        `${formattedOfferAmount}${sendAsset}`,
+        receiveAsset,
+      );
 
       return response.return_coin?.amount ?? null;
     },
@@ -45,7 +51,11 @@ export function useExchangeRate() {
   const exchangeRate = useMemo(() => {
     if (queryExchangeRate.data) {
       // Use BigNumber for precise decimal arithmetic
-      return new BigNumber(queryExchangeRate.data).dividedBy(1000000).toNumber();
+      console.log(
+        'Returning exchange rate (useExchangeRate function):',
+        new BigNumber(queryExchangeRate.data).toNumber(),
+      );
+      return new BigNumber(queryExchangeRate.data).toNumber();
     }
     return 0;
   }, [queryExchangeRate.data]);

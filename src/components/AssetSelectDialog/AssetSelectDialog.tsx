@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { SlideTray } from '@/ui-kit';
 import { TileScroller } from '../TileScroller';
 import { LogoIcon } from '@/assets/icons';
@@ -24,10 +24,13 @@ export const AssetSelectDialog: React.FC<AssetSelectDialogProps> = ({
   isSendDialog = false,
   onClick,
 }) => {
+  const slideTrayRef = useRef<{ closeWithAnimation: () => void }>(null);
+
   const setSearchTerm = useSetAtom(dialogSearchTermAtom);
   const setSortOrder = useSetAtom(assetDialogSortOrderAtom);
   const setSortType = useSetAtom(assetDialogSortTypeAtom);
   const currentState = useAtomValue(isSendDialog ? sendStateAtom : receiveStateAtom);
+
   const [dialogSelectedAsset, setDialogSelectedAsset] = useState(currentState.asset);
 
   const resetDefaults = () => {
@@ -35,13 +38,19 @@ export const AssetSelectDialog: React.FC<AssetSelectDialogProps> = ({
     setSortOrder('Desc');
     setSortType('name');
   };
-  console.log('AssetSelectDialog isSendDialog:', isSendDialog);
+
   useEffect(() => {
     setDialogSelectedAsset(currentState.asset);
   }, [currentState.asset]);
 
+  const handleAssetSelection = (asset: Asset) => {
+    onClick(asset);
+    slideTrayRef.current?.closeWithAnimation();
+  };
+
   return (
     <SlideTray
+      ref={slideTrayRef}
       triggerComponent={
         <div
           className={cn(
@@ -73,7 +82,13 @@ export const AssetSelectDialog: React.FC<AssetSelectDialogProps> = ({
           </div>
         </div>
 
-        <TileScroller activeIndex={0} isSelectable={true} onSelectAsset={onClick} isDialog={true} isReceiveDialog={!isSendDialog}/>
+        <TileScroller
+          activeIndex={0}
+          isSelectable={true}
+          onSelectAsset={handleAssetSelection}
+          isDialog={true}
+          isReceiveDialog={!isSendDialog}
+        />
 
         <SearchBar isDialog />
       </div>
