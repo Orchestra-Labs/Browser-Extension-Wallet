@@ -113,15 +113,12 @@ export const Send = () => {
 
   const calculateMaxAvailable = (sendAsset: Asset) => {
     const walletAsset = walletAssets.find(asset => asset.denom === sendAsset.denom);
-    console.log('Wallet Asset:', walletAsset); // Check asset details
     if (!walletAsset) return 0;
 
     const maxAmount = parseFloat(walletAsset.amount || '0');
     const feeAmount = simulatedFee ? parseFloat(simulatedFee.fee) : 0;
-    console.log('Max Amount:', maxAmount, 'Fee Amount:', feeAmount); // Verify both
 
     const maxAvailable = Math.max(0, maxAmount - feeAmount);
-    console.log('Max Available:', maxAvailable); // Final max available
     return maxAvailable;
   };
 
@@ -167,7 +164,6 @@ export const Send = () => {
   };
 
   const updateSendAmount = (newSendAmount: number, propagateChanges: boolean = false) => {
-    console.log('New Send Amount (before rounding):', newSendAmount);
     const sendAsset = sendState.asset;
     if (!sendAsset) {
       return;
@@ -183,7 +179,6 @@ export const Send = () => {
         amount: roundedSendAmount,
       };
     });
-    console.log('Updated send with (send update function):', newSendAmount);
 
     // Handle propagation of changes if required
     if (propagateChanges) {
@@ -202,7 +197,6 @@ export const Send = () => {
   };
 
   const updateReceiveAmount = (newReceiveAmount: number, propagateChanges: boolean = false) => {
-    console.log('New Receive Amount (before rounding):', newReceiveAmount);
     const receiveAsset = receiveState.asset;
     if (!receiveAsset) return;
 
@@ -213,7 +207,6 @@ export const Send = () => {
       ...prevState,
       amount: roundedReceiveAmount,
     }));
-    console.log('Updated receive with (receive update function):', newReceiveAmount);
 
     if (propagateChanges) {
       setChangeMap(prevMap => ({
@@ -339,9 +332,7 @@ export const Send = () => {
 
       const sendAmount = sendState.amount;
       const maxAvailable = calculateMaxAvailable(sendAsset);
-      console.log('Max Available sendable (send changed in propagateChanges):', maxAvailable);
       const verifiedSendAmount = Math.min(sendState.amount, maxAvailable);
-      console.log('Verified send amount (send changed in propagateChanges):', verifiedSendAmount);
 
       if (verifiedSendAmount != sendAmount) {
         updateSendAmount(verifiedSendAmount);
@@ -349,16 +340,9 @@ export const Send = () => {
 
       const applicableExchangeRate =
         sendAsset.denom === receiveState.asset?.denom ? 1 : exchangeRate || 1;
-      console.log('Exchange rate (send changed in propagateChanges):', exchangeRate);
-      console.log(
-        'Applicable exchange rate (send changed in propagateChanges):',
-        applicableExchangeRate,
-      );
       const newReceiveAmount = verifiedSendAmount * applicableExchangeRate;
-      console.log('New receive amount (send changed in propagateChanges):', newReceiveAmount);
 
       updateReceiveAmount(newReceiveAmount);
-      console.log('Updated receive with (send changed in propagateChanges):', newReceiveAmount);
 
       if (!isExchangeRateUpdate) {
         setMap(prevMap => ({ ...prevMap, sendAmount: false }));
@@ -376,29 +360,14 @@ export const Send = () => {
       let newSendAmount = receiveAmount * applicableExchangeRate;
 
       const maxAvailable = calculateMaxAvailable(sendAsset);
-      console.log('Max Available sendable (receive changed in propagateChanges):', maxAvailable);
 
       if (newSendAmount > maxAvailable) {
         newSendAmount = maxAvailable;
-        console.log('New send amount (receive changed in propagateChanges):', newSendAmount);
         const adjustedReceiveAmount = newSendAmount * (exchangeRate || 1);
-        console.log('Exchange rate (receive changed in propagateChanges):', exchangeRate);
-        console.log(
-          'Adjusted receive amount (receive changed in propagateChanges):',
-          adjustedReceiveAmount,
-        );
+
         updateSendAmount(newSendAmount);
         updateReceiveAmount(adjustedReceiveAmount);
-        console.log(
-          'updated send and receive with (receive changed in propagateChanges):',
-          newSendAmount,
-          adjustedReceiveAmount,
-        );
       } else {
-        console.log(
-          'New send amount [else statement] (receive changed in propagateChanges):',
-          newSendAmount,
-        );
         updateSendAmount(newSendAmount);
       }
 
