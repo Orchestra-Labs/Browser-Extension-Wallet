@@ -1,6 +1,6 @@
 import { CombinedStakingInfo, DelegationResponse, ValidatorInfo } from '@/types';
 import { queryRestNode } from './queryNodes';
-import { CHAIN_ENDPOINTS } from '@/constants';
+import { BondStatus, CHAIN_ENDPOINTS } from '@/constants';
 
 // Fetch delegations (staked assets) from either the REST or RPC endpoint
 export const fetchDelegations = async (
@@ -43,49 +43,51 @@ export const fetchDelegations = async (
   }
 };
 
-//fetch all validators using an optional bond status 
-type BondStatus = 'BOND_STATUS_UNSPECIFIED' | 'BOND_STATUS_UNBONDED' | 'BOND_STATUS_UNBONDING' | 'BOND_STATUS_BONDED';
-
-  // Create default validator info matching interface
-  const defaultValidatorInfo: ValidatorInfo = {
-    operator_address: '',
-    jailed: false,
-    status: 'BOND_STATUS_UNBONDED',
-    tokens: '0',
-    delegator_shares: '0',
-    description: {
-      moniker: '',
-      website: '',
-      details: ''
+// Create default validator info matching interface
+const defaultValidatorInfo: ValidatorInfo = {
+  operator_address: '',
+  jailed: false,
+  status: BondStatus.UNBONDED,
+  tokens: '0',
+  delegator_shares: '0',
+  description: {
+    moniker: '',
+    website: '',
+    details: '',
+  },
+  commission: {
+    commission_rates: {
+      rate: '0',
+      max_rate: '0',
+      max_change_rate: '0',
     },
-    commission: {
-      commission_rates: {
-        rate: '0',
-        max_rate: '0',
-        max_change_rate: '0'
-      }
-    }
-  };
+  },
+};
 
 export const fetchAllValidators = async (bondStatus?: BondStatus): Promise<ValidatorInfo[]> => {
   let allValidators: ValidatorInfo[] = [];
   let nextKey: string | null = null;
-  
+
   do {
     try {
       let endpoint = `${CHAIN_ENDPOINTS.getValidators}?pagination.key=${encodeURIComponent(nextKey || '')}`;
       if (bondStatus) {
         endpoint += `&status=${bondStatus}`;
       }
-      
-      console.log('Fetching validators, page key:', nextKey || 'first page', 'status:', bondStatus || 'all');
-      
+
+      console.log(
+        'Fetching validators, page key:',
+        nextKey || 'first page',
+        'status:',
+        bondStatus || 'all',
+      );
+
       const response = await queryRestNode({ endpoint });
-      
+
       console.log('Validators response:', response);
-      
+
       allValidators = allValidators.concat(response.validators ?? []);
-      
+
       nextKey = response.pagination?.next_key ?? null;
     } catch (error) {
       console.error('Error fetching validators:', error);
@@ -99,7 +101,7 @@ export const fetchAllValidators = async (bondStatus?: BondStatus): Promise<Valid
 // Fetch validator details using either the REST or RPC endpoint
 export const fetchValidators = async (
   validatorAddress?: string,
-  bondStatus?: BondStatus
+  bondStatus?: BondStatus,
 ): Promise<{ validators: ValidatorInfo[]; pagination: any }> => {
   try {
     if (validatorAddress) {
@@ -107,16 +109,14 @@ export const fetchValidators = async (
       console.log('Fetching validator info for:', validatorAddress);
       const response = await queryRestNode({ endpoint });
       console.log('Validator response:', response);
-      
+
       // Filter single validator by bond status if provided
       if (bondStatus && response?.validator?.status !== bondStatus) {
         return { validators: [], pagination: null };
       }
 
-
-
       return {
-        validators: [response?.validator ?? defaultValidatorInfo ],
+        validators: [response?.validator ?? defaultValidatorInfo],
         pagination: null,
       };
     } else {
@@ -129,7 +129,7 @@ export const fetchValidators = async (
   } catch (error) {
     console.error(
       `Error fetching validator info for ${validatorAddress || 'all validators'}:`,
-      error
+      error,
     );
     throw error;
   }

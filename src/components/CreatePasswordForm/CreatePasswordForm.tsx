@@ -126,7 +126,7 @@ export const CreatePasswordForm = () => {
   const handlePasswordPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
     e.preventDefault();
     const pastedText = e.clipboardData.getData('text');
-    setPassword(pastedText);
+    setPassword(pastedText.trim());
 
     // Start validating immediately after paste
     if (pastedText.length > 0) {
@@ -138,7 +138,7 @@ export const CreatePasswordForm = () => {
   const handleConfirmPasswordPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
     const pastedText = e.clipboardData.getData('text');
     e.preventDefault();
-    setConfirmPassword(pastedText);
+    setConfirmPassword(pastedText.trim());
 
     // Start validating immediately after paste
     if (pastedText.length > 0) {

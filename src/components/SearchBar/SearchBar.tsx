@@ -33,7 +33,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
           variant="primary"
           value={searchTerm}
           onChange={e => setSearchTerm(e.target.value)}
-          placeholder={isValidatorSearch ? PLACEHOLDERS.asset : PLACEHOLDERS.validator}
+          placeholder={isValidatorSearch ? PLACEHOLDERS.validator : PLACEHOLDERS.asset}
         />
       </div>
     </>
