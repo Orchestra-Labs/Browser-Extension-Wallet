@@ -111,14 +111,15 @@ export const CreateWallet = () => {
 
   // TODO: add clear and max buttons to amount section
   // TODO: add search icon to search field, add onclick
+  /* ******************************************************************************************* */
 
+  /* Current TODOs */
   // TODO: add fee display and updates for stake, unstake, and claim
 
   // TODO: add conclusionary action with selection in asset select dialog.  should picking close the dialog?
   // TODO: add confirm button to select dialogs.  does not need to be visible before selection
   // TODO: make "clear" and "max" button placement and appearance more uniform (send and unstake sections)
   // TODO: change "options" to settings?
-  /* ******************************************************************************************* */
 
   /* Current TODOs */
   // TODO: clean up helper functions and hooks
