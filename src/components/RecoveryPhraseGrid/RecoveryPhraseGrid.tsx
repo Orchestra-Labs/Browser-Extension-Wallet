@@ -5,6 +5,7 @@ import { Button, CopyTextField, Input } from '@/ui-kit';
 import { EnglishMnemonic } from '@cosmjs/crypto';
 import { useAtom, useSetAtom } from 'jotai';
 import { mnemonic12State, mnemonic24State, mnemonicVerifiedState, use24WordsState } from '@/atoms';
+import { useDrag } from '@use-gesture/react';
 
 type RecoveryPhraseGridProps = {
   isVerifyMode?: boolean;
@@ -34,6 +35,7 @@ export const RecoveryPhraseGrid: React.FC<RecoveryPhraseGridProps> = ({
   const [allowValidation12, setAllowValidation12] = useState<{ [key: number]: boolean }>({});
   const [allowValidation24, setAllowValidation24] = useState<{ [key: number]: boolean }>({});
   const [isFocused, setIsFocused] = useState<number | null>(null);
+  const [isMouseDown, setIsMouseDown] = useState(false);
 
   const getCurrentMnemonic = () => (use24Words ? mnemonic24 : mnemonic12);
   const maxWords = use24Words ? 24 : 12;
@@ -277,6 +279,25 @@ export const RecoveryPhraseGrid: React.FC<RecoveryPhraseGridProps> = ({
     }
   };
 
+  const bind = useDrag(
+    ({ movement: [, my], memo = phraseBoxRef.current?.scrollTop || 0 }) => {
+      if (isMouseDown && phraseBoxRef.current) {
+        phraseBoxRef.current.scrollTop = memo - my;
+      }
+      return memo;
+    },
+    { filterTaps: true },
+  );
+
+  const handleMouseDown = () => setIsMouseDown(true);
+  const handleMouseUp = () => setIsMouseDown(false);
+
+  useEffect(() => {
+    const resetDrag = () => setIsMouseDown(false);
+    window.addEventListener('mouseup', resetDrag);
+    return () => window.removeEventListener('mouseup', resetDrag);
+  }, []);
+
   // TODO: add drag to scroll
   useLayoutEffect(() => {
     const handleScroll = () => {
@@ -338,6 +359,9 @@ export const RecoveryPhraseGrid: React.FC<RecoveryPhraseGridProps> = ({
             ref={phraseBoxRef}
             className="overflow-auto min-h-[160px] max-h-[160px] border border-grey rounded-lg p-2.5 hide-scrollbar"
             style={{ boxShadow: shadow }}
+            {...bind()}
+            onMouseDown={handleMouseDown}
+            onMouseUp={handleMouseUp}
           >
             <ul className="grid grid-cols-3 gap-y-3.5 gap-x-2.5">
               {localMnemonic.map((word, index) => (
