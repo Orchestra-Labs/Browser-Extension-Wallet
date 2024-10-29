@@ -103,8 +103,12 @@ export const CreateWallet = () => {
 
   /* ******************************************************************************************* */
   /* David Current TODOs */
-  // TODO: add option screen filter for validator list (by status.  default to not showing jailed validators)
-  // TODO: add option screen filter for regional display for numbers
+  // TODO: get fee estimations for non-send transactions.  stake, unstake, claim
+
+  // TODO: add onHover and onClick color changes to password and create wallet buttons
+  // TODO: ensure trim on completion of password entry (such as save to storage).  same on login.  to avoid copy/paste errors
+  // TODO: show green or red border for passphrase box on full verify, clear on start of typing
+
   // TODO: add clear and max buttons to amount section
   // TODO: add search icon to search field, add onclick
   /* ******************************************************************************************* */
@@ -117,7 +121,7 @@ export const CreateWallet = () => {
   // TODO: make "clear" and "max" button placement and appearance more uniform (send and unstake sections)
   // TODO: change "options" to settings?
 
-  // TODO: show errors to user (user displayable values)
+  /* Current TODOs */
   // TODO: clean up helper functions and hooks
 
   // TODO: add fields to let user know when sending over IBC (info status on Input - blue text)

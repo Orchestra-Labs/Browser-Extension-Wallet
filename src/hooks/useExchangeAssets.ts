@@ -80,6 +80,7 @@ export const useExchangeAssets = () => {
     }
   };
 
+  // TODO: examine why refetch on wallet change and why this depends on existing wallet asset information
   useEffect(() => {
     fetchExchangeAssets();
   }, [walletState?.assets]); // Refetch when wallet assets change
