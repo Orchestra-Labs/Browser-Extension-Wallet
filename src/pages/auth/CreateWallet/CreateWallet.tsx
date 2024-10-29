@@ -108,6 +108,8 @@ export const CreateWallet = () => {
   // TODO: add clear and max buttons to amount section
   // TODO: add search icon to search field, add onclick
 
+  // TODO: add fee display and updates for stake, unstake, and claim
+
   // TODO: add conclusionary action with selection in asset select dialog.  should picking close the dialog?
   // TODO: add confirm button to select dialogs.  does not need to be visible before selection
   // TODO: make "clear" and "max" button placement and appearance more uniform (send and unstake sections)
@@ -132,11 +134,19 @@ export const CreateWallet = () => {
   // TODO: ensure new encrypted mnemonic overwrites old in case of same password and name (but let user know first)
 
   /* Wallet UI TODOs */
+  // TODO: Add QR code intake methods (camera, file selection/drag and drop option)
+  // TODO: Add Maestro-only QR code that also shows preferred receive asset (requires preferred receive asset)
   // TODO: add show/hide function to wallet asset list (select which assets to show.  add searchability to this)
   // TODO: add show/hide function to validator list (by activity, by chain)
   // TODO: security tab enables/disables need to confirm transactions/re-entry of password on transactions (3 levels of security)
   // TODO: update transactions history button (need endpoint for this.  disable until ready)
   // TODO: show donut chart with assets rather than singular value (requires connections to exchanges)
+  // TODO: Add on-ramp / off-ramp page
+  // TODO: If at lease one on-ramp connection exists, include fiat in send options
+  // TODO: If at lease one off-ramp connection exists, include fiat in receive options
+  // TODO: Add dApp page
+  // TODO: Add NFT page
+  // TODO: Add page view selection in options
 
   /* Interchain-compatibility TODOs */
   // TODO: integrate skip protocol or automated use of exchange to allow swapping between chains
@@ -148,7 +158,6 @@ export const CreateWallet = () => {
   // TODO: handle error printout for create/import wallet (in place of subtitle on verify screen?)
   // TODO: for default on text, ensure no focus and basic mouse onHover (no change)
   // TODO: test path and create error for no wallet exists and user attempts login
-  // TODO: Add Manual RPC changes in-app (both selection in list and form entry.  one or both of these should be kept behind dev-mode toggle)
 
   /* Less Critical Wallet TODOs */
   // TODO: add QR code input to address on send screen (drag and drop/image selection)
@@ -172,6 +181,11 @@ export const CreateWallet = () => {
 
   /* Nice to have Interchain-compatibility TODOs */
   // TODO: add manual IBC (for rare cases.  hide behind dev tool enabling?)
+
+  /* Dev Mode TODOs */
+  // TODO: add dev mode options (additional views and manual use screens).  these persist after close of dev mode (just hide options toggles)
+  // TODO: include "add network" screen (dev mode)
+  // TODO: Add Manual RPC changes in-app (both selection in list and form entry.  one or both of these should be kept behind dev-mode toggle)
 
   // Check everything is completed properly and pass to confirmation screen
   const handleCreateWallet = async () => {

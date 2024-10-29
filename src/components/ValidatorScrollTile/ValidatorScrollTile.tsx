@@ -151,16 +151,15 @@ export const ValidatorScrollTile = ({
             </div>
           )}
 
-          {/* TODO: on button press, animate collapse to 1 line / re-expansion? */}
+          {/* TODO: make scrollable? collapse/expand on button press? if collapse, animate collapse to 1 line / re-expansion */}
           {/* Validator Information */}
           <div className="mb-4 min-h-[7.5rem] max-h-[7.5rem] overflow-hidden shadow-md bg-black p-2">
             <p>
               <strong>Status: </strong>
               <span className={textColor}>{statusLabel}</span>
             </p>
-            <p>
-              <strong>Amount Staked:</strong>{' '}
-              <span className="text-blue line-clamp-1">{dialogSubTitle}</span>
+            <p className="line-clamp-1">
+              <strong>Amount Staked:</strong> <span className="text-blue">{dialogSubTitle}</span>
             </p>
             <p>
               <strong>Validator Commission:</strong> {commission}
@@ -264,11 +263,17 @@ export const ValidatorScrollTile = ({
                 >
                   Claim to Wallet
                 </Button>
-                <Button className="w-full ml-2" onClick={() => claimAndRestake(delegationResponse, [{
-                  validator: validator.operator_address, 
-                  rewards: rewards
-                }
-                ])}>
+                <Button
+                  className="w-full ml-2"
+                  onClick={() =>
+                    claimAndRestake(delegationResponse, [
+                      {
+                        validator: validator.operator_address,
+                        rewards: rewards,
+                      },
+                    ])
+                  }
+                >
                   Claim to Restake
                 </Button>
               </div>
