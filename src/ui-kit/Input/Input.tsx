@@ -46,6 +46,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             <input
               type={type}
               className={cn(
+                'select-text',
                 'flex h-10 w-full rounded-md border border-neutral-3 bg-transparent px-2 py-1.5 text-base text-neutral-3',
                 'hover:border-neutral-1 hover:text-neutral-1',
                 'focus:outline-0 focus:border-blue focus:text-white',
@@ -87,7 +88,11 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
       default: {
         return (
           <>
-            <input className={cn('bg-transparent', className as string)} ref={ref} {...props} />
+            <input
+              className={cn('select-text bg-transparent', className as string)}
+              ref={ref}
+              {...props}
+            />
             {showMessageText && <span className="mt-1.5 text-sm min-h-[20px] mb-4">&nbsp;</span>}
           </>
         );

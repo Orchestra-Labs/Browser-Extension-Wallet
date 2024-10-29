@@ -7,6 +7,8 @@ import App from '@/app/App';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <App />
+    <div className="select-none h-full">
+      <App />
+    </div>
   </React.StrictMode>,
 );
