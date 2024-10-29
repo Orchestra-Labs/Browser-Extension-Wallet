@@ -120,12 +120,13 @@ export const CreateWallet = () => {
   /* Current TODOs */
   // TODO: keep track of current page for case of re-open before timeout
   // TODO: ensure logout after blur (click outside application to close).  to remove sensitive data after time period
-  // TODO: prevent re-building auth every time wallet updates
 
-  /* Less Critical Auth TODOs */
   // TODO: ensure new encrypted mnemonic overwrites old in case of same password and name (but let user know first)
   // TODO: test path and create error for no wallet exists and user attempts login
   // TODO: handle error printout for create/import wallet (in place of subtitle on verify screen?)
+
+  /* Less Critical Auth TODOs */
+  // TODO: prevent re-building auth every time wallet updates
 
   /* Interchain-compatibility TODOs (mobile version before this) */
   // TODO: add button to "add chain" at bottom of Holdings list

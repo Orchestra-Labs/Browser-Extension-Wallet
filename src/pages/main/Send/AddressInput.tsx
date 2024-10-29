@@ -4,6 +4,7 @@ import { addressVerifiedAtom, recipientAddressAtom } from '@/atoms';
 import { useEffect, useState } from 'react';
 import { WALLET_PREFIX } from '@/constants';
 import { cn } from '@/helpers';
+import { QRCodeScannerDialog } from '@/components';
 
 interface AddressInputProps {
   addBottomMargin?: boolean;
@@ -18,7 +19,7 @@ export const AddressInput: React.FC<AddressInputProps> = ({ addBottomMargin = tr
 
   const validAddressLength = 47;
 
-  // Validate password
+  // Validate address
   const validateAddress = () => {
     if (address === '') {
       setAddressStatus(null);
@@ -31,12 +32,6 @@ export const AddressInput: React.FC<AddressInputProps> = ({ addBottomMargin = tr
 
     const isAddressValid = hasPrefix && isValidLength && isAlphanumeric;
     setAddressStatus(isAddressValid ? 'success' : 'error');
-  };
-
-  const checkAddressStatus = () => {
-    if (allowValidateAddress || address.length === 0) {
-      validateAddress();
-    }
   };
 
   const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -77,20 +72,13 @@ export const AddressInput: React.FC<AddressInputProps> = ({ addBottomMargin = tr
     validateAddress();
   };
 
-  // Validate address after the first validation
   useEffect(() => {
-    checkAddressStatus();
+    validateAddress();
   }, [address]);
 
   useEffect(() => {
-    const addressVerified = addressStatus === 'success';
-
-    setAddressVerified(addressVerified);
+    setAddressVerified(addressStatus === 'success');
   }, [addressStatus]);
-
-  useEffect(() => {
-    setAddress(address);
-  }, []);
 
   return (
     <div className={cn(`flex items-baseline ${addBottomMargin ? 'mb-4' : ''} space-x-2`)}>
@@ -103,13 +91,7 @@ export const AddressInput: React.FC<AddressInputProps> = ({ addBottomMargin = tr
           showMessageText={true}
           messageText={addressStatus === 'error' ? 'Address not in supported format' : ''}
           placeholder="Wallet Address or ICNS"
-          // TODO: enable when QR code input is enabled
-          // icon={
-          //   <QRCode
-          //     className="h-7 w-7 text-neutral-1 hover:bg-blue-hover hover:text-blue-dark cursor-pointer"
-          //     width={20}
-          //   />
-          // }
+          icon={<QRCodeScannerDialog />}
           value={address}
           onChange={handleAddressChange}
           onBlur={handleAddressBlur}
