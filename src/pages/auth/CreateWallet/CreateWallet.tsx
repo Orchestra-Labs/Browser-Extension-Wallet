@@ -105,8 +105,6 @@ export const CreateWallet = () => {
   /* David Current TODOs */
   // TODO: show green or red border for passphrase box on full verify, clear on start of typing
 
-  // TODO: add option screen filter for validator list (by status.  default to not showing jailed validators)
-  // TODO: add option screen filter for regional display for numbers
   // TODO: add clear and max buttons to amount section
   // TODO: add search icon to search field, add onclick
 
@@ -159,6 +157,10 @@ export const CreateWallet = () => {
   // TODO: add qr code screen for transfer data (including account data).  or from google
   // TODO: ensure refresh only queries once (currently 4 times per pull)
 
+  /* Internationalization TODOs */
+  // TODO: add translations for all strings (pull from string file/translation file)
+  // TODO: add option screen filter for regional display for numbers
+
   /* Nice to have TODOs */
   // TODO: add password complexity bar on entry
   // TODO: add toggle option for single-click transactions and another for force accepting/declining transactions
@@ -166,6 +168,7 @@ export const CreateWallet = () => {
   // TODO: keep track of current page for case of re-open before timeout
   // TODO: loader coming in late and tries to catch up.  make more uniform.
   // TODO: loader should spin in line with its percent pulled
+  // TODO: add option screen filter for validator list (by status.  default to not showing jailed validators.  check fetchAllValidators function and validatorsAtom (currently filters here))
 
   /* Nice to have Interchain-compatibility TODOs */
   // TODO: add manual IBC (for rare cases.  hide behind dev tool enabling?)
