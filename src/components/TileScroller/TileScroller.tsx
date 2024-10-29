@@ -148,8 +148,7 @@ export const TileScroller: React.FC<TileScrollerProps> = ({
 
   return (
     <ScrollArea
-      // TODO: move select-none to top level, add select option to specific areas of app that allow it (inputs)
-      className="select-none flex-grow w-full overflow-y-auto border border-neutral-3 rounded-md"
+      className="flex-grow w-full overflow-y-auto border border-neutral-3 rounded-md"
       type="always"
       scrollbarProps={{}}
       viewportRef={viewportRef}
