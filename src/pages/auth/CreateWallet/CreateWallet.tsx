@@ -103,20 +103,20 @@ export const CreateWallet = () => {
 
   /* ******************************************************************************************* */
   /* David Current TODOs */
-  // TODO: show green or red border for passphrase box on full verify, clear on start of typing
-
+  // TODO: add option screen filter for validator list (by status.  default to not showing jailed validators)
+  // TODO: add option screen filter for regional display for numbers
   // TODO: add clear and max buttons to amount section
   // TODO: add search icon to search field, add onclick
+  /* ******************************************************************************************* */
 
+  /* Current TODOs */
   // TODO: add fee display and updates for stake, unstake, and claim
 
   // TODO: add conclusionary action with selection in asset select dialog.  should picking close the dialog?
   // TODO: add confirm button to select dialogs.  does not need to be visible before selection
   // TODO: make "clear" and "max" button placement and appearance more uniform (send and unstake sections)
   // TODO: change "options" to settings?
-  /* ******************************************************************************************* */
 
-  /* Current TODOs */
   // TODO: show errors to user (user displayable values)
   // TODO: clean up helper functions and hooks
 
