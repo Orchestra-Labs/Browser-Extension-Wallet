@@ -107,6 +107,7 @@ export const CreateWallet = () => {
   // TODO: Add Maestro-only QR code that also shows preferred receive asset (requires preferred receive asset)
 
   // TODO: pull unbonding days dynamically from the validator
+  // TODO: amend fee showing as 0 rather than 0 MLD (send page0)
   // TODO: add fee display and updates for stake, unstake, and claim
 
   // TODO: make "clear" and "max" button placement and appearance more uniform (send and unstake sections)
