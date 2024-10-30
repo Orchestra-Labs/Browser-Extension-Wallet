@@ -103,7 +103,6 @@ export const CreateWallet = () => {
 
   /* ******************************************************************************************* */
   /* David Current TODOs */
-  // TODO: Add QR code intake methods (camera, file selection/drag and drop option)
   // TODO: Add Maestro-only QR code that also shows preferred receive asset (requires preferred receive asset)
 
   // TODO: pull unbonding days dynamically from the validator
