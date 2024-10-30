@@ -103,8 +103,6 @@ export const CreateWallet = () => {
 
   /* ******************************************************************************************* */
   /* David Current TODOs */
-  // TODO: Add Maestro-only QR code that also shows preferred receive asset (requires preferred receive asset)
-
   // TODO: put Loader on loading screen, not "loading"
   // TODO: make "clear" and "max" button send screen inputs.  make placement and appearance for these uniform (send and unstake sections)
   // TODO: pull unbonding days dynamically from the validator
