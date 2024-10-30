@@ -1,18 +1,25 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { SlideTray, Button } from '@/ui-kit';
-import { useSetAtom } from 'jotai';
-import { recipientAddressAtom } from '@/atoms';
+import { useAtomValue, useSetAtom } from 'jotai';
+import { filteredAssetsAtom, recipientAddressAtom } from '@/atoms';
 import { QRCode } from '@/assets/icons';
 import { QrReader } from 'react-qr-reader';
 import { BrowserQRCodeReader } from '@zxing/browser';
 import { cn } from '@/helpers';
+import { Asset } from '@/types';
 
-export const QRCodeScannerDialog: React.FC = () => {
+interface QRCodeScannerDialogProps {
+  updateSendAsset: (asset: Asset, propagateChanges: boolean) => void;
+}
+
+export const QRCodeScannerDialog: React.FC<QRCodeScannerDialogProps> = ({ updateSendAsset }) => {
   const slideTrayRef = useRef<{ closeWithAnimation: () => void }>(null);
+
+  const setAddress = useSetAtom(recipientAddressAtom);
+  const filteredAssets = useAtomValue(filteredAssetsAtom);
 
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [permissionDenied, setPermissionDenied] = useState(false);
-  const setAddress = useSetAtom(recipientAddressAtom);
   const [isDragOver, setIsDragOver] = useState(false);
 
   const qrCodeReader = new BrowserQRCodeReader();
@@ -20,7 +27,25 @@ export const QRCodeScannerDialog: React.FC = () => {
   const handleScan = (result: string | null) => {
     if (result) {
       console.log('QR Code Scanned:', result);
-      setAddress(result);
+
+      try {
+        const parsedResult = JSON.parse(result);
+        if (parsedResult.address && parsedResult.denomPreference) {
+          console.log('parsed result', parsedResult);
+          const preferredAsset = filteredAssets.find(
+            asset => asset.denom === parsedResult.denomPreference,
+          );
+          console.log('preferred asset', preferredAsset);
+
+          setAddress(parsedResult.address);
+          updateSendAsset(preferredAsset as Asset, true);
+        } else {
+          setAddress(result);
+        }
+      } catch (err) {
+        setAddress(result);
+      }
+
       slideTrayRef.current?.closeWithAnimation();
       setIsScannerOpen(false);
     }

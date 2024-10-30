@@ -5,12 +5,17 @@ import { useEffect, useState } from 'react';
 import { WALLET_PREFIX } from '@/constants';
 import { cn } from '@/helpers';
 import { QRCodeScannerDialog } from '@/components';
+import { Asset } from '@/types';
 
 interface AddressInputProps {
   addBottomMargin?: boolean;
+  updateSendAsset: (asset: Asset, propagateChanges: boolean) => void;
 }
 
-export const AddressInput: React.FC<AddressInputProps> = ({ addBottomMargin = true }) => {
+export const AddressInput: React.FC<AddressInputProps> = ({
+  addBottomMargin = true,
+  updateSendAsset,
+}) => {
   const [address, setAddress] = useAtom(recipientAddressAtom);
   const setAddressVerified = useSetAtom(addressVerifiedAtom);
 
@@ -91,7 +96,7 @@ export const AddressInput: React.FC<AddressInputProps> = ({ addBottomMargin = tr
           showMessageText={true}
           messageText={addressStatus === 'error' ? 'Address not in supported format' : ''}
           placeholder="Wallet Address or ICNS"
-          icon={<QRCodeScannerDialog />}
+          icon={<QRCodeScannerDialog updateSendAsset={updateSendAsset} />}
           value={address}
           onChange={handleAddressChange}
           onBlur={handleAddressBlur}
