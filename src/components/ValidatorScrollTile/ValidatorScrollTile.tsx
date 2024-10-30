@@ -37,7 +37,10 @@ export const ValidatorScrollTile = ({
   );
   const walletState = useAtomValue(walletStateAtom);
   const [amount, setAmount] = useState(0);
-  const [transactionSuccess, setTransactionSuccess] = useState<{ success: boolean; txHash?: string }>({
+  const [transactionSuccess, setTransactionSuccess] = useState<{
+    success: boolean;
+    txHash?: string;
+  }>({
     success: false,
   });
   const [loadingAction, setLoadingAction] = useState<LoadingAction>(null);
@@ -122,13 +125,13 @@ export const ValidatorScrollTile = ({
         walletState.address,
         validator.operator_address,
       );
-      
+
       console.log('Stake result:', result);
-      
+
       if (result.success && result.data?.code === 0) {
-        setTransactionSuccess({ 
-          success: true, 
-          txHash: result.data.txHash 
+        setTransactionSuccess({
+          success: true,
+          txHash: result.data.txHash,
         });
       } else {
         console.warn('Stake failed with code:', result.data?.code);
@@ -145,13 +148,13 @@ export const ValidatorScrollTile = ({
     setLoadingAction('unstake');
     try {
       const result = await unstakeFromValidator(amount, delegationResponse);
-      
+
       console.log('Unstake result:', result);
-      
+
       if (result.success && result.data?.code === 0) {
-        setTransactionSuccess({ 
-          success: true, 
-          txHash: result.data.txHash 
+        setTransactionSuccess({
+          success: true,
+          txHash: result.data.txHash,
         });
       } else {
         console.warn('Unstake failed with code:', result.data?.code);
@@ -168,13 +171,13 @@ export const ValidatorScrollTile = ({
     setLoadingAction('claim-wallet');
     try {
       const result = await claimRewards(walletState.address, validator.operator_address);
-      
+
       console.log('Claim to wallet result:', result);
-      
+
       if (result.success && result.data?.code === 0) {
-        setTransactionSuccess({ 
-          success: true, 
-          txHash: result.data.txHash 
+        setTransactionSuccess({
+          success: true,
+          txHash: result.data.txHash,
         });
       } else {
         console.warn('Claim to wallet failed with code:', result.data?.code);
@@ -190,17 +193,19 @@ export const ValidatorScrollTile = ({
   const handleClaimAndRestake = async () => {
     setLoadingAction('claim-restake');
     try {
-      const result = await claimAndRestake(delegationResponse, [{
-        validator: validator.operator_address,
-        rewards: rewards
-      }]);
-      
+      const result = await claimAndRestake(delegationResponse, [
+        {
+          validator: validator.operator_address,
+          rewards: rewards,
+        },
+      ]);
+
       console.log('Claim and restake result:', result);
-      
+
       if (result.success && result.data?.code === 0) {
-        setTransactionSuccess({ 
-          success: true, 
-          txHash: result.data.txHash 
+        setTransactionSuccess({
+          success: true,
+          txHash: result.data.txHash,
         });
       } else {
         console.warn('Claim and restake failed with code:', result.data?.code);
@@ -248,8 +253,8 @@ export const ValidatorScrollTile = ({
         >
           {transactionSuccess.success ? (
             <div className="fixed top-0 left-0 w-screen h-screen z-[9999] bg-black">
-              <WalletSuccessScreen 
-                caption="Transaction success!" 
+              <WalletSuccessScreen
+                caption="Transaction success!"
                 txHash={transactionSuccess.txHash}
               />
             </div>
@@ -302,8 +307,8 @@ export const ValidatorScrollTile = ({
               {/* Action Selection */}
               {delegation && (
                 <div className="flex justify-between w-full px-2 mb-2">
-                  <Button 
-                    className="w-full" 
+                  <Button
+                    className="w-full"
                     onClick={() => setSelectedAction('stake')}
                     disabled={loadingAction !== null}
                   >
@@ -317,8 +322,8 @@ export const ValidatorScrollTile = ({
                   >
                     Unstake
                   </Button>
-                  <Button 
-                    className="w-full" 
+                  <Button
+                    className="w-full"
                     onClick={() => setSelectedAction('claim')}
                     disabled={loadingAction !== null}
                   >
@@ -396,7 +401,7 @@ export const ValidatorScrollTile = ({
                         'Claim to Wallet'
                       )}
                     </Button>
-                    <Button 
+                    <Button
                       className="w-full ml-2"
                       disabled={loadingAction !== null}
                       onClick={handleClaimAndRestake}

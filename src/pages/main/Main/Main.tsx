@@ -81,7 +81,7 @@ export const Main = () => {
   const formattedTotalAvailableMLD = formatBalanceDisplay(totalAvailableMLD, symbol);
 
   // Calculate total staked MLD balance with safety check
-  const totalStakedMLD = Array.isArray(validatorData) 
+  const totalStakedMLD = Array.isArray(validatorData)
     ? validatorData
         .filter(item => item.balance?.denom === LOCAL_ASSET_REGISTRY.note.denom)
         .reduce((sum, item) => sum + parseFloat(item.balance?.amount || '0'), 0)
@@ -93,7 +93,7 @@ export const Main = () => {
   );
 
   // Calculate total rewards with safety check
-  const totalStakedRewards = Array.isArray(validatorData) 
+  const totalStakedRewards = Array.isArray(validatorData)
     ? validatorData.reduce((sum, item) => {
         const totalReward = item.rewards?.reduce(
           (rewardSum, reward) => rewardSum + parseFloat(reward.amount || '0'),

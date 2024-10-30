@@ -95,8 +95,8 @@ export const claimRewards = async (
         success: false,
         message: 'No response received from transaction',
         data: {
-          code: 1
-        }
+          code: 1,
+        },
       };
     }
 
@@ -109,8 +109,8 @@ export const claimRewards = async (
         txHash: response.txHash,
         gasUsed: response.gasUsed,
         gasWanted: response.gasWanted,
-        height: response.height
-      }
+        height: response.height,
+      },
     };
   } catch (error) {
     console.error('Error claiming rewards:', error);
@@ -118,8 +118,8 @@ export const claimRewards = async (
       success: false,
       message: error instanceof Error ? error.message : 'Unknown error occurred',
       data: {
-        code: 1
-      }
+        code: 1,
+      },
     };
   }
 };
@@ -130,7 +130,7 @@ export const claimAndRestake = async (
   rewards?: {
     validator: string;
     rewards: { denom: string; amount: string }[];
-  }[]
+  }[],
 ): Promise<TransactionResult> => {
   const delegateEndpoint = CHAIN_ENDPOINTS.delegateToValidator;
 
@@ -141,10 +141,12 @@ export const claimAndRestake = async (
 
   try {
     // If rewards weren't passed in, fetch them
-    const validatorRewards = rewards || await fetchRewards(
-      delegatorAddress,
-      validatorAddresses.map(addr => ({ validator_address: addr }))
-    );
+    const validatorRewards =
+      rewards ||
+      (await fetchRewards(
+        delegatorAddress,
+        validatorAddresses.map(addr => ({ validator_address: addr })),
+      ));
 
     // Check if there are any non-zero rewards
     const hasRewards = validatorRewards.some(reward => {
@@ -159,14 +161,14 @@ export const claimAndRestake = async (
         success: false,
         message: 'No rewards to claim',
         data: {
-          code: 1
-        }
+          code: 1,
+        },
       };
     }
 
     // Claim rewards first and check for success
     const claimResponse = await claimRewards(delegatorAddress, validatorAddresses);
-    
+
     if (!claimResponse.success || claimResponse.data?.code !== 0) {
       return claimResponse;
     }
@@ -177,7 +179,7 @@ export const claimAndRestake = async (
       if (!reward.rewards || reward.rewards.length === 0) return [];
 
       const { denom, amount } = reward.rewards[0];
-      
+
       // Skip if reward amount is zero
       if (parseFloat(amount) <= 0) return [];
 
@@ -205,8 +207,8 @@ export const claimAndRestake = async (
           success: false,
           message: 'No response received from restake transaction',
           data: {
-            code: 1
-          }
+            code: 1,
+          },
         };
       }
 
@@ -219,8 +221,8 @@ export const claimAndRestake = async (
           txHash: response.txHash,
           gasUsed: response.gasUsed,
           gasWanted: response.gasWanted,
-          height: response.height
-        }
+          height: response.height,
+        },
       };
     } else {
       console.log('No rewards to delegate after filtering zero amounts');
@@ -228,8 +230,8 @@ export const claimAndRestake = async (
         success: false,
         message: 'No rewards to delegate',
         data: {
-          code: 1
-        }
+          code: 1,
+        },
       };
     }
   } catch (error) {
@@ -238,8 +240,8 @@ export const claimAndRestake = async (
       success: false,
       message: error instanceof Error ? error.message : 'Unknown error occurred',
       data: {
-        code: 1
-      }
+        code: 1,
+      },
     };
   }
 };
@@ -276,8 +278,8 @@ export const stakeToValidator = async (
         success: false,
         message: 'No response received from transaction',
         data: {
-          code: 1
-        }
+          code: 1,
+        },
       };
     }
 
@@ -290,8 +292,8 @@ export const stakeToValidator = async (
         txHash: response.txHash,
         gasUsed: response.gasUsed,
         gasWanted: response.gasWanted,
-        height: response.height
-      }
+        height: response.height,
+      },
     };
   } catch (error) {
     console.error('Error during staking:', error);
@@ -299,16 +301,16 @@ export const stakeToValidator = async (
       success: false,
       message: error instanceof Error ? error.message : 'Unknown error occurred',
       data: {
-        code: 1
-      }
+        code: 1,
+      },
     };
   }
 };
 
 // Function to unstake from a validator
 export const unstakeFromValidator = async (
-  amount: string, 
-  delegation: DelegationResponse
+  amount: string,
+  delegation: DelegationResponse,
 ): Promise<TransactionResult> => {
   const endpoint = CHAIN_ENDPOINTS.undelegateFromValidator;
   const delegatorAddress = delegation.delegation.delegator_address;
@@ -342,8 +344,8 @@ export const unstakeFromValidator = async (
         success: false,
         message: 'No response received from transaction',
         data: {
-          code: 1
-        }
+          code: 1,
+        },
       };
     }
 
@@ -356,8 +358,8 @@ export const unstakeFromValidator = async (
         txHash: response.txHash,
         gasUsed: response.gasUsed,
         gasWanted: response.gasWanted,
-        height: response.height
-      }
+        height: response.height,
+      },
     };
   } catch (error) {
     console.error('Error during unstaking:', error);
@@ -365,15 +367,15 @@ export const unstakeFromValidator = async (
       success: false,
       message: error instanceof Error ? error.message : 'Unknown error occurred',
       data: {
-        code: 1
-      }
+        code: 1,
+      },
     };
   }
 };
 
 // Function to unstake from multiple validators
 export const unstakeFromAllValidators = async (
-  delegations: DelegationResponse[]
+  delegations: DelegationResponse[],
 ): Promise<TransactionResult> => {
   const endpoint = CHAIN_ENDPOINTS.undelegateFromValidator;
 
@@ -393,8 +395,8 @@ export const unstakeFromAllValidators = async (
         success: false,
         message: 'No response received from transaction',
         data: {
-          code: 1
-        }
+          code: 1,
+        },
       };
     }
 
@@ -407,8 +409,8 @@ export const unstakeFromAllValidators = async (
         txHash: response.txHash,
         gasUsed: response.gasUsed,
         gasWanted: response.gasWanted,
-        height: response.height
-      }
+        height: response.height,
+      },
     };
   } catch (error) {
     console.error('Error during unstaking:', error);
@@ -416,8 +418,8 @@ export const unstakeFromAllValidators = async (
       success: false,
       message: error instanceof Error ? error.message : 'Unknown error occurred',
       data: {
-        code: 1
-      }
+        code: 1,
+      },
     };
   }
 };

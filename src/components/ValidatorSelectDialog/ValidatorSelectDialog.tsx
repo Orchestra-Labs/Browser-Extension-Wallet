@@ -17,7 +17,6 @@ import { CombinedStakingInfo } from '@/types';
 import { WalletSuccessScreen } from '@/components';
 import { LoadingAction } from '@/types';
 
-
 interface ValidatorSelectDialogProps {
   buttonText: string;
   buttonVariant?: string;
@@ -34,7 +33,10 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
   const setSortType = useSetAtom(validatorDialogSortTypeAtom);
   const [selectedValidators, setSelectedValidators] = useAtom(selectedValidatorsAtom);
   const filteredValidators = useAtomValue(filteredDialogValidatorsAtom);
-  const [transactionSuccess, setTransactionSuccess] = useState<{ success: boolean; txHash?: string }>({
+  const [transactionSuccess, setTransactionSuccess] = useState<{
+    success: boolean;
+    txHash?: string;
+  }>({
     success: false,
   });
   const [loadingAction, setLoadingAction] = useState<LoadingAction>(null);
@@ -78,13 +80,13 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
         filteredValidators[0].delegation.delegator_address,
         selectedValidators.map(v => v.delegation.validator_address),
       );
-      
+
       console.log('Claim to wallet result:', result);
-      
+
       if (result.success && result.data?.code === 0) {
-        setTransactionSuccess({ 
-          success: true, 
-          txHash: result.data.txHash 
+        setTransactionSuccess({
+          success: true,
+          txHash: result.data.txHash,
         });
       } else {
         console.warn('Claim to wallet failed with code:', result.data?.code);
@@ -102,23 +104,23 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
     try {
       const validatorRewards = selectedValidators.map(v => ({
         validator: v.delegation.validator_address,
-        rewards: v.rewards
+        rewards: v.rewards,
       }));
-      
+
       const result = await claimAndRestake(
-        selectedValidators.map(v => ({ 
+        selectedValidators.map(v => ({
           delegation: v.delegation,
-          balance: v.balance 
+          balance: v.balance,
         })),
-        validatorRewards
+        validatorRewards,
       );
-      
+
       console.log('Claim and restake result:', result);
-      
+
       if (result.success && result.data?.code === 0) {
-        setTransactionSuccess({ 
-          success: true, 
-          txHash: result.data.txHash 
+        setTransactionSuccess({
+          success: true,
+          txHash: result.data.txHash,
         });
       } else {
         console.warn('Claim and restake failed with code:', result.data?.code);
@@ -135,13 +137,13 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
     setLoadingAction('unstake');
     try {
       const result = await unstakeFromAllValidators(selectedValidators);
-      
+
       console.log('Unstake result:', result);
-      
+
       if (result.success && result.data?.code === 0) {
-        setTransactionSuccess({ 
-          success: true, 
-          txHash: result.data.txHash 
+        setTransactionSuccess({
+          success: true,
+          txHash: result.data.txHash,
         });
       } else {
         console.warn('Unstake failed with code:', result.data?.code);
@@ -167,10 +169,7 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
     >
       {transactionSuccess.success ? (
         <div className="fixed top-0 left-0 w-screen h-screen z-[9999] bg-black">
-          <WalletSuccessScreen 
-            caption="Transaction success!" 
-            txHash={transactionSuccess.txHash}
-          />
+          <WalletSuccessScreen caption="Transaction success!" txHash={transactionSuccess.txHash} />
         </div>
       ) : (
         <div className="flex flex-col h-full">
