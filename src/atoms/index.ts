@@ -12,3 +12,4 @@ export * from './transactionStateAtom';
 export * from './validatorsAtom';
 export * from './walletStateAtom';
 export * from './exchangeAssetAtom';
+export * from './errorAtom';
