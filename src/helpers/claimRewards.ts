@@ -124,7 +124,7 @@ export const claimRewards = async (
   }
 };
 
-// TODO: fails occasionally.  find out why and fix.  needs timeout?
+// TODO: fails occasionally on restake.  find out why and fix.  needs timeout?
 // Function to claim rewards and restake for one or multiple validators
 export const claimAndRestake = async (
   delegations: DelegationResponse | DelegationResponse[],
