@@ -453,7 +453,7 @@ export const Send = () => {
       <div className="flex flex-col justify-between flex-grow p-4 border border-neutral-2 rounded-lg overflow-y-auto">
         <>
           {/* Address Input */}
-          <AddressInput addBottomMargin={false} />
+          <AddressInput addBottomMargin={false} updateSendAsset={updateSendAsset} />
 
           {/* Separator */}
           <Separator variant="top" />

@@ -40,9 +40,16 @@ export const Main = () => {
   // Fetch all validator data (delegations, validators, rewards) in one go
   useEffect(() => {
     if (walletState.address) {
+      // setIsLoading(true);
       fetchValidatorData(walletState.address)
-        .then(data => setValidatorData(data))
-        .catch(error => console.error('Error fetching staking data:', error));
+        .then(data => {
+          setValidatorData(data);
+          // setIsLoading(false);
+        })
+        .catch(error => {
+          console.error('Error fetching staking data:', error);
+          // setIsLoading(false);
+        });
     }
   }, [walletState.address]);
 
@@ -72,27 +79,40 @@ export const Main = () => {
     .toFixed(currentExponent);
   const formattedTotalAvailableMLD = formatBalanceDisplay(totalAvailableMLD, symbol);
 
-  // Calculate total staked MLD balance
+  // Calculate total staked MLD balance with safety check
   const totalStakedMLD = validatorData
-    .filter(item => item.balance.denom === LOCAL_ASSET_REGISTRY.note.denom)
+    .filter(item => item.balance?.denom === LOCAL_ASSET_REGISTRY.note.denom)
     .reduce((sum, item) => sum + parseFloat(item.balance?.amount || '0'), 0);
   const formattedTotalStakedMLD = formatBalanceDisplay(
     convertToGreaterUnit(totalStakedMLD, currentExponent).toFixed(currentExponent),
     symbol,
   );
 
-  // Calculate total rewards
-  const totalStakedRewards = validatorData.reduce((sum, item) => {
-    const totalReward = item.rewards.reduce(
-      (rewardSum, reward) => rewardSum + parseFloat(reward.amount),
-      0,
-    );
-    return sum + totalReward;
-  }, 0);
+  // TODO: test removal of array.isarray.  does it proc .filter error?
+  // Calculate total rewards with safety check
+  const totalStakedRewards = Array.isArray(validatorData)
+    ? validatorData.reduce((sum, item) => {
+        const totalReward = item.rewards?.reduce(
+          (rewardSum, reward) => rewardSum + parseFloat(reward.amount || '0'),
+          0,
+        );
+        return sum + totalReward;
+      }, 0)
+    : 0;
+
   const formattedConvertedTotalRewards = formatBalanceDisplay(
     convertToGreaterUnit(totalStakedRewards, 6).toFixed(6),
     symbol,
   );
+
+  // TODO: replace with individual displays on balance card and tilescroller
+  // if (isLoading) {
+  //   return (
+  //     <div className="h-full flex items-center justify-center">
+  //       <div className="text-white">Loading validator data...</div>
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
