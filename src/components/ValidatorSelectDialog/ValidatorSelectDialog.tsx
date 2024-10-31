@@ -216,7 +216,7 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
       title={isClaimDialog ? 'Claim' : 'Unstake'}
       onClose={resetDefaults}
       showBottomBorder
-      topBorderVariant={isClaimDialog ? 'top' : 'bottom'}
+      reducedTopMargin={!isClaimDialog}
     >
       <div className="flex flex-col h-full">
         {!isClaimDialog && (
