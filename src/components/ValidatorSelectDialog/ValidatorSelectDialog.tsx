@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Button, SlideTray } from '@/ui-kit';
 import { TileScroller } from '../TileScroller';
 import { SortDialog } from '../SortDialog';
-import { Spinner } from '@/assets/icons';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import {
   dialogSearchTermAtom,
@@ -12,10 +11,17 @@ import {
   validatorDialogSortTypeAtom,
 } from '@/atoms';
 import { SearchBar } from '../SearchBar';
-import { claimAndRestake, claimRewards, unstakeFromAllValidators } from '@/helpers';
+import {
+  claimAndRestake,
+  claimRewards,
+  truncateWalletAddress,
+  unstakeFromAllValidators,
+} from '@/helpers';
 import { CombinedStakingInfo } from '@/types';
-import { WalletSuccessScreen } from '@/components';
-import { LoadingAction } from '@/types';
+import { useToast } from '@/hooks';
+import { TransactionType } from '@/constants';
+import { WalletSuccessTile } from '../WalletSuccessTile';
+import { Loader } from '../Loader';
 
 interface ValidatorSelectDialogProps {
   buttonText: string;
@@ -28,21 +34,65 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
   buttonVariant,
   isClaimDialog = false,
 }) => {
+  const { toast } = useToast();
+
   const setSearchTerm = useSetAtom(dialogSearchTermAtom);
   const setSortOrder = useSetAtom(validatorDialogSortOrderAtom);
   const setSortType = useSetAtom(validatorDialogSortTypeAtom);
   const [selectedValidators, setSelectedValidators] = useAtom(selectedValidatorsAtom);
   const filteredValidators = useAtomValue(filteredDialogValidatorsAtom);
+
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isSlideTrayOpen, setIsSlideTrayOpen] = useState(false);
   const [transactionSuccess, setTransactionSuccess] = useState<{
+    transactionType?: TransactionType;
     success: boolean;
     txHash?: string;
   }>({
     success: false,
   });
-  const [loadingAction, setLoadingAction] = useState<LoadingAction>(null);
 
   const allValidatorsSelected = selectedValidators.length === filteredValidators.length;
   const noValidatorsSelected = selectedValidators.length === 0;
+
+  const setAsLoading = (transactionType: TransactionType) => {
+    setIsLoading(true);
+    setTransactionSuccess(prev => ({
+      ...prev,
+      transactionType: transactionType,
+    }));
+  };
+
+  const handleTransactionSuccess = (txHash: string) => {
+    if (isSlideTrayOpen) {
+      setTransactionSuccess(prev => ({
+        ...prev,
+        success: true,
+        txHash,
+      }));
+
+      // Set timeout to reset success state after 3 seconds (3000 ms)
+      setTimeout(() => {
+        setTransactionSuccess(prev => ({
+          ...prev,
+          success: false,
+        }));
+      }, 3000);
+    } else {
+      // TODO: toast not displaying.  find out why and fix
+      const displayTransactionHash = truncateWalletAddress('', transactionSuccess.txHash as string);
+
+      toast({
+        title: `${transactionSuccess.transactionType} success!`,
+        description: `Transaction hash ${displayTransactionHash} has been copied.`,
+      });
+
+      setTransactionSuccess(prev => ({
+        ...prev,
+        success: false,
+      }));
+    }
+  };
 
   const resetDefaults = () => {
     console.log('Resetting defaults');
@@ -74,7 +124,8 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
   };
 
   const handleClaimToWallet = async () => {
-    setLoadingAction('claim-wallet');
+    setAsLoading(TransactionType.CLAIM_TO_WALLET);
+
     try {
       const result = await claimRewards(
         filteredValidators[0].delegation.delegator_address,
@@ -84,10 +135,8 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
       console.log('Claim to wallet result:', result);
 
       if (result.success && result.data?.code === 0) {
-        setTransactionSuccess({
-          success: true,
-          txHash: result.data.txHash,
-        });
+        const txHash = result.data.txHash as string;
+        handleTransactionSuccess(txHash);
       } else {
         console.warn('Claim to wallet failed with code:', result.data?.code);
         console.warn('Error message:', result.message || 'No error message provided');
@@ -95,12 +144,13 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
     } catch (error) {
       console.error('Error claiming rewards:', error);
     } finally {
-      setLoadingAction(null);
+      setIsLoading(false);
     }
   };
 
   const handleClaimAndRestake = async () => {
-    setLoadingAction('claim-restake');
+    setAsLoading(TransactionType.CLAIM_TO_RESTAKE);
+
     try {
       const validatorRewards = selectedValidators.map(v => ({
         validator: v.delegation.validator_address,
@@ -118,10 +168,8 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
       console.log('Claim and restake result:', result);
 
       if (result.success && result.data?.code === 0) {
-        setTransactionSuccess({
-          success: true,
-          txHash: result.data.txHash,
-        });
+        const txHash = result.data.txHash as string;
+        handleTransactionSuccess(txHash);
       } else {
         console.warn('Claim and restake failed with code:', result.data?.code);
         console.warn('Error message:', result.message || 'No error message provided');
@@ -129,22 +177,21 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
     } catch (error) {
       console.error('Error claiming and restaking:', error);
     } finally {
-      setLoadingAction(null);
+      setIsLoading(false);
     }
   };
 
   const handleUnstake = async () => {
-    setLoadingAction('unstake');
+    setAsLoading(TransactionType.UNSTAKE);
+
     try {
       const result = await unstakeFromAllValidators(selectedValidators);
 
       console.log('Unstake result:', result);
 
       if (result.success && result.data?.code === 0) {
-        setTransactionSuccess({
-          success: true,
-          txHash: result.data.txHash,
-        });
+        const txHash = result.data.txHash as string;
+        handleTransactionSuccess(txHash);
       } else {
         console.warn('Unstake failed with code:', result.data?.code);
         console.warn('Error message:', result.message || 'No error message provided');
@@ -152,14 +199,14 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
     } catch (error) {
       console.error('Error during unstaking:', error);
     } finally {
-      setLoadingAction(null);
+      setIsLoading(false);
     }
   };
 
   return (
     <SlideTray
       triggerComponent={
-        <Button variant={buttonVariant} className="w-full">
+        <Button variant={buttonVariant} className="w-full" onClick={() => setIsSlideTrayOpen(true)}>
           {buttonText}
         </Button>
       }
@@ -167,99 +214,97 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
       onClose={resetDefaults}
       showBottomBorder
     >
-      {transactionSuccess.success ? (
-        <div className="fixed top-0 left-0 w-screen h-screen z-[9999] bg-black">
-          <WalletSuccessScreen caption="Transaction success!" txHash={transactionSuccess.txHash} />
-        </div>
-      ) : (
-        <div className="flex flex-col h-full">
-          {isClaimDialog && (
-            <div className="flex justify-between space-x-4">
-              <Button
-                size="small"
-                variant="secondary"
-                className="w-full"
-                disabled={selectedValidators.length === 0 || loadingAction !== null}
-                onClick={handleClaimToWallet}
-              >
-                {loadingAction === 'claim-wallet' ? (
-                  <Spinner className="h-4 w-4 animate-spin fill-blue" />
-                ) : (
-                  'To Wallet'
-                )}
-              </Button>
-              <Button
-                size="small"
-                className="w-full"
-                disabled={selectedValidators.length === 0 || loadingAction !== null}
-                onClick={handleClaimAndRestake}
-              >
-                {loadingAction === 'claim-restake' ? (
-                  <Spinner className="h-4 w-4 animate-spin fill-blue" />
-                ) : (
-                  'To Restake'
-                )}
-              </Button>
-            </div>
-          )}
-
-          <div className="flex justify-between items-center px-2">
-            <div className="flex-1 text-sm">Tap to select</div>
-            <div className="flex items-center">
-              <p className="text-sm pr-1">Select:</p>
-              <Button
-                variant={allValidatorsSelected ? 'selected' : 'unselected'}
-                size="xsmall"
-                className="px-1 rounded-md text-xs"
-                onClick={handleSelectAll}
-                disabled={loadingAction !== null}
-              >
-                All
-              </Button>
-              <p className="text-sm px-1">/</p>
-              <Button
-                variant={noValidatorsSelected ? 'selected' : 'unselected'}
-                size="xsmall"
-                className="px-1 rounded-md text-xs"
-                onClick={handleSelectNone}
-                disabled={loadingAction !== null}
-              >
-                None
-              </Button>
-            </div>
-            <div className="flex-1 flex justify-end">
-              <SortDialog isValidatorSort isDialog />
-            </div>
+      <div className="flex flex-col h-full">
+        {isClaimDialog && (
+          <div className="flex justify-between space-x-4">
+            <Button
+              size="small"
+              variant="secondary"
+              className="w-full"
+              disabled={selectedValidators.length === 0 || isLoading}
+              onClick={handleClaimToWallet}
+            >
+              To Wallet
+            </Button>
+            <Button
+              size="small"
+              className="w-full"
+              disabled={selectedValidators.length === 0 || isLoading}
+              onClick={handleClaimAndRestake}
+            >
+              To Restake
+            </Button>
           </div>
+        )}
 
+        <div className="flex justify-between items-center px-2">
+          <div className="flex-1 text-sm">Tap to select</div>
+          <div className="flex items-center">
+            <p className="text-sm pr-1">Select:</p>
+            <Button
+              variant={allValidatorsSelected ? 'selected' : 'unselected'}
+              size="xsmall"
+              className="px-1 rounded-md text-xs"
+              onClick={handleSelectAll}
+              disabled={isLoading}
+            >
+              All
+            </Button>
+            <p className="text-sm px-1">/</p>
+            <Button
+              variant={noValidatorsSelected ? 'selected' : 'unselected'}
+              size="xsmall"
+              className="px-1 rounded-md text-xs"
+              onClick={handleSelectNone}
+              disabled={isLoading}
+            >
+              None
+            </Button>
+          </div>
+          <div className="flex-1 flex justify-end">
+            <SortDialog isValidatorSort isDialog />
+          </div>
+        </div>
+
+        {transactionSuccess.success || isLoading ? (
+          <div className="flex flex-col flex-grow w-full border border-neutral-3 rounded-md items-center justify-center px-[1.5rem]">
+            {isLoading ? (
+              // TODO: scale up size for this.  add variants
+              <div className="flex items-center px-4">
+                <Loader showBackground={false} />
+              </div>
+            ) : (
+              <WalletSuccessTile
+                txHash={truncateWalletAddress('', transactionSuccess.txHash as string)}
+                size="md"
+              />
+            )}
+          </div>
+        ) : (
           <TileScroller
             activeIndex={1}
             onSelectValidator={handleValidatorSelect}
             isSelectable
             isDialog
           />
+        )}
 
-          <SearchBar isDialog isValidatorSearch />
+        <SearchBar isDialog isValidatorSearch />
 
-          {!isClaimDialog && (
-            <div className="flex justify-center space-x-4">
-              <Button
-                variant="secondary"
-                size="small"
-                className="mb-1 w-[44%] h-8"
-                disabled={selectedValidators.length === 0 || loadingAction !== null}
-                onClick={handleUnstake}
-              >
-                {loadingAction === 'unstake' ? (
-                  <Spinner className="h-4 w-4 animate-spin fill-blue" />
-                ) : (
-                  'Unstake'
-                )}
-              </Button>
-            </div>
-          )}
-        </div>
-      )}
+        {!isClaimDialog && (
+          <div className="flex justify-center space-x-4">
+            <Button
+              variant="secondary"
+              size="small"
+              className="mb-1 w-[44%] h-8"
+              disabled={selectedValidators.length === 0 || isLoading}
+              onClick={handleUnstake}
+            >
+              Unstake
+            </Button>
+          </div>
+        )}
+      </div>
     </SlideTray>
   );
 };

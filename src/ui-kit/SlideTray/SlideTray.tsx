@@ -142,10 +142,11 @@ export const SlideTray = forwardRef<unknown, SlideTrayProps>(
 
     useImperativeHandle(ref, () => ({
       closeWithAnimation: dismissTray,
+      isOpen: () => open,
     }));
 
     const handleOverlayClick = () => {
-      setOpen(false);
+      dismissTray();
     };
 
     // TODO: darken slidetray

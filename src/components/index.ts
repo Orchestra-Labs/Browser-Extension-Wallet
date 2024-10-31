@@ -13,6 +13,8 @@ export * from './ScrollTile';
 export * from './SearchBar';
 export * from './SortDialog';
 export * from './TileScroller';
+export * from './Toast';
 export * from './ValidatorScrollTile';
 export * from './ValidatorSelectDialog';
 export * from './WalletSuccessScreen';
+export * from './WalletSuccessTile';

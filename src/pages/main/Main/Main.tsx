@@ -9,7 +9,11 @@ import {
   showAllAssetsAtom,
   searchTermAtom,
 } from '@/atoms';
-import { useEffect, useRef, useState } from 'react';
+import {
+  useEffect,
+  useRef,
+  // useState
+} from 'react';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { Button } from '@/ui-kit';
 import { convertToGreaterUnit, fetchValidatorData, formatBalanceDisplay } from '@/helpers';
@@ -22,7 +26,7 @@ export const Main = () => {
   const [showCurrentValidators, setShowCurrentValidators] = useAtom(showCurrentValidatorsAtom);
   const [showAllAssets, setShowAllAssets] = useAtom(showAllAssetsAtom);
   const setSearchTerm = useSetAtom(searchTermAtom);
-  const [isLoading, setIsLoading] = useState(false);
+  // const [isLoading, setIsLoading] = useState(false);
 
   const swiperRef = useRef<SwiperClass | null>(null);
   const totalSlides = 2;
@@ -41,15 +45,15 @@ export const Main = () => {
   // Fetch all validator data (delegations, validators, rewards) in one go
   useEffect(() => {
     if (walletState.address) {
-      setIsLoading(true);
+      // setIsLoading(true);
       fetchValidatorData(walletState.address)
         .then(data => {
           setValidatorData(data);
-          setIsLoading(false);
+          // setIsLoading(false);
         })
         .catch(error => {
           console.error('Error fetching staking data:', error);
-          setIsLoading(false);
+          // setIsLoading(false);
         });
     }
   }, [walletState.address]);
@@ -81,12 +85,9 @@ export const Main = () => {
   const formattedTotalAvailableMLD = formatBalanceDisplay(totalAvailableMLD, symbol);
 
   // Calculate total staked MLD balance with safety check
-  const totalStakedMLD = Array.isArray(validatorData)
-    ? validatorData
-        .filter(item => item.balance?.denom === LOCAL_ASSET_REGISTRY.note.denom)
-        .reduce((sum, item) => sum + parseFloat(item.balance?.amount || '0'), 0)
-    : 0;
-
+  const totalStakedMLD = validatorData
+    .filter(item => item.balance?.denom === LOCAL_ASSET_REGISTRY.note.denom)
+    .reduce((sum, item) => sum + parseFloat(item.balance?.amount || '0'), 0);
   const formattedTotalStakedMLD = formatBalanceDisplay(
     convertToGreaterUnit(totalStakedMLD, currentExponent).toFixed(currentExponent),
     symbol,
@@ -108,13 +109,14 @@ export const Main = () => {
     symbol,
   );
 
-  if (isLoading) {
-    return (
-      <div className="h-full flex items-center justify-center">
-        <div className="text-white">Loading validator data...</div>
-      </div>
-    );
-  }
+  // TODO: replace with individual displays on balance card and tilescroller
+  // if (isLoading) {
+  //   return (
+  //     <div className="h-full flex items-center justify-center">
+  //       <div className="text-white">Loading validator data...</div>
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
