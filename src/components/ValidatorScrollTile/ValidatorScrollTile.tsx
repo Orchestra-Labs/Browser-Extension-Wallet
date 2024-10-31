@@ -13,7 +13,12 @@ import {
   stakeToValidator,
   unstakeFromValidator,
 } from '@/helpers';
-import { DEFAULT_ASSET, GREATER_EXPONENT_DEFAULT, LOCAL_ASSET_REGISTRY } from '@/constants';
+import {
+  BondStatus,
+  DEFAULT_ASSET,
+  GREATER_EXPONENT_DEFAULT,
+  LOCAL_ASSET_REGISTRY,
+} from '@/constants';
 import { useAtomValue } from 'jotai';
 import { selectedValidatorsAtom, walletStateAtom } from '@/atoms';
 import { AssetInput } from '../AssetInput';
@@ -62,7 +67,7 @@ export const ValidatorScrollTile = ({
   let subTitle: string;
   if (validator.jailed) {
     subTitle = 'Jailed';
-  } else if (validator.status === 'BOND_STATUS_UNBONDED') {
+  } else if (validator.status === BondStatus.UNBONDED) {
     subTitle = 'Inactive';
   } else if (delegatedAmount === 0) {
     subTitle = 'No delegation';
@@ -84,10 +89,10 @@ export const ValidatorScrollTile = ({
   if (validator.jailed) {
     statusLabel = 'Jailed';
     statusColor = 'error';
-  } else if (validator.status === 'BOND_STATUS_UNBONDING') {
+  } else if (validator.status === BondStatus.UNBONDING) {
     statusLabel = 'Unbonding';
     statusColor = 'warn';
-  } else if (validator.status === 'BOND_STATUS_UNBONDED') {
+  } else if (validator.status === BondStatus.UNBONDED) {
     statusLabel = 'Inactive';
     statusColor = 'warn';
   } else {
