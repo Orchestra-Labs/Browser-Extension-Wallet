@@ -103,10 +103,6 @@ export const CreateWallet = () => {
 
   /* ******************************************************************************************* */
   /* David Current TODOs */
-  // TODO: put Loader on loading screen, not "loading"
-  // TODO: make "clear" and "max" button send screen inputs.  make placement and appearance for these uniform (send and unstake sections)
-  // TODO: pull unbonding days dynamically from the validator
-  // TODO: amend fee showing as 0 rather than 0 MLD (send page0)
   // TODO: add fee display and updates for stake, unstake, and claim
   /* ******************************************************************************************* */
 
@@ -118,6 +114,8 @@ export const CreateWallet = () => {
   // TODO: modify auth to accounts & wallets structure to make this scalable for later upgrades
 
   /* Less Critical TODOs */
+  // TODO: amend fee showing as 0 rather than 0 MLD (send page)
+  // TODO: make "clear" and "max" button send screen inputs.  make placement and appearance for these uniform (send and unstake sections)
   // TODO: keep track of current page for case of re-open after timeout
   // TODO: clean up helper functions and hooks
   // TODO: prevent re-building auth every time wallet updates

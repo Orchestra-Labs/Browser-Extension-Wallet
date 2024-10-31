@@ -77,6 +77,7 @@ export interface CombinedStakingInfo {
   balance: DelegationResponse['balance'];
   validator: ValidatorInfo;
   rewards: ValidatorReward['rewards'];
+  stakingParams?: StakingParams | null;
 }
 
 //Create base RPC response interface
@@ -146,6 +147,16 @@ export interface RPCResponse {
     | any[]; // Allow both formats of rewards
   reward?: any[]; // For single validator rewards
 
+  params?: StakingParams;
+
   // Catch-all
   [key: string]: any;
+}
+
+export interface StakingParams {
+  unbonding_time: string;
+  max_validators: number;
+  max_entries: number;
+  historical_entries: number;
+  bond_denom: string;
 }

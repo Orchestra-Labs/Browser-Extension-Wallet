@@ -29,12 +29,8 @@ export const CHAIN_NODES = {
     },
     /*nodeshub has tx indexing disabled, this is a good way to test errors, but not for production
     {
-      rpc: isDev 
-        ? `${DEV_PROXY}/nodeshub-rpc` 
-        : 'https://symphony.test.rpc.nodeshub.online',
-      rest: isDev 
-        ? `${DEV_PROXY}/nodeshub-rest` 
-        : 'https://symphony.test.api.nodeshub.online',
+      rpc: isDev ? `${DEV_PROXY}/nodeshub-rpc` : 'https://symphony.test.rpc.nodeshub.online',
+      rest: isDev ? `${DEV_PROXY}/nodeshub-rest` : 'https://symphony.test.api.nodeshub.online',
       provider: 'Nodes Hub',
     },*/
     {
@@ -57,6 +53,7 @@ export const CHAIN_ENDPOINTS = {
   sendMessage: '/cosmos.bank.v1beta1.MsgSend',
   swap: '/osmosis/market/v1beta1/swap?',
   exchangeRequirements: '/osmosis/market/v1beta1/exchange_requirements',
+  getStakingParams: '/cosmos/staking/v1beta1/params',
 };
 
 // Time constants

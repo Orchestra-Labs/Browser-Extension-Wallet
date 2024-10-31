@@ -97,8 +97,7 @@ export const ValidatorScrollTile = ({
     symbol,
   );
 
-  // TODO: pull dynamically from the validator
-  const unbondingDays = 12;
+  const unbondingDays = `${combinedStakingInfo.stakingParams?.unbonding_time} days`;
 
   let statusLabel = '';
   let statusColor: 'good' | 'warn' | 'error' = 'good';
@@ -304,12 +303,12 @@ export const ValidatorScrollTile = ({
                   Reward: <span className="text-blue">{formattedRewardAmount}</span>
                 </div>
                 <span className="text-grey-dark text-xs text-base">
-                  Unstaking period <span className="text-warning">{unbondingDays} days</span>
+                  Unstaking period <span className="text-warning">{unbondingDays}</span>
                 </span>
               </div>
             )}
 
-            {/* TODO: on button press, animate collapse to 1 line / re-expansion? */}
+            {/* TODO: make scrollable? collapse/expand on button press? if collapse, animate collapse to 1 line / re-expansion */}
             {/* Validator Information */}
             <div className="mb-4 min-h-[7.5rem] max-h-[7.5rem] overflow-hidden shadow-md bg-black p-2">
               <p>

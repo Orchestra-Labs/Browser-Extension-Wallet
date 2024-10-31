@@ -55,6 +55,9 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
   const allValidatorsSelected = selectedValidators.length === filteredValidators.length;
   const noValidatorsSelected = selectedValidators.length === 0;
 
+  // TODO: change per chain, not per validator.  current solution can return 0.  innaccurate.
+  const unbondingDays = `${filteredValidators[0]?.stakingParams?.unbonding_time || 0} days`;
+
   const setAsLoading = (transactionType: TransactionType) => {
     setIsLoading(true);
     setTransactionSuccess(prev => ({
@@ -213,8 +216,17 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
       title={isClaimDialog ? 'Claim' : 'Unstake'}
       onClose={resetDefaults}
       showBottomBorder
+      reducedTopMargin={!isClaimDialog}
     >
       <div className="flex flex-col h-full">
+        {!isClaimDialog && (
+          <div className="text-center">
+            <span className="text-grey-dark text-xs text-base">
+              Unstaking period <span className="text-warning">{unbondingDays}</span>
+            </span>
+          </div>
+        )}
+
         {isClaimDialog && (
           <div className="flex justify-between space-x-4">
             <Button
