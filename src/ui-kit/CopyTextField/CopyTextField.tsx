@@ -6,15 +6,17 @@ import { ICON_CHANGEOVER_TIMEOUT } from '@/constants';
 interface CopyTextFieldProps {
   variant?: 'transparent' | 'text';
   displayText: string;
-  copyText?: string; // Optional prop for the text to copy
-  iconHeight?: number; // Optional prop for the icon height
+  copyText?: string;
+  iconHeight?: number;
+  includeMargin?: boolean;
 }
 
 export const CopyTextField: React.FC<CopyTextFieldProps> = ({
   variant = 'transparent',
   displayText,
-  copyText, // If not provided, defaults to `text`
-  iconHeight = 20, // Default icon height is 14px
+  copyText,
+  iconHeight = 20,
+  includeMargin = true,
 }) => {
   const [copied, setCopied] = useState(false);
 
@@ -42,12 +44,13 @@ export const CopyTextField: React.FC<CopyTextFieldProps> = ({
       );
     }
     default: {
+      // TODO: click to claim in balance card widens drastically.  find out why and fix
       return (
         <Button
           variant="transparentNeutral"
           size="small"
           onClick={handleCopyToClipboard}
-          className="mt-3"
+          className={includeMargin ? 'mt-3' : ''}
         >
           <div className="flex items-center space-x-2 px-2 rounded-full border border-neutral-2">
             {copied ? (

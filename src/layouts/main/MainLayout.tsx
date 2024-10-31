@@ -3,7 +3,7 @@ import { NavLink, Outlet } from 'react-router-dom';
 
 import { Copy } from '@/assets/icons';
 import { LogoIcon } from '@/assets/icons';
-import { OptionsDialog } from '@/components';
+import { OptionsDialog, Toaster } from '@/components';
 import { ROUTES } from '@/constants';
 
 const avatarUrl = chrome?.runtime?.getURL('avatar.png');
@@ -36,6 +36,7 @@ const MainLayout: React.FC = () => (
       </div>
     </header>
     <Outlet />
+    <Toaster />
   </div>
 );
 

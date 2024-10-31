@@ -149,5 +149,3 @@ export interface RPCResponse {
   // Catch-all
   [key: string]: any;
 }
-
-export type LoadingAction = 'stake' | 'unstake' | 'claim-wallet' | 'claim-restake' | null;
