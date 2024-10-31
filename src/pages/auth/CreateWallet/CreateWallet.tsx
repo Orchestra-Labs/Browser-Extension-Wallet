@@ -103,6 +103,7 @@ export const CreateWallet = () => {
 
   /* ******************************************************************************************* */
   /* David Current TODOs */
+  // TODO: modify toast display.  may need to force consistent refresh of toast to modify this
   // TODO: Add QR code intake methods (camera, file selection/drag and drop option)
   // TODO: Add Maestro-only QR code that also shows preferred receive asset (requires preferred receive asset)
 

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { CombinedStakingInfo } from '@/types';
 import { SlideTray, Button } from '@/ui-kit';
 import { LogoIcon } from '@/assets/icons';
@@ -39,18 +39,17 @@ export const ValidatorScrollTile = ({
   onClick,
 }: ValidatorScrollTileProps) => {
   const { toast } = useToast();
+  const slideTrayRef = useRef<{ isOpen: () => void }>(null);
 
   const selectedValidators = useAtomValue(selectedValidatorsAtom);
   const walletState = useAtomValue(walletStateAtom);
 
   const [amount, setAmount] = useState(0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [isSlideTrayOpen, setIsSlideTrayOpen] = useState(false);
   const [selectedAction, setSelectedAction] = useState<'stake' | 'unstake' | 'claim' | null>(
     !combinedStakingInfo.delegation ? 'stake' : null,
   );
   const [transactionSuccess, setTransactionSuccess] = useState<{
-    transactionType?: TransactionType;
     success: boolean;
     txHash?: string;
   }>({
@@ -128,16 +127,11 @@ export const ValidatorScrollTile = ({
     }
   };
 
-  const setAsLoading = (transactionType: TransactionType) => {
-    setIsLoading(true);
-    setTransactionSuccess(prev => ({
-      ...prev,
-      transactionType: transactionType,
-    }));
-  };
+  const handleTransactionSuccess = (transactionType: TransactionType, txHash: string) => {
+    const slideTrayIsOpen = slideTrayRef.current && slideTrayRef.current.isOpen();
+    console.log('reference slide tray is open?', slideTrayIsOpen);
 
-  const handleTransactionSuccess = (txHash: string) => {
-    if (isSlideTrayOpen) {
+    if (slideTrayIsOpen) {
       setSelectedAction(null);
       setTransactionSuccess(prev => ({
         ...prev,
@@ -153,11 +147,10 @@ export const ValidatorScrollTile = ({
         }));
       }, 3000);
     } else {
-      // TODO: toast not displaying.  find out why and fix
-      const displayTransactionHash = truncateWalletAddress('', transactionSuccess.txHash as string);
+      const displayTransactionHash = truncateWalletAddress('', txHash as string);
 
       toast({
-        title: `${transactionSuccess.transactionType} success!`,
+        title: `${transactionType} success!`,
         description: `Transaction hash ${displayTransactionHash} has been copied.`,
       });
 
@@ -169,7 +162,7 @@ export const ValidatorScrollTile = ({
   };
 
   const handleStake = async (amount: string) => {
-    setAsLoading(TransactionType.STAKE);
+    setIsLoading(true);
 
     try {
       const result = await stakeToValidator(
@@ -182,8 +175,9 @@ export const ValidatorScrollTile = ({
       console.log('Stake result:', result);
 
       if (result.success && result.data?.code === 0) {
+        const txType = TransactionType.STAKE;
         const txHash = result.data.txHash as string;
-        handleTransactionSuccess(txHash);
+        handleTransactionSuccess(txType, txHash);
       } else {
         console.warn('Stake failed with code:', result.data?.code);
         console.warn('Error message:', result.message || 'No error message provided');
@@ -196,7 +190,7 @@ export const ValidatorScrollTile = ({
   };
 
   const handleUnstake = async (amount: string) => {
-    setAsLoading(TransactionType.UNSTAKE);
+    setIsLoading(true);
 
     try {
       const result = await unstakeFromValidator(amount, delegationResponse);
@@ -204,8 +198,9 @@ export const ValidatorScrollTile = ({
       console.log('Unstake result:', result);
 
       if (result.success && result.data?.code === 0) {
+        const txType = TransactionType.UNSTAKE;
         const txHash = result.data.txHash as string;
-        handleTransactionSuccess(txHash);
+        handleTransactionSuccess(txType, txHash);
       } else {
         console.warn('Unstake failed with code:', result.data?.code);
         console.warn('Error message:', result.message || 'No error message provided');
@@ -218,7 +213,7 @@ export const ValidatorScrollTile = ({
   };
 
   const handleClaimToWallet = async () => {
-    setAsLoading(TransactionType.CLAIM_TO_WALLET);
+    setIsLoading(true);
 
     try {
       const result = await claimRewards(walletState.address, validator.operator_address);
@@ -226,8 +221,9 @@ export const ValidatorScrollTile = ({
       console.log('Claim to wallet result:', result);
 
       if (result.success && result.data?.code === 0) {
+        const txType = TransactionType.CLAIM_TO_WALLET;
         const txHash = result.data.txHash as string;
-        handleTransactionSuccess(txHash);
+        handleTransactionSuccess(txType, txHash);
       } else {
         console.warn('Claim to wallet failed with code:', result.data?.code);
         console.warn('Error message:', result.message || 'No error message provided');
@@ -240,7 +236,7 @@ export const ValidatorScrollTile = ({
   };
 
   const handleClaimAndRestake = async () => {
-    setAsLoading(TransactionType.CLAIM_TO_RESTAKE);
+    setIsLoading(true);
 
     try {
       const result = await claimAndRestake(delegationResponse, [
@@ -253,8 +249,9 @@ export const ValidatorScrollTile = ({
       console.log('Claim and restake result:', result);
 
       if (result.success && result.data?.code === 0) {
+        const txType = TransactionType.CLAIM_TO_RESTAKE;
         const txHash = result.data.txHash as string;
-        handleTransactionSuccess(txHash);
+        handleTransactionSuccess(txType, txHash);
       } else {
         console.warn('Claim and restake failed with code:', result.data?.code);
         console.warn('Error message:', result.message || 'No error message provided');
@@ -284,6 +281,7 @@ export const ValidatorScrollTile = ({
         />
       ) : (
         <SlideTray
+          ref={slideTrayRef}
           triggerComponent={
             <div>
               <ScrollTile
@@ -292,14 +290,12 @@ export const ValidatorScrollTile = ({
                 value={formattedRewardAmount}
                 icon={<LogoIcon />}
                 status={statusColor}
-                onClick={() => setIsSlideTrayOpen(true)}
               />
             </div>
           }
           title={title}
           showBottomBorder
           status={statusColor}
-          onClose={() => setIsSlideTrayOpen(false)}
         >
           <>
             {rewards && (
