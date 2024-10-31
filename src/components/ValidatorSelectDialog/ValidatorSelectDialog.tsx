@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Button, SlideTray } from '@/ui-kit';
 import { TileScroller } from '../TileScroller';
 import { SortDialog } from '../SortDialog';
@@ -11,8 +11,17 @@ import {
   validatorDialogSortTypeAtom,
 } from '@/atoms';
 import { SearchBar } from '../SearchBar';
-import { claimAndRestake, claimRewards, unstakeFromAllValidators } from '@/helpers';
+import {
+  claimAndRestake,
+  claimRewards,
+  truncateWalletAddress,
+  unstakeFromAllValidators,
+} from '@/helpers';
 import { CombinedStakingInfo } from '@/types';
+import { useToast } from '@/hooks';
+import { TransactionType } from '@/constants';
+import { WalletSuccessTile } from '../WalletSuccessTile';
+import { Loader } from '../Loader';
 
 interface ValidatorSelectDialogProps {
   buttonText: string;
@@ -25,14 +34,65 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
   buttonVariant,
   isClaimDialog = false,
 }) => {
+  const { toast } = useToast();
+
   const setSearchTerm = useSetAtom(dialogSearchTermAtom);
   const setSortOrder = useSetAtom(validatorDialogSortOrderAtom);
   const setSortType = useSetAtom(validatorDialogSortTypeAtom);
   const [selectedValidators, setSelectedValidators] = useAtom(selectedValidatorsAtom);
   const filteredValidators = useAtomValue(filteredDialogValidatorsAtom);
 
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isSlideTrayOpen, setIsSlideTrayOpen] = useState(false);
+  const [transactionSuccess, setTransactionSuccess] = useState<{
+    transactionType?: TransactionType;
+    success: boolean;
+    txHash?: string;
+  }>({
+    success: false,
+  });
+
   const allValidatorsSelected = selectedValidators.length === filteredValidators.length;
   const noValidatorsSelected = selectedValidators.length === 0;
+
+  const setAsLoading = (transactionType: TransactionType) => {
+    setIsLoading(true);
+    setTransactionSuccess(prev => ({
+      ...prev,
+      transactionType: transactionType,
+    }));
+  };
+
+  const handleTransactionSuccess = (txHash: string) => {
+    if (isSlideTrayOpen) {
+      setTransactionSuccess(prev => ({
+        ...prev,
+        success: true,
+        txHash,
+      }));
+
+      // Set timeout to reset success state after 3 seconds (3000 ms)
+      setTimeout(() => {
+        setTransactionSuccess(prev => ({
+          ...prev,
+          success: false,
+        }));
+      }, 3000);
+    } else {
+      // TODO: toast not displaying.  find out why and fix
+      const displayTransactionHash = truncateWalletAddress('', transactionSuccess.txHash as string);
+
+      toast({
+        title: `${transactionSuccess.transactionType} success!`,
+        description: `Transaction hash ${displayTransactionHash} has been copied.`,
+      });
+
+      setTransactionSuccess(prev => ({
+        ...prev,
+        success: false,
+      }));
+    }
+  };
 
   const resetDefaults = () => {
     console.log('Resetting defaults');
@@ -63,10 +123,90 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
     );
   };
 
+  const handleClaimToWallet = async () => {
+    setAsLoading(TransactionType.CLAIM_TO_WALLET);
+
+    try {
+      const result = await claimRewards(
+        filteredValidators[0].delegation.delegator_address,
+        selectedValidators.map(v => v.delegation.validator_address),
+      );
+
+      console.log('Claim to wallet result:', result);
+
+      if (result.success && result.data?.code === 0) {
+        const txHash = result.data.txHash as string;
+        handleTransactionSuccess(txHash);
+      } else {
+        console.warn('Claim to wallet failed with code:', result.data?.code);
+        console.warn('Error message:', result.message || 'No error message provided');
+      }
+    } catch (error) {
+      console.error('Error claiming rewards:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleClaimAndRestake = async () => {
+    setAsLoading(TransactionType.CLAIM_TO_RESTAKE);
+
+    try {
+      const validatorRewards = selectedValidators.map(v => ({
+        validator: v.delegation.validator_address,
+        rewards: v.rewards,
+      }));
+
+      const result = await claimAndRestake(
+        selectedValidators.map(v => ({
+          delegation: v.delegation,
+          balance: v.balance,
+        })),
+        validatorRewards,
+      );
+
+      console.log('Claim and restake result:', result);
+
+      if (result.success && result.data?.code === 0) {
+        const txHash = result.data.txHash as string;
+        handleTransactionSuccess(txHash);
+      } else {
+        console.warn('Claim and restake failed with code:', result.data?.code);
+        console.warn('Error message:', result.message || 'No error message provided');
+      }
+    } catch (error) {
+      console.error('Error claiming and restaking:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleUnstake = async () => {
+    setAsLoading(TransactionType.UNSTAKE);
+
+    try {
+      const result = await unstakeFromAllValidators(selectedValidators);
+
+      console.log('Unstake result:', result);
+
+      if (result.success && result.data?.code === 0) {
+        const txHash = result.data.txHash as string;
+        handleTransactionSuccess(txHash);
+      } else {
+        console.warn('Unstake failed with code:', result.data?.code);
+        console.warn('Error message:', result.message || 'No error message provided');
+      }
+    } catch (error) {
+      console.error('Error during unstaking:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <SlideTray
       triggerComponent={
-        <Button variant={buttonVariant} className="w-full">
+        <Button variant={buttonVariant} className="w-full" onClick={() => setIsSlideTrayOpen(true)}>
           {buttonText}
         </Button>
       }
@@ -81,36 +221,16 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
               size="small"
               variant="secondary"
               className="w-full"
-              disabled={selectedValidators.length === 0}
-              onClick={() => {
-                console.log('Claiming rewards for selected validators:', selectedValidators);
-                claimRewards(
-                  filteredValidators[0].delegation.delegator_address,
-                  selectedValidators.map(v => v.delegation.validator_address),
-                );
-              }}
+              disabled={selectedValidators.length === 0 || isLoading}
+              onClick={handleClaimToWallet}
             >
               To Wallet
             </Button>
             <Button
               size="small"
               className="w-full"
-              disabled={selectedValidators.length === 0}
-              onClick={() => {
-                console.log('Claiming and restaking for selected validators:', selectedValidators);
-                const validatorRewards = selectedValidators.map(v => ({
-                  validator: v.delegation.validator_address,
-                  rewards: v.rewards
-                }));
-                
-                claimAndRestake(
-                  selectedValidators.map(v => ({ 
-                    delegation: v.delegation,
-                    balance: v.balance 
-                  })),
-                  validatorRewards
-                );
-              }}
+              disabled={selectedValidators.length === 0 || isLoading}
+              onClick={handleClaimAndRestake}
             >
               To Restake
             </Button>
@@ -126,6 +246,7 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
               size="xsmall"
               className="px-1 rounded-md text-xs"
               onClick={handleSelectAll}
+              disabled={isLoading}
             >
               All
             </Button>
@@ -135,6 +256,7 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
               size="xsmall"
               className="px-1 rounded-md text-xs"
               onClick={handleSelectNone}
+              disabled={isLoading}
             >
               None
             </Button>
@@ -144,12 +266,28 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
           </div>
         </div>
 
-        <TileScroller
-          activeIndex={1}
-          onSelectValidator={handleValidatorSelect}
-          isSelectable
-          isDialog
-        />
+        {transactionSuccess.success || isLoading ? (
+          <div className="flex flex-col flex-grow w-full border border-neutral-3 rounded-md items-center justify-center px-[1.5rem]">
+            {isLoading ? (
+              // TODO: scale up size for this.  add variants
+              <div className="flex items-center px-4">
+                <Loader showBackground={false} />
+              </div>
+            ) : (
+              <WalletSuccessTile
+                txHash={truncateWalletAddress('', transactionSuccess.txHash as string)}
+                size="md"
+              />
+            )}
+          </div>
+        ) : (
+          <TileScroller
+            activeIndex={1}
+            onSelectValidator={handleValidatorSelect}
+            isSelectable
+            isDialog
+          />
+        )}
 
         <SearchBar isDialog isValidatorSearch />
 
@@ -159,11 +297,8 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
               variant="secondary"
               size="small"
               className="mb-1 w-[44%] h-8"
-              disabled={selectedValidators.length === 0}
-              onClick={() => {
-                console.log('Unstaking selected validators:', selectedValidators);
-                unstakeFromAllValidators(selectedValidators);
-              }}
+              disabled={selectedValidators.length === 0 || isLoading}
+              onClick={handleUnstake}
             >
               Unstake
             </Button>

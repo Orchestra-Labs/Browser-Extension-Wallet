@@ -5,7 +5,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import { AppRouter } from '@/app/Router';
-import { Loader } from '@/components';
+import { Loader, Toaster } from '@/components';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -22,6 +22,7 @@ function App() {
       <MemoryRouter>
         <Suspense fallback={<Loader />}>
           <AppRouter />
+          <Toaster />
         </Suspense>
       </MemoryRouter>
     </QueryClientProvider>
