@@ -104,22 +104,22 @@ export const CreateWallet = () => {
   /* ******************************************************************************************* */
   /* David Current TODOs */
   // TODO: add fee display and updates for stake, unstake, and claim
-
-  // TODO: make "clear" and "max" button placement and appearance more uniform (send and unstake sections)
-  // TODO: add search icon to search field, add onclick
-
-  // TODO: clean up helper functions and hooks
   /* ******************************************************************************************* */
 
   /* Current TODOs */
-  // TODO: keep track of current page for case of re-open before timeout
-  // TODO: ensure logout after blur (click outside application to close).  to remove sensitive data after time period
-  // TODO: prevent re-building auth every time wallet updates
-
-  /* Less Critical Auth TODOs */
-  // TODO: ensure new encrypted mnemonic overwrites old in case of same password and name (but let user know first)
+  // TODO: ensure logout after blur + timeout (blur is click outside application to close).  to remove sensitive data after time period
   // TODO: test path and create error for no wallet exists and user attempts login
+  // TODO: ensure new encrypted mnemonic overwrites old in case of same password and name (but let user know first)
   // TODO: handle error printout for create/import wallet (in place of subtitle on verify screen?)
+  // TODO: modify auth to accounts & wallets structure to make this scalable for later upgrades
+
+  /* Less Critical TODOs */
+  // TODO: amend fee showing as 0 rather than 0 MLD (send page)
+  // TODO: make "clear" and "max" button send screen inputs.  make placement and appearance for these uniform (send and unstake sections)
+  // TODO: keep track of current page for case of re-open after timeout
+  // TODO: clean up helper functions and hooks
+  // TODO: prevent re-building auth every time wallet updates
+  // TODO: add search icon to search field (component), add onclick
 
   /* Interchain-compatibility TODOs (mobile version before this) */
   // TODO: add button to "add chain" at bottom of Holdings list

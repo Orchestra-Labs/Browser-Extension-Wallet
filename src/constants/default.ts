@@ -27,11 +27,12 @@ export const CHAIN_NODES = {
       rest: isDev ? `${DEV_PROXY}/kleomedes-rest` : 'https://symphony-api.kleomedes.network',
       provider: 'Kleomedes',
     },
+    /*nodeshub has tx indexing disabled, this is a good way to test errors, but not for production
     {
       rpc: isDev ? `${DEV_PROXY}/nodeshub-rpc` : 'https://symphony.test.rpc.nodeshub.online',
       rest: isDev ? `${DEV_PROXY}/nodeshub-rest` : 'https://symphony.test.api.nodeshub.online',
       provider: 'Nodes Hub',
-    },
+    },*/
     {
       rpc: isDev ? `${DEV_PROXY}/cogwheel-rpc` : 'https://symphony-testnet-rpc.cogwheel.zone',
       rest: isDev ? `${DEV_PROXY}/cogwheel-rest` : 'https://symphony-testnet-api.cogwheel.zone',

@@ -15,16 +15,8 @@
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'"
   },
-  "host_permissions": [
-    "https://*/*",
-    "http://*/*"
-  ],
-  "permissions": [
-    "activeTab",
-    "tabs",
-    "storage",
-    "clipboardWrite"
-  ],
+  "host_permissions": ["https://*/*", "http://*/*"],
+  "permissions": ["activeTab", "videoCapture", "camera", "tabs", "storage", "clipboardWrite"],
   "web_accessible_resources": [
     {
       "resources": ["index.html"],

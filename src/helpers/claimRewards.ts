@@ -1,6 +1,6 @@
 import { CHAIN_ENDPOINTS, GREATER_EXPONENT_DEFAULT, LOCAL_ASSET_REGISTRY } from '@/constants';
 import { queryRpcNode } from './queryNodes';
-import { DelegationResponse } from '@/types';
+import { DelegationResponse, TransactionResult } from '@/types';
 import { fetchRewards } from './fetchStakingInfo';
 
 export const buildClaimMessage = ({
@@ -64,7 +64,7 @@ export const buildClaimMessage = ({
 export const claimRewards = async (
   delegatorAddress: string,
   validatorAddress: string | string[],
-) => {
+): Promise<TransactionResult> => {
   const endpoint = CHAIN_ENDPOINTS.claimRewards;
 
   // Make sure validatorAddress is always an array
@@ -90,17 +90,49 @@ export const claimRewards = async (
       messages,
     });
 
+    if (!response) {
+      return {
+        success: false,
+        message: 'No response received from transaction',
+        data: {
+          code: 1,
+        },
+      };
+    }
+
     console.log('Rewards claimed successfully:', response);
+    return {
+      success: true,
+      message: 'Transaction successful',
+      data: {
+        code: response.code || 0,
+        txHash: response.txHash,
+        gasUsed: response.gasUsed,
+        gasWanted: response.gasWanted,
+        height: response.height,
+      },
+    };
   } catch (error) {
     console.error('Error claiming rewards:', error);
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : 'Unknown error occurred',
+      data: {
+        code: 1,
+      },
+    };
   }
 };
 
+// TODO: fails occasionally on restake.  find out why and fix.  needs timeout?
 // Function to claim rewards and restake for one or multiple validators
-export const claimAndRestake = async (delegations: DelegationResponse | DelegationResponse[], rewards?: {
-  validator: string;
-  rewards: { denom: string; amount: string }[];
-}[]) => {
+export const claimAndRestake = async (
+  delegations: DelegationResponse | DelegationResponse[],
+  rewards?: {
+    validator: string;
+    rewards: { denom: string; amount: string }[];
+  }[],
+): Promise<TransactionResult> => {
   const delegateEndpoint = CHAIN_ENDPOINTS.delegateToValidator;
 
   // Ensure delegations is always an array
@@ -110,10 +142,12 @@ export const claimAndRestake = async (delegations: DelegationResponse | Delegati
 
   try {
     // If rewards weren't passed in, fetch them
-    const validatorRewards = rewards || await fetchRewards(
-      delegatorAddress,
-      validatorAddresses.map(addr => ({ validator_address: addr }))
-    );
+    const validatorRewards =
+      rewards ||
+      (await fetchRewards(
+        delegatorAddress,
+        validatorAddresses.map(addr => ({ validator_address: addr })),
+      ));
 
     // Check if there are any non-zero rewards
     const hasRewards = validatorRewards.some(reward => {
@@ -124,11 +158,21 @@ export const claimAndRestake = async (delegations: DelegationResponse | Delegati
 
     if (!hasRewards) {
       console.log('No non-zero rewards to claim and delegate');
-      return null;
+      return {
+        success: false,
+        message: 'No rewards to claim',
+        data: {
+          code: 1,
+        },
+      };
     }
 
-    // Claim rewards first
-    await claimRewards(delegatorAddress, validatorAddresses);
+    // Claim rewards first and check for success
+    const claimResponse = await claimRewards(delegatorAddress, validatorAddresses);
+
+    if (!claimResponse.success || claimResponse.data?.code !== 0) {
+      return claimResponse;
+    }
 
     // Create delegation messages for each validator with their respective reward amounts
     const delegateMessages = validatorRewards.flatMap(reward => {
@@ -136,7 +180,7 @@ export const claimAndRestake = async (delegations: DelegationResponse | Delegati
       if (!reward.rewards || reward.rewards.length === 0) return [];
 
       const { denom, amount } = reward.rewards[0];
-      
+
       // Skip if reward amount is zero
       if (parseFloat(amount) <= 0) return [];
 
@@ -154,20 +198,52 @@ export const claimAndRestake = async (delegations: DelegationResponse | Delegati
 
     // Only proceed with delegation if there are messages (implying non-zero rewards)
     if (delegateMessages.length > 0) {
-      const restakeResponse = await queryRpcNode({
+      const response = await queryRpcNode({
         endpoint: delegateEndpoint,
         messages: delegateMessages.flat(),
       });
 
-      console.log('Rewards claimed and delegated successfully:', restakeResponse);
-      return restakeResponse;
+      if (!response) {
+        return {
+          success: false,
+          message: 'No response received from restake transaction',
+          data: {
+            code: 1,
+          },
+        };
+      }
+
+      console.log('Rewards claimed and delegated successfully:', response);
+      return {
+        success: true,
+        message: 'Transaction successful',
+        data: {
+          code: response.code || 0,
+          txHash: response.txHash,
+          gasUsed: response.gasUsed,
+          gasWanted: response.gasWanted,
+          height: response.height,
+        },
+      };
     } else {
       console.log('No rewards to delegate after filtering zero amounts');
-      return null;
+      return {
+        success: false,
+        message: 'No rewards to delegate',
+        data: {
+          code: 1,
+        },
+      };
     }
   } catch (error) {
-    console.error('Error during claim and restake:', error);
-    throw error;
+    console.error('Error during claim and restake process:', error);
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : 'Unknown error occurred',
+      data: {
+        code: 1,
+      },
+    };
   }
 };
 
@@ -177,7 +253,7 @@ export const stakeToValidator = async (
   denom: string,
   walletAddress: string,
   validatorAddress: string,
-) => {
+): Promise<TransactionResult> => {
   const endpoint = CHAIN_ENDPOINTS.delegateToValidator;
   const formattedAmount = (
     parseFloat(amount) *
@@ -198,27 +274,56 @@ export const stakeToValidator = async (
       messages,
     });
 
+    if (!response) {
+      return {
+        success: false,
+        message: 'No response received from transaction',
+        data: {
+          code: 1,
+        },
+      };
+    }
+
     console.log('Successfully staked:', response);
+    return {
+      success: true,
+      message: 'Transaction successful',
+      data: {
+        code: response.code || 0,
+        txHash: response.txHash,
+        gasUsed: response.gasUsed,
+        gasWanted: response.gasWanted,
+        height: response.height,
+      },
+    };
   } catch (error) {
     console.error('Error during staking:', error);
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : 'Unknown error occurred',
+      data: {
+        code: 1,
+      },
+    };
   }
 };
 
 // Function to unstake from a validator
-export const unstakeFromValidator = async (amount: string, delegation: DelegationResponse) => {
+export const unstakeFromValidator = async (
+  amount: string,
+  delegation: DelegationResponse,
+): Promise<TransactionResult> => {
   const endpoint = CHAIN_ENDPOINTS.undelegateFromValidator;
   const delegatorAddress = delegation.delegation.delegator_address;
   const validatorAddress = delegation.delegation.validator_address;
   const denom = delegation.balance.denom;
 
-  // TODO: format according to passed asset
   // Convert the amount to the smallest unit by multiplying by 10^exponent
   const formattedAmount = (
     parseFloat(amount) *
     Math.pow(10, LOCAL_ASSET_REGISTRY[denom].exponent || GREATER_EXPONENT_DEFAULT)
   ).toFixed(0);
 
-  // Log the formatted amount to ensure it is correct
   console.log('Formatted amount (in smallest unit):', formattedAmount);
 
   const messages = buildClaimMessage({
@@ -235,14 +340,44 @@ export const unstakeFromValidator = async (amount: string, delegation: Delegatio
       messages,
     });
 
+    if (!response) {
+      return {
+        success: false,
+        message: 'No response received from transaction',
+        data: {
+          code: 1,
+        },
+      };
+    }
+
     console.log('Successfully unstaked:', response);
+    return {
+      success: true,
+      message: 'Transaction successful',
+      data: {
+        code: response.code || 0,
+        txHash: response.txHash,
+        gasUsed: response.gasUsed,
+        gasWanted: response.gasWanted,
+        height: response.height,
+      },
+    };
   } catch (error) {
     console.error('Error during unstaking:', error);
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : 'Unknown error occurred',
+      data: {
+        code: 1,
+      },
+    };
   }
 };
 
 // Function to unstake from multiple validators
-export const unstakeFromAllValidators = async (delegations: DelegationResponse[]) => {
+export const unstakeFromAllValidators = async (
+  delegations: DelegationResponse[],
+): Promise<TransactionResult> => {
   const endpoint = CHAIN_ENDPOINTS.undelegateFromValidator;
 
   const messages = buildClaimMessage({
@@ -251,12 +386,41 @@ export const unstakeFromAllValidators = async (delegations: DelegationResponse[]
   });
 
   try {
-    const unstakeResponse = await queryRpcNode({
+    const response = await queryRpcNode({
       endpoint,
       messages,
     });
-    console.log('Successfully unstaked:', unstakeResponse);
+
+    if (!response) {
+      return {
+        success: false,
+        message: 'No response received from transaction',
+        data: {
+          code: 1,
+        },
+      };
+    }
+
+    console.log('Successfully unstaked:', response);
+    return {
+      success: true,
+      message: 'Transaction successful',
+      data: {
+        code: response.code || 0,
+        txHash: response.txHash,
+        gasUsed: response.gasUsed,
+        gasWanted: response.gasWanted,
+        height: response.height,
+      },
+    };
   } catch (error) {
     console.error('Error during unstaking:', error);
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : 'Unknown error occurred',
+      data: {
+        code: 1,
+      },
+    };
   }
 };
