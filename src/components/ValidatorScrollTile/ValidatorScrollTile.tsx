@@ -76,7 +76,6 @@ export const ValidatorScrollTile = ({
     symbol,
   );
 
-  // TODO: add unstaking period to validator select dialog
   const unbondingDays = `${combinedStakingInfo.stakingParams?.unbonding_time} days`;
 
   let statusLabel = '';

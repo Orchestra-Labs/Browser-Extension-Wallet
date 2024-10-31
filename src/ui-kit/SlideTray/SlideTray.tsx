@@ -15,6 +15,7 @@ interface SlideTrayProps {
   closeButtonVariant?: 'top-right' | 'bottom-center';
   height?: string;
   showBottomBorder?: boolean;
+  topBorderVariant?: 'top' | 'bottom' | 'centered-icon' | 'neutral';
   status?: 'error' | 'warn' | 'good';
   onClose?: () => void;
 }
@@ -29,6 +30,7 @@ export const SlideTray = forwardRef<unknown, SlideTrayProps>(
       closeButtonVariant = 'bottom-center',
       height = '75%',
       showBottomBorder = false,
+      topBorderVariant = 'top',
       status = 'good',
       onClose,
     },
@@ -185,7 +187,7 @@ export const SlideTray = forwardRef<unknown, SlideTrayProps>(
               {title && (
                 <>
                   <h2 className={`text-h5 font-bold ${titleColor} text-center mb-2`}>{title}</h2>
-                  <Separator variant="top" />
+                  <Separator variant={topBorderVariant} />
                 </>
               )}
               <div className="flex-1 overflow-y-auto">{children}</div>

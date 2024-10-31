@@ -34,6 +34,9 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
   const allValidatorsSelected = selectedValidators.length === filteredValidators.length;
   const noValidatorsSelected = selectedValidators.length === 0;
 
+  // TODO: change per chain, not per validator.  current solution can return 0.  innaccurate.
+  const unbondingDays = `${filteredValidators[0]?.stakingParams?.unbonding_time || 0} days`;
+
   const resetDefaults = () => {
     console.log('Resetting defaults');
     setSearchTerm('');
@@ -73,8 +76,17 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
       title={isClaimDialog ? 'Claim' : 'Unstake'}
       onClose={resetDefaults}
       showBottomBorder
+      topBorderVariant={isClaimDialog ? 'top' : 'bottom'}
     >
       <div className="flex flex-col h-full">
+        {!isClaimDialog && (
+          <div className="text-center">
+            <span className="text-grey-dark text-xs text-base">
+              Unstaking period <span className="text-warning">{unbondingDays}</span>
+            </span>
+          </div>
+        )}
+
         {isClaimDialog && (
           <div className="flex justify-between space-x-4">
             <Button
@@ -100,15 +112,15 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
                 console.log('Claiming and restaking for selected validators:', selectedValidators);
                 const validatorRewards = selectedValidators.map(v => ({
                   validator: v.delegation.validator_address,
-                  rewards: v.rewards
+                  rewards: v.rewards,
                 }));
-                
+
                 claimAndRestake(
-                  selectedValidators.map(v => ({ 
+                  selectedValidators.map(v => ({
                     delegation: v.delegation,
-                    balance: v.balance 
+                    balance: v.balance,
                   })),
-                  validatorRewards
+                  validatorRewards,
                 );
               }}
             >
