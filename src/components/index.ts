@@ -7,6 +7,7 @@ export * from './CreatePasswordForm';
 export * from './Loader';
 export * from './OptionsDialog';
 export * from './QRCodeContainer';
+export * from './QRCodeScannerDialog';
 export * from './ReceiveDialog';
 export * from './RecoveryPhraseGrid';
 export * from './ScrollTile';

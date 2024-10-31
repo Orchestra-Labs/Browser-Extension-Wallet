@@ -129,7 +129,6 @@ export const ValidatorScrollTile = ({
 
   const handleTransactionSuccess = (transactionType: TransactionType, txHash: string) => {
     const slideTrayIsOpen = slideTrayRef.current && slideTrayRef.current.isOpen();
-    console.log('reference slide tray is open?', slideTrayIsOpen);
 
     if (slideTrayIsOpen) {
       setSelectedAction(null);
