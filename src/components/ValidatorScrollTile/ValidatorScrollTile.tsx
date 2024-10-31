@@ -76,8 +76,8 @@ export const ValidatorScrollTile = ({
     symbol,
   );
 
-  // TODO: pull dynamically from the validator
-  const unbondingDays = 12;
+  // TODO: add unstaking period to validator select dialog
+  const unbondingDays = `${combinedStakingInfo.stakingParams?.unbonding_time} days`;
 
   let statusLabel = '';
   let statusColor: 'good' | 'warn' | 'error' = 'good';
@@ -146,7 +146,7 @@ export const ValidatorScrollTile = ({
                 Reward: <span className="text-blue">{formattedRewardAmount}</span>
               </div>
               <span className="text-grey-dark text-xs text-base">
-                Unstaking period <span className="text-warning">{unbondingDays} days</span>
+                Unstaking period <span className="text-warning">{unbondingDays}</span>
               </span>
             </div>
           )}

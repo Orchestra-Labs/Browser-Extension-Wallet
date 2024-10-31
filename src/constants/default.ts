@@ -23,30 +23,18 @@ const DEV_PROXY = 'http://localhost:5173'; // Your Vite dev server URL
 export const CHAIN_NODES = {
   symphonytestnet: [
     {
-      rpc: isDev 
-        ? `${DEV_PROXY}/kleomedes-rpc` 
-        : 'https://symphony-rpc.kleomedes.network',
-      rest: isDev 
-        ? `${DEV_PROXY}/kleomedes-rest` 
-        : 'https://symphony-api.kleomedes.network',
+      rpc: isDev ? `${DEV_PROXY}/kleomedes-rpc` : 'https://symphony-rpc.kleomedes.network',
+      rest: isDev ? `${DEV_PROXY}/kleomedes-rest` : 'https://symphony-api.kleomedes.network',
       provider: 'Kleomedes',
     },
     {
-      rpc: isDev 
-        ? `${DEV_PROXY}/nodeshub-rpc` 
-        : 'https://symphony.test.rpc.nodeshub.online',
-      rest: isDev 
-        ? `${DEV_PROXY}/nodeshub-rest` 
-        : 'https://symphony.test.api.nodeshub.online',
+      rpc: isDev ? `${DEV_PROXY}/nodeshub-rpc` : 'https://symphony.test.rpc.nodeshub.online',
+      rest: isDev ? `${DEV_PROXY}/nodeshub-rest` : 'https://symphony.test.api.nodeshub.online',
       provider: 'Nodes Hub',
     },
     {
-      rpc: isDev 
-        ? `${DEV_PROXY}/cogwheel-rpc` 
-        : 'https://symphony-testnet-rpc.cogwheel.zone',
-      rest: isDev 
-        ? `${DEV_PROXY}/cogwheel-rest` 
-        : 'https://symphony-testnet-api.cogwheel.zone',
+      rpc: isDev ? `${DEV_PROXY}/cogwheel-rpc` : 'https://symphony-testnet-rpc.cogwheel.zone',
+      rest: isDev ? `${DEV_PROXY}/cogwheel-rest` : 'https://symphony-testnet-api.cogwheel.zone',
       provider: 'Cogwheel',
     },
   ],
@@ -64,6 +52,7 @@ export const CHAIN_ENDPOINTS = {
   sendMessage: '/cosmos.bank.v1beta1.MsgSend',
   swap: '/osmosis/market/v1beta1/swap?',
   exchangeRequirements: '/osmosis/market/v1beta1/exchange_requirements',
+  getStakingParams: '/cosmos/staking/v1beta1/params',
 };
 
 // Time constants
