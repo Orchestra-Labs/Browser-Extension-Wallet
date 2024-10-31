@@ -9,11 +9,7 @@ import {
   showAllAssetsAtom,
   searchTermAtom,
 } from '@/atoms';
-import {
-  useEffect,
-  useRef,
-  // useState
-} from 'react';
+import { useEffect, useRef } from 'react';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { Button } from '@/ui-kit';
 import { convertToGreaterUnit, fetchValidatorData, formatBalanceDisplay } from '@/helpers';
@@ -26,7 +22,6 @@ export const Main = () => {
   const [showCurrentValidators, setShowCurrentValidators] = useAtom(showCurrentValidatorsAtom);
   const [showAllAssets, setShowAllAssets] = useAtom(showAllAssetsAtom);
   const setSearchTerm = useSetAtom(searchTermAtom);
-  // const [isLoading, setIsLoading] = useState(false);
 
   const swiperRef = useRef<SwiperClass | null>(null);
   const totalSlides = 2;
@@ -93,6 +88,7 @@ export const Main = () => {
     symbol,
   );
 
+  // TODO: test removal of array.isarray.  does it proc .filter error?
   // Calculate total rewards with safety check
   const totalStakedRewards = Array.isArray(validatorData)
     ? validatorData.reduce((sum, item) => {
