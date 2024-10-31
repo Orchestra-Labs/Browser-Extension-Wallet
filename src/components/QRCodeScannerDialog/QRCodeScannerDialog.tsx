@@ -13,16 +13,16 @@ interface QRCodeScannerDialogProps {
 }
 
 export const QRCodeScannerDialog: React.FC<QRCodeScannerDialogProps> = ({ updateSendAsset }) => {
-  const slideTrayRef = useRef<{ closeWithAnimation: () => void }>(null);
+  const slideTrayRef = useRef<{ isOpen: () => void; closeWithAnimation: () => void }>(null);
 
   const setAddress = useSetAtom(recipientAddressAtom);
   const filteredAssets = useAtomValue(filteredAssetsAtom);
 
-  const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [permissionDenied, setPermissionDenied] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
 
   const qrCodeReader = new BrowserQRCodeReader();
+  const slideTrayIsOpen = slideTrayRef.current && slideTrayRef.current.isOpen();
 
   const handleScan = (result: string | null) => {
     if (result) {
@@ -47,7 +47,6 @@ export const QRCodeScannerDialog: React.FC<QRCodeScannerDialogProps> = ({ update
       }
 
       slideTrayRef.current?.closeWithAnimation();
-      setIsScannerOpen(false);
     }
   };
 
@@ -111,14 +110,14 @@ export const QRCodeScannerDialog: React.FC<QRCodeScannerDialogProps> = ({ update
   };
 
   useEffect(() => {
-    if (isScannerOpen && !permissionDenied) {
+    if (slideTrayIsOpen && !permissionDenied) {
       requestCameraPermission();
     }
-  }, [isScannerOpen]);
+  }, [slideTrayIsOpen]);
 
   const borderColor = isDragOver
     ? 'border-blue-pressed'
-    : isScannerOpen && !permissionDenied
+    : slideTrayIsOpen && !permissionDenied
       ? 'border-blue'
       : 'border-neutral-3';
 
@@ -129,12 +128,10 @@ export const QRCodeScannerDialog: React.FC<QRCodeScannerDialogProps> = ({ update
         <QRCode
           className="h-7 w-7 text-neutral-1 hover:bg-blue-hover hover:text-blue-dark cursor-pointer"
           width={20}
-          onClick={() => setIsScannerOpen(true)}
         />
       }
       title="Scan Address"
       showBottomBorder
-      onClose={() => setIsScannerOpen(false)}
     >
       <div className="flex flex-col items-center space-yt-4 yb-2">
         {/* Camera View & Drag/Drop Area */}
@@ -166,7 +163,7 @@ export const QRCodeScannerDialog: React.FC<QRCodeScannerDialogProps> = ({ update
             )}
           />
 
-          {isScannerOpen ? (
+          {slideTrayIsOpen ? (
             <QrReader
               onResult={(result, error) => {
                 if (result) handleScan(result.getText());
