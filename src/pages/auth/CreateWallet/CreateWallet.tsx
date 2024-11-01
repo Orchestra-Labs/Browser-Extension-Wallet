@@ -96,6 +96,7 @@ export const CreateWallet = () => {
 
   /* ******************************************************************************************* */
   /* Chris current TODO */
+  // TODO: diagnose and fix issue with gas on 'all' button for validator selections
   // TODO: show errors to user (user displayable values)
   // TODO: provide updates to user as staking, claim, and unstaking information changes (successes, errors, and changing gas fees)
   // TODO: provide updates to user as send information updates (errors and changing gas fees)
@@ -103,14 +104,12 @@ export const CreateWallet = () => {
 
   /* ******************************************************************************************* */
   /* David Current TODOs */
-  // TODO: add fee display and updates for stake, unstake, and claim
+  // TODO: ensure new encrypted mnemonic overwrites old in case of same password and name (but let user know first)
+  // TODO: handle error printout for create/import wallet (in place of subtitle on verify screen?)
   /* ******************************************************************************************* */
 
   /* Current TODOs */
   // TODO: ensure logout after blur + timeout (blur is click outside application to close).  to remove sensitive data after time period
-  // TODO: test path and create error for no wallet exists and user attempts login
-  // TODO: ensure new encrypted mnemonic overwrites old in case of same password and name (but let user know first)
-  // TODO: handle error printout for create/import wallet (in place of subtitle on verify screen?)
   // TODO: modify auth to accounts & wallets structure to make this scalable for later upgrades
 
   /* Less Critical TODOs */
