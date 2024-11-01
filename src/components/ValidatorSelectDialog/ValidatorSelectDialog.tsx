@@ -230,6 +230,7 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
     }
   };
 
+  // TODO: transactions not going through.  find out why
   const handleUnstake = async (simulateOnly: boolean = false) => {
     if (!simulateOnly) setAsLoading(TransactionType.UNSTAKE);
 
@@ -239,7 +240,6 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
     }));
 
     try {
-      // TODO: likely to error.  midmatched types delegations/combinedstakinginfo
       const result = await unstakeFromValidator({
         delegations: delegations,
         simulateOnly,
