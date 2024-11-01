@@ -96,6 +96,7 @@ export const Send = () => {
       if (simulateTransaction && result?.data?.code === 0) {
         return result;
       } else if (result.success && result.data?.code === 0) {
+        // TODO: much like on validator actions, set to toast if not on page
         setIsSuccess({ success: true, txHash: result.data.txHash });
       } else {
         console.error('Transaction failed', result.data);
