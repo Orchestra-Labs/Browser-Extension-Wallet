@@ -1,12 +1,9 @@
 import React, { ComponentType } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 
-import { Copy } from '@/assets/icons';
 import { LogoIcon } from '@/assets/icons';
 import { OptionsDialog } from '@/components';
 import { ROUTES } from '@/constants';
-
-const avatarUrl = chrome?.runtime?.getURL('avatar.png');
 
 const MainLayout: React.FC = () => (
   <div className="max-w-full bg-background-dark-grey h-full flex flex-col">
