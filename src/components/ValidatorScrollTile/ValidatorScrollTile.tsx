@@ -201,7 +201,7 @@ export const ValidatorScrollTile = ({
     setIsLoading(true);
 
     try {
-      const result = await unstakeFromValidator(amount, delegationResponse);
+      const result = await unstakeFromValidator({ amount, delegations: delegationResponse });
 
       console.log('Unstake result:', result);
 
@@ -314,10 +314,18 @@ export const ValidatorScrollTile = ({
           console.log('Restake simulation fee result:', stakeResult);
           formatFee(parseFloat(result.data?.gasWanted || '0'));
         } else if (selectedAction === 'stake') {
-          const result = await unstakeFromValidator(amount.toString(), delegationResponse, true);
+          const result = await unstakeFromValidator({
+            amount: amount.toString(),
+            delegations: delegationResponse,
+            simulateOnly: true,
+          });
           formatFee(parseFloat(result.data?.gasWanted || '0'));
         } else if (selectedAction === 'unstake') {
-          const result = await unstakeFromValidator(amount.toString(), delegationResponse, true);
+          const result = await unstakeFromValidator({
+            amount: amount.toString(),
+            delegations: delegationResponse,
+            simulateOnly: true,
+          });
           formatFee(parseFloat(result.data?.gasWanted || '0'));
         }
       } catch (error) {

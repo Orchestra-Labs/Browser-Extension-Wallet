@@ -18,7 +18,7 @@ import {
   formatBalanceDisplay,
   stakeToValidator,
   truncateWalletAddress,
-  unstakeFromAllValidators,
+  unstakeFromValidator,
 } from '@/helpers';
 import { CombinedStakingInfo } from '@/types';
 import { useToast } from '@/hooks';
@@ -233,8 +233,17 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
   const handleUnstake = async (simulateOnly: boolean = false) => {
     if (!simulateOnly) setAsLoading(TransactionType.UNSTAKE);
 
+    const delegations = selectedValidators.map(validator => ({
+      delegation: validator.delegation,
+      balance: validator.balance,
+    }));
+
     try {
-      const result = await unstakeFromAllValidators(selectedValidators, simulateOnly);
+      // TODO: likely to error.  midmatched types delegations/combinedstakinginfo
+      const result = await unstakeFromValidator({
+        delegations: delegations,
+        simulateOnly,
+      });
 
       if (simulateOnly) {
         console.log('Unstake simulation fee:', result.data?.gasWanted || 'No fee available');

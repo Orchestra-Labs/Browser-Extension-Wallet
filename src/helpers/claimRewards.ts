@@ -264,28 +264,39 @@ export const stakeToValidator = async (
   }
 };
 
-// TODO: merge functions for unstake and unstake all
-export const unstakeFromValidator = async (
-  amount: string,
-  delegation: DelegationResponse,
+export const unstakeFromValidator = async ({
+  delegations,
+  amount,
   simulateOnly = false,
-): Promise<TransactionResult> => {
+}: {
+  delegations: DelegationResponse | DelegationResponse[];
+  amount?: string;
+  simulateOnly?: boolean;
+}): Promise<TransactionResult> => {
   const endpoint = CHAIN_ENDPOINTS.undelegateFromValidator;
-  const formattedAmount = (
-    parseFloat(amount) *
-    Math.pow(
-      10,
-      LOCAL_ASSET_REGISTRY[delegation.balance.denom].exponent || GREATER_EXPONENT_DEFAULT,
-    )
-  ).toFixed(0);
+  const delegationsArray = Array.isArray(delegations) ? delegations : [delegations];
+  const isSingleDelegation = delegationsArray.length === 1 && amount;
 
-  const messages = buildClaimMessage({
-    endpoint,
-    delegatorAddress: delegation.delegation.delegator_address,
-    validatorAddress: delegation.delegation.validator_address,
-    amount: formattedAmount,
-    denom: delegation.balance.denom,
-  });
+  // If there's a single delegation and amount is provided, format the amount
+  const messages = isSingleDelegation
+    ? buildClaimMessage({
+        endpoint,
+        delegatorAddress: delegationsArray[0].delegation.delegator_address,
+        validatorAddress: delegationsArray[0].delegation.validator_address,
+        amount: (
+          parseFloat(amount!) *
+          Math.pow(
+            10,
+            LOCAL_ASSET_REGISTRY[delegationsArray[0].balance.denom].exponent ||
+              GREATER_EXPONENT_DEFAULT,
+          )
+        ).toFixed(0),
+        denom: delegationsArray[0].balance.denom,
+      })
+    : buildClaimMessage({
+        endpoint,
+        delegations: delegationsArray,
+      });
 
   try {
     const response = await queryRpcNode({
@@ -299,50 +310,6 @@ export const unstakeFromValidator = async (
         success: false,
         message: 'No response received from transaction',
         data: { code: 1 },
-      };
-    }
-
-    if (simulateOnly) {
-      console.log('Simulation result for unstaking:', response);
-      return { success: true, message: 'Simulation successful', data: response };
-    }
-
-    return { success: true, message: 'Transaction successful', data: response };
-  } catch (error) {
-    console.error('Error during unstaking:', error);
-    return {
-      success: false,
-      message: error instanceof Error ? error.message : 'Unknown error occurred',
-      data: { code: 1 },
-    };
-  }
-};
-
-export const unstakeFromAllValidators = async (
-  delegations: DelegationResponse[],
-  simulateOnly = false,
-): Promise<TransactionResult> => {
-  const endpoint = CHAIN_ENDPOINTS.undelegateFromValidator;
-
-  const messages = buildClaimMessage({
-    endpoint,
-    delegations,
-  });
-
-  try {
-    const response = await queryRpcNode({
-      endpoint,
-      messages,
-      simulateOnly,
-    });
-
-    if (!response) {
-      return {
-        success: false,
-        message: 'No response received from transaction',
-        data: {
-          code: 1,
-        },
       };
     }
 
@@ -368,9 +335,7 @@ export const unstakeFromAllValidators = async (
     return {
       success: false,
       message: error instanceof Error ? error.message : 'Unknown error occurred',
-      data: {
-        code: 1,
-      },
+      data: { code: 1 },
     };
   }
 };
