@@ -82,16 +82,13 @@ export const Main = () => {
   );
 
   // Calculate total rewards with safety check
-  const totalStakedRewards = Array.isArray(validatorData)
-    ? validatorData.reduce((sum, item) => {
-        const totalReward = item.rewards?.reduce(
-          (rewardSum, reward) => rewardSum + parseFloat(reward.amount || '0'),
-          0,
-        );
-        return sum + totalReward;
-      }, 0)
-    : 0;
-
+  const totalStakedRewards = validatorData.reduce((sum, item) => {
+    const totalReward = item.rewards?.reduce(
+      (rewardSum, reward) => rewardSum + parseFloat(reward.amount || '0'),
+      0,
+    );
+    return sum + totalReward;
+  }, 0);
   const formattedConvertedTotalRewards = formatBalanceDisplay(
     convertToGreaterUnit(totalStakedRewards, 6).toFixed(6),
     symbol,
