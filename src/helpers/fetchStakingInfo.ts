@@ -24,12 +24,8 @@ export const fetchDelegations = async (
 
     const response = await queryRestNode({ endpoint });
 
-    console.log('Delegation response:', response);
-
     return {
       delegations: (response.delegation_responses ?? []).map((item: any) => {
-        console.log('Delegation recorded as:', item);
-
         return {
           delegation: item.delegation,
           balance: item.balance,

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Button, SlideTray } from '@/ui-kit';
 import { TileScroller } from '../TileScroller';
 import { SortDialog } from '../SortDialog';
@@ -9,17 +9,25 @@ import {
   selectedValidatorsAtom,
   validatorDialogSortOrderAtom,
   validatorDialogSortTypeAtom,
+  walletStateAtom,
 } from '@/atoms';
 import { SearchBar } from '../SearchBar';
 import {
   claimAndRestake,
   claimRewards,
+  formatBalanceDisplay,
+  stakeToValidator,
   truncateWalletAddress,
   unstakeFromAllValidators,
 } from '@/helpers';
 import { CombinedStakingInfo } from '@/types';
 import { useToast } from '@/hooks';
-import { TransactionType } from '@/constants';
+import {
+  DEFAULT_ASSET,
+  GREATER_EXPONENT_DEFAULT,
+  LOCAL_ASSET_REGISTRY,
+  TransactionType,
+} from '@/constants';
 import { WalletSuccessTile } from '../WalletSuccessTile';
 import { Loader } from '../Loader';
 
@@ -35,7 +43,9 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
   isClaimDialog = false,
 }) => {
   const { toast } = useToast();
+  const slideTrayRef = useRef<{ isOpen: () => void }>(null);
 
+  const { address } = useAtomValue(walletStateAtom);
   const setSearchTerm = useSetAtom(dialogSearchTermAtom);
   const setSortOrder = useSetAtom(validatorDialogSortOrderAtom);
   const setSortType = useSetAtom(validatorDialogSortTypeAtom);
@@ -51,12 +61,34 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
   }>({
     success: false,
   });
+  const [simulatedFee, setSimulatedFee] = useState<{
+    fee: string;
+    textClass: 'text-error' | 'text-warn' | 'text-blue';
+  } | null>({ fee: '0 MLD', textClass: 'text-blue' });
 
   const allValidatorsSelected = selectedValidators.length === filteredValidators.length;
   const noValidatorsSelected = selectedValidators.length === 0;
 
   // TODO: change per chain, not per validator.  current solution can return 0.  innaccurate.
   const unbondingDays = `${filteredValidators[0]?.stakingParams?.unbonding_time || 0} days`;
+  const slideTrayIsOpen = slideTrayRef.current && slideTrayRef.current.isOpen();
+
+  const calculateTotalRewards = () => {
+    return selectedValidators.reduce((sum, validator) => {
+      const totalReward = validator.rewards.reduce(
+        (rewardSum, reward) => rewardSum + parseFloat(reward.amount),
+        0,
+      );
+      return sum + totalReward;
+    }, 0);
+  };
+
+  const calculateTotalDelegations = () => {
+    return selectedValidators.reduce(
+      (sum, validator) => sum + parseFloat(validator.delegation.shares || '0'),
+      0,
+    );
+  };
 
   const setAsLoading = (transactionType: TransactionType) => {
     setIsLoading(true);
@@ -98,7 +130,6 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
   };
 
   const resetDefaults = () => {
-    console.log('Resetting defaults');
     setSearchTerm('');
     setSortOrder('Desc');
     setSortType('name');
@@ -106,17 +137,14 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
   };
 
   const handleSelectAll = () => {
-    console.log('Selecting all validators:', filteredValidators);
     setSelectedValidators(filteredValidators);
   };
 
   const handleSelectNone = () => {
-    console.log('Deselecting all validators');
     setSelectedValidators([]);
   };
 
   const handleValidatorSelect = (validator: CombinedStakingInfo) => {
-    console.log('Toggling selection for validator:', validator);
     setSelectedValidators(prev =>
       prev.some(v => v.delegation.validator_address === validator.delegation.validator_address)
         ? prev.filter(
@@ -126,16 +154,23 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
     );
   };
 
-  const handleClaimToWallet = async () => {
-    setAsLoading(TransactionType.CLAIM_TO_WALLET);
+  const handleClaimToWallet = async (isSimulation: boolean = false) => {
+    if (!isSimulation) setAsLoading(TransactionType.CLAIM_TO_WALLET);
 
     try {
       const result = await claimRewards(
         filteredValidators[0].delegation.delegator_address,
         selectedValidators.map(v => v.delegation.validator_address),
+        isSimulation,
       );
 
-      console.log('Claim to wallet result:', result);
+      if (isSimulation) {
+        console.log(
+          'Claim to wallet simulation result:',
+          result.data?.gasWanted || 'No fee available',
+        );
+        return result;
+      }
 
       if (result.success && result.data?.code === 0) {
         const txHash = result.data.txHash as string;
@@ -147,12 +182,12 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
     } catch (error) {
       console.error('Error claiming rewards:', error);
     } finally {
-      setIsLoading(false);
+      if (!isSimulation) setIsLoading(false);
     }
   };
 
-  const handleClaimAndRestake = async () => {
-    setAsLoading(TransactionType.CLAIM_TO_RESTAKE);
+  const handleClaimAndRestake = async (isSimulation: boolean = false) => {
+    if (!isSimulation) setAsLoading(TransactionType.CLAIM_TO_RESTAKE);
 
     try {
       const validatorRewards = selectedValidators.map(v => ({
@@ -160,6 +195,27 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
         rewards: v.rewards,
       }));
 
+      // First, simulate or execute the claim rewards part
+      const claimResult = await claimRewards(
+        selectedValidators[0].delegation.delegator_address,
+        selectedValidators.map(v => v.delegation.validator_address),
+        isSimulation,
+      );
+
+      if (isSimulation) {
+        console.log(
+          'Claim and restake simulation result (claim part):',
+          claimResult.data?.gasWanted || 'No fee available',
+        );
+        return claimResult; // Return the claim result if it's a simulation
+      }
+
+      if (!claimResult.success || claimResult.data?.code !== 0) {
+        console.warn('Claim part failed, stopping restake.');
+        return claimResult;
+      }
+
+      // Proceed with the restake part if it's not a simulation
       const result = await claimAndRestake(
         selectedValidators.map(v => ({
           delegation: v.delegation,
@@ -167,8 +223,6 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
         })),
         validatorRewards,
       );
-
-      console.log('Claim and restake result:', result);
 
       if (result.success && result.data?.code === 0) {
         const txHash = result.data.txHash as string;
@@ -180,15 +234,20 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
     } catch (error) {
       console.error('Error claiming and restaking:', error);
     } finally {
-      setIsLoading(false);
+      if (!isSimulation) setIsLoading(false);
     }
   };
 
-  const handleUnstake = async () => {
-    setAsLoading(TransactionType.UNSTAKE);
+  const handleUnstake = async (simulateOnly: boolean = false) => {
+    if (!simulateOnly) setAsLoading(TransactionType.UNSTAKE);
 
     try {
-      const result = await unstakeFromAllValidators(selectedValidators);
+      const result = await unstakeFromAllValidators(selectedValidators, simulateOnly);
+
+      if (simulateOnly) {
+        console.log('Unstake simulation fee:', result.data?.gasWanted || 'No fee available');
+        return result;
+      }
 
       console.log('Unstake result:', result);
 
@@ -202,12 +261,85 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
     } catch (error) {
       console.error('Error during unstaking:', error);
     } finally {
-      setIsLoading(false);
+      if (!simulateOnly) setIsLoading(false);
     }
   };
 
+  const formatFee = (amount: number, gasWanted: number) => {
+    const defaultGasPrice = 0.025;
+    const exponent = GREATER_EXPONENT_DEFAULT;
+    const symbol = DEFAULT_ASSET.symbol || 'MLD';
+    const feeAmount = gasWanted * defaultGasPrice;
+    const feeInGreaterUnit = feeAmount / Math.pow(10, exponent);
+
+    // Calculate against stake or unstake input or rewards amount
+    let feePercentage = 0;
+    if (isClaimDialog) {
+      feePercentage = feeInGreaterUnit ? (feeInGreaterUnit / amount) * 100 : 0;
+    } else {
+      feePercentage = feeInGreaterUnit ? (feeInGreaterUnit / amount) * 100 : 0;
+    }
+
+    setSimulatedFee({
+      fee: formatBalanceDisplay(feeInGreaterUnit.toFixed(exponent), symbol),
+      textClass:
+        feePercentage > 1 ? 'text-error' : feePercentage > 0.75 ? 'text-warn' : 'text-blue',
+    });
+  };
+
+  const updateFee = async () => {
+    console.log('no validators selected?', noValidatorsSelected);
+    if (noValidatorsSelected) {
+      console.log('No validators selected, skipping fee update.');
+      return;
+    }
+    try {
+      console.log('Starting fee update with selectedValidators:', selectedValidators);
+      let totalAmount = 0;
+      let simulationResult;
+
+      if (isClaimDialog) {
+        totalAmount = calculateTotalRewards();
+        simulationResult = await handleClaimToWallet(true);
+        console.log(
+          'Claim to wallet simulation fee:',
+          simulationResult?.data?.gasWanted || 'No fee available',
+        );
+        if (!simulationResult?.success || !simulationResult.data) return;
+        const restakeSimulationResult = await stakeToValidator(
+          totalAmount.toString(),
+          LOCAL_ASSET_REGISTRY.note.denom,
+          address,
+          selectedValidators[0].validator.operator_address,
+          true,
+        );
+        console.log(
+          'Restake simulation fee:',
+          restakeSimulationResult.data?.gasWanted || 'No fee available',
+        );
+        formatFee(totalAmount, parseFloat(simulationResult?.data.gasWanted || '0'));
+      } else {
+        totalAmount = calculateTotalDelegations();
+        simulationResult = await handleUnstake(true);
+        console.log(
+          'Unstake simulation fee:',
+          simulationResult?.data?.gasWanted || 'No fee available',
+        );
+        formatFee(totalAmount, parseFloat(simulationResult?.data?.gasWanted || '0'));
+      }
+    } catch (error) {
+      console.error('Simulation error:', error);
+    }
+  };
+
+  useEffect(() => {
+    console.log('slide tray is open', slideTrayIsOpen);
+    if (slideTrayIsOpen) updateFee();
+  }, [slideTrayIsOpen, selectedValidators]);
+
   return (
     <SlideTray
+      ref={slideTrayRef}
       triggerComponent={
         <Button variant={buttonVariant} className="w-full" onClick={() => setIsSlideTrayOpen(true)}>
           {buttonText}
@@ -234,7 +366,7 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
               variant="secondary"
               className="w-full"
               disabled={selectedValidators.length === 0 || isLoading}
-              onClick={handleClaimToWallet}
+              onClick={() => handleClaimToWallet}
             >
               To Wallet
             </Button>
@@ -242,7 +374,7 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
               size="small"
               className="w-full"
               disabled={selectedValidators.length === 0 || isLoading}
-              onClick={handleClaimAndRestake}
+              onClick={() => handleClaimAndRestake}
             >
               To Restake
             </Button>
@@ -310,12 +442,21 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
               size="small"
               className="mb-1 w-[44%] h-8"
               disabled={selectedValidators.length === 0 || isLoading}
-              onClick={handleUnstake}
+              onClick={() => handleUnstake}
             >
               Unstake
             </Button>
           </div>
         )}
+
+        {/* Fee Section */}
+        <div className="flex flex-grow" />
+        <div className="flex justify-between items-center text-blue text-sm font-bold w-full">
+          <p>Fee</p>
+          <p className={simulatedFee?.textClass}>
+            {simulatedFee && !noValidatorsSelected ? simulatedFee.fee : '-'}
+          </p>
+        </div>
       </div>
     </SlideTray>
   );

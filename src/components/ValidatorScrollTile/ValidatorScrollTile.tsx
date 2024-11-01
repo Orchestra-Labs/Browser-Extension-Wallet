@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { CombinedStakingInfo } from '@/types';
 import { SlideTray, Button } from '@/ui-kit';
 import { LogoIcon } from '@/assets/icons';
@@ -56,6 +56,10 @@ export const ValidatorScrollTile = ({
   }>({
     success: false,
   });
+  const [simulatedFee, setSimulatedFee] = useState<{
+    fee: string;
+    textClass: 'text-error' | 'text-warn' | 'text-blue';
+  } | null>({ fee: '0 MLD', textClass: 'text-blue' });
 
   const { validator, delegation, balance, rewards } = combinedStakingInfo;
   const delegationResponse = { delegation, balance };
@@ -79,6 +83,11 @@ export const ValidatorScrollTile = ({
 
   const title = validator.description.moniker || 'Unknown Validator';
   const commission = `${parseFloat(validator.commission.commission_rates.rate) * 100}%`;
+  const isSelected = selectedValidators.some(
+    v => v.delegation.validator_address === combinedStakingInfo.delegation.validator_address,
+  );
+
+  const slideTrayIsOpen = slideTrayRef.current && slideTrayRef.current.isOpen();
 
   let subTitle: string;
   if (validator.jailed) {
@@ -160,6 +169,7 @@ export const ValidatorScrollTile = ({
     }
   };
 
+  //   const handleTransaction = async ({ simulateTransaction = false } = {}) => {
   const handleStake = async (amount: string) => {
     setIsLoading(true);
 
@@ -170,8 +180,6 @@ export const ValidatorScrollTile = ({
         walletState.address,
         validator.operator_address,
       );
-
-      console.log('Stake result:', result);
 
       if (result.success && result.data?.code === 0) {
         const txType = TransactionType.STAKE;
@@ -188,6 +196,7 @@ export const ValidatorScrollTile = ({
     }
   };
 
+  //   const handleTransaction = async ({ simulateTransaction = false } = {}) => {
   const handleUnstake = async (amount: string) => {
     setIsLoading(true);
 
@@ -211,13 +220,12 @@ export const ValidatorScrollTile = ({
     }
   };
 
+  //   const handleTransaction = async ({ simulateTransaction = false } = {}) => {
   const handleClaimToWallet = async () => {
     setIsLoading(true);
 
     try {
       const result = await claimRewards(walletState.address, validator.operator_address);
-
-      console.log('Claim to wallet result:', result);
 
       if (result.success && result.data?.code === 0) {
         const txType = TransactionType.CLAIM_TO_WALLET;
@@ -234,6 +242,7 @@ export const ValidatorScrollTile = ({
     }
   };
 
+  //   const handleTransaction = async ({ simulateTransaction = false } = {}) => {
   const handleClaimAndRestake = async () => {
     setIsLoading(true);
 
@@ -262,9 +271,64 @@ export const ValidatorScrollTile = ({
     }
   };
 
-  const isSelected = selectedValidators.some(
-    v => v.delegation.validator_address === combinedStakingInfo.delegation.validator_address,
-  );
+  // TODO: extract to utils
+  const formatFee = (gasWanted: number) => {
+    const defaultGasPrice = 0.025;
+    const exponent = GREATER_EXPONENT_DEFAULT;
+    const symbol = DEFAULT_ASSET.symbol || 'MLD';
+    const feeAmount = gasWanted * defaultGasPrice;
+    const feeInGreaterUnit = feeAmount / Math.pow(10, exponent);
+
+    // Calculate against stake or unstake input or rewards amount
+    let feePercentage = 0;
+    if (selectedAction === 'claim') {
+      feePercentage = feeInGreaterUnit ? (feeInGreaterUnit / rewardAmount) * 100 : 0;
+    } else if (selectedAction === 'stake' || selectedAction === 'unstake') {
+      feePercentage = feeInGreaterUnit ? (feeInGreaterUnit / amount) * 100 : 0;
+    }
+
+    setSimulatedFee({
+      fee: formatBalanceDisplay(feeInGreaterUnit.toFixed(exponent), symbol),
+      textClass:
+        feePercentage > 1 ? 'text-error' : feePercentage > 0.75 ? 'text-warn' : 'text-blue',
+    });
+  };
+
+  const updateFee = async () => {
+    if (amount === 0 || isNaN(amount)) {
+      formatFee(0);
+    } else {
+      try {
+        // TODO: handle claim and restake scenario
+        if (selectedAction === 'claim') {
+          const result = await claimRewards(walletState.address, validator.operator_address, true);
+
+          // Separate for claim and restake
+          const stakeResult = await stakeToValidator(
+            amount.toString(),
+            LOCAL_ASSET_REGISTRY.note.denom,
+            walletState.address,
+            validator.operator_address,
+            true,
+          );
+          console.log('Restake simulation fee result:', stakeResult);
+          formatFee(parseFloat(result.data?.gasWanted || '0'));
+        } else if (selectedAction === 'stake') {
+          const result = await unstakeFromValidator(amount.toString(), delegationResponse, true);
+          formatFee(parseFloat(result.data?.gasWanted || '0'));
+        } else if (selectedAction === 'unstake') {
+          const result = await unstakeFromValidator(amount.toString(), delegationResponse, true);
+          formatFee(parseFloat(result.data?.gasWanted || '0'));
+        }
+      } catch (error) {
+        console.error('Simulation error:', error);
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (slideTrayIsOpen) updateFee();
+  }, [slideTrayIsOpen, selectedAction, amount]);
 
   return (
     <>
@@ -384,6 +448,7 @@ export const ValidatorScrollTile = ({
               {!isLoading && (selectedAction === 'stake' || selectedAction === 'unstake') && (
                 <>
                   <div className="flex items-center w-full">
+                    {/* TODO: set height to h-8 */}
                     <div className="flex-grow mr-2">
                       <AssetInput
                         placeholder="Enter amount"
@@ -448,6 +513,15 @@ export const ValidatorScrollTile = ({
                   </Button>
                 </div>
               )}
+
+              {/* Fee Section */}
+              <div className="flex flex-grow" />
+              <div className="flex justify-between items-center text-blue text-sm font-bold w-full">
+                <p>Fee</p>
+                <p className={simulatedFee?.textClass}>
+                  {simulatedFee && selectedAction ? simulatedFee.fee : '-'}
+                </p>
+              </div>
             </div>
           </>
         </SlideTray>

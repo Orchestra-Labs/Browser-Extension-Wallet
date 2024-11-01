@@ -486,9 +486,8 @@ export const Send = () => {
           />
         </>
 
-        <div className="flex flex-grow" />
-
         {/* Fee Section */}
+        <div className="flex flex-grow" />
         <div className="flex justify-between items-center text-blue text-sm font-bold">
           <p>Fee</p>
           <p className={simulatedFee?.textClass}>
