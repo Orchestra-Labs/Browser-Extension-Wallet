@@ -154,6 +154,8 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
     );
   };
 
+  // TODO: non-simulation transactions not going through.  find out why
+  // TODO: need to bundle transactions for the all if greater than 29 (set to 20 to be safe).  one bundle per block
   const handleClaimToWallet = async (isSimulation: boolean = false) => {
     if (!isSimulation) setAsLoading(TransactionType.CLAIM_TO_WALLET);
 
@@ -230,7 +232,6 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
     }
   };
 
-  // TODO: transactions not going through.  find out why
   const handleUnstake = async (simulateOnly: boolean = false) => {
     if (!simulateOnly) setAsLoading(TransactionType.UNSTAKE);
 
