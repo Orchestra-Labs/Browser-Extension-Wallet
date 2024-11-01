@@ -147,12 +147,16 @@ export const claimAndRestake = async (
       reward => parseFloat(reward.rewards[0]?.amount || '0') > 0,
     );
 
-    if (!hasRewards) return { success: false, message: 'No rewards to claim', data: { code: 1 } };
+    if (!hasRewards) {
+      return { success: false, message: 'No rewards to claim', data: { code: 1 } };
+    }
 
     const claimResponse = await claimRewards(delegatorAddress, validatorAddresses, simulateOnly);
-    if (!claimResponse.success || claimResponse.data?.code !== 0) return claimResponse;
+    if (!claimResponse.success || claimResponse.data?.code !== 0) {
+      return claimResponse;
+    }
 
-    if (simulateOnly) return claimResponse;
+    let totalGasWanted = parseFloat(claimResponse.data?.gasWanted || '0');
 
     const delegateMessages = validatorRewards.flatMap(reward =>
       buildClaimMessage({
@@ -165,11 +169,36 @@ export const claimAndRestake = async (
     );
 
     if (delegateMessages.length > 0) {
-      const response = await queryRpcNode({
+      const delegateResponse = await queryRpcNode({
         endpoint: delegateEndpoint,
         messages: delegateMessages.flat(),
+        simulateOnly,
       });
-      return { success: true, message: 'Transaction successful', data: response };
+
+      if (!delegateResponse) {
+        return {
+          success: false,
+          message: 'No response received from delegation',
+          data: { code: 1 },
+        };
+      }
+
+      // If simulation, sum the gas from claim and delegate, and return
+      if (simulateOnly) {
+        totalGasWanted += parseFloat(delegateResponse.gasWanted || '0');
+        console.log('Simulation total gas wanted (claim + delegate):', totalGasWanted);
+        return {
+          success: true,
+          message: 'Simulation successful',
+          data: {
+            ...claimResponse.data,
+            gasWanted: totalGasWanted.toFixed(GREATER_EXPONENT_DEFAULT),
+          },
+        };
+      }
+
+      console.log('Restaked rewards successfully:', delegateResponse);
+      return { success: true, message: 'Transaction successful', data: delegateResponse };
     }
 
     return { success: false, message: 'No rewards to delegate', data: { code: 1 } };

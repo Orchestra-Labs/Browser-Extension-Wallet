@@ -195,28 +195,7 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
         rewards: v.rewards,
       }));
 
-      // First, simulate or execute the claim rewards part
-      const claimResult = await claimRewards(
-        selectedValidators[0].delegation.delegator_address,
-        selectedValidators.map(v => v.delegation.validator_address),
-        isSimulation,
-      );
-
-      if (isSimulation) {
-        console.log(
-          'Claim and restake simulation result (claim part):',
-          claimResult.data?.gasWanted || 'No fee available',
-        );
-        return claimResult; // Return the claim result if it's a simulation
-      }
-
-      if (!claimResult.success || claimResult.data?.code !== 0) {
-        console.warn('Claim part failed, stopping restake.');
-        return claimResult;
-      }
-
-      // Proceed with the restake part if it's not a simulation
-      const result = await claimAndRestake(
+      const claimResult = await claimAndRestake(
         selectedValidators.map(v => ({
           delegation: v.delegation,
           balance: v.balance,
@@ -224,12 +203,25 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
         validatorRewards,
       );
 
-      if (result.success && result.data?.code === 0) {
-        const txHash = result.data.txHash as string;
+      if (isSimulation) {
+        console.log(
+          'Claim and restake simulation result (claim part):',
+          claimResult.data?.gasWanted || 'No fee available',
+        );
+        return claimResult;
+      }
+
+      if (!claimResult.success || claimResult.data?.code !== 0) {
+        console.warn('Claim part failed, stopping restake.');
+        return claimResult;
+      }
+
+      if (claimResult.success && claimResult.data?.code === 0) {
+        const txHash = claimResult.data.txHash as string;
         handleTransactionSuccess(txHash);
       } else {
-        console.warn('Claim and restake failed with code:', result.data?.code);
-        console.warn('Error message:', result.message || 'No error message provided');
+        console.warn('Claim and restake failed with code:', claimResult.data?.code);
+        console.warn('Error message:', claimResult.message || 'No error message provided');
       }
     } catch (error) {
       console.error('Error claiming and restaking:', error);
