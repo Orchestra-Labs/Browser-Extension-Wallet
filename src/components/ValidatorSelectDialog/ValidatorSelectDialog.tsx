@@ -201,7 +201,6 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
         selectedValidators.map(v => v.delegation.validator_address),
         isSimulation,
       );
-
       if (isSimulation) {
         console.log(
           'Claim and restake simulation result (claim part):',
@@ -307,7 +306,7 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
         );
         if (!simulationResult?.success || !simulationResult.data) return;
         const restakeSimulationResult = await stakeToValidator(
-          totalAmount.toString(),
+          (totalAmount/1E6).toString(),
           LOCAL_ASSET_REGISTRY.note.denom,
           address,
           selectedValidators[0].validator.operator_address,

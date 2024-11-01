@@ -28,6 +28,7 @@ export const buildClaimMessage = ({
   });
 
   if (delegations) {
+    console.log("delegations activated")
     // Handle multiple delegations
     return delegations.map(delegation => ({
       typeUrl: endpoint,
@@ -137,23 +138,29 @@ export const claimAndRestake = async (
   const validatorAddresses = delegationsArray.map(d => d.delegation.validator_address);
 
   try {
+    console.log("MADE IT TO CLAIM AND RESTAKE")
+    simulateOnly = false
     const validatorRewards =
       rewards ||
       (await fetchRewards(
         delegatorAddress,
         validatorAddresses.map(addr => ({ validator_address: addr })),
       ));
+
     const hasRewards = validatorRewards.some(
       reward => parseFloat(reward.rewards[0]?.amount || '0') > 0,
     );
-
+  
     if (!hasRewards) return { success: false, message: 'No rewards to claim', data: { code: 1 } };
 
-    const claimResponse = await claimRewards(delegatorAddress, validatorAddresses, simulateOnly);
-    if (!claimResponse.success || claimResponse.data?.code !== 0) return claimResponse;
+    // Create claim messages using same structure as claimRewards
+    const claimMessages = buildClaimMessage({
+      endpoint: CHAIN_ENDPOINTS.claimRewards,
+      delegatorAddress,
+      validatorAddress: validatorAddresses,
+    });
 
-    if (simulateOnly) return claimResponse;
-
+    // Create delegate messages
     const delegateMessages = validatorRewards.flatMap(reward =>
       buildClaimMessage({
         endpoint: delegateEndpoint,
@@ -164,17 +171,35 @@ export const claimAndRestake = async (
       }),
     );
 
-    if (delegateMessages.length > 0) {
+    // Combine messages in correct order
+    const batchedMessages = [...claimMessages, ...delegateMessages];
+
+    if (simulateOnly) {
+      const simulateResponse = await queryRpcNode({
+        endpoint: delegateEndpoint,
+        messages: batchedMessages,
+        simulateOnly: true
+      });
+      
+      return {
+        success: true,
+        message: 'Simulation successful',
+        data: simulateResponse
+      };
+    }
+    console.log("made it to batched tx submission")
+    // Execute batched transaction
+    if (batchedMessages.length > 0) {
       const response = await queryRpcNode({
         endpoint: delegateEndpoint,
-        messages: delegateMessages.flat(),
+        messages: batchedMessages,
       });
-      return { success: true, message: 'Transaction successful', data: response };
+      return { success: true, message: 'Batch transaction successful', data: response };
     }
 
-    return { success: false, message: 'No rewards to delegate', data: { code: 1 } };
+    return { success: false, message: 'No messages to process', data: { code: 1 } };
   } catch (error) {
-    console.error('Error during claim and restake process:', error);
+    console.error('Error during batch claim and restake process:', error);
     return {
       success: false,
       message: error instanceof Error ? error.message : 'Unknown error occurred',
