@@ -104,11 +104,10 @@ export const CreateWallet = () => {
 
   /* ******************************************************************************************* */
   /* David Current TODOs */
+  // TODO: modify accounts/wallets management for scalability (password per account, multiple wallets per account, multiple accounts in storage, search by password+decryption)
   // TODO: ensure new encrypted mnemonic overwrites old in case of same password and name (but let user know first)
   // TODO: handle error printout for create/import wallet (in place of subtitle on verify screen?)
   // TODO: put Loader on loading screen, not "loading"
-  // TODO: amend fee showing as 0 rather than 0 MLD (send page)
-  // TODO: add fee display and updates for stake, unstake, and claim
   // TODO: refresh on complete of query (call validator and wallet refresh hooks or make other hook that fully updates all information)
   /* ******************************************************************************************* */
 
@@ -116,7 +115,6 @@ export const CreateWallet = () => {
   // TODO: ensure logout after blur + timeout (blur is click outside application to close).  to remove sensitive data after time period
   // TODO: enable transaction fees for wallet transactions (revenue)
   // TODO: abstract wallet prefix and mnemonic decryption
-  // TODO: modify accounts/wallets management for scalability (password per account, multiple wallets per account, multiple accounts in storage, search by password+decryption)
 
   /* Nice to have TODOs */
   // TODO: fix copytextfield issue of enlarged border on click
