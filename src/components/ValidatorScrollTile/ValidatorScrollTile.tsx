@@ -358,7 +358,7 @@ export const ValidatorScrollTile = ({
           showBottomBorder
           status={statusColor}
         >
-          <>
+          <div className="flex flex-col h-full">
             {rewards && (
               <div className="text-center mb-2">
                 <div className="truncate text-base font-medium text-neutral-1">
@@ -520,13 +520,14 @@ export const ValidatorScrollTile = ({
             </div>
 
             {/* Fee Section */}
+            <div className="flex flex-grow" />
             <div className="flex justify-between items-center text-blue text-sm font-bold w-full">
               <p>Fee</p>
               <p className={simulatedFee?.textClass}>
                 {simulatedFee && selectedAction ? simulatedFee.fee : '-'}
               </p>
             </div>
-          </>
+          </div>
         </SlideTray>
       )}
     </>

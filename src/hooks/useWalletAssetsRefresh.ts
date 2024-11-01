@@ -7,8 +7,9 @@ export function useWalletAssetsRefresh() {
   const [shouldRefreshData, setShouldRefreshData] = useAtom(shouldRefreshDataAtom);
 
   const refreshWalletAssets = async () => {
+    // Control refresh
     if (shouldRefreshData) {
-      console.log('refreshing data');
+      console.log('refreshing asset data');
 
       try {
         const newAssets = await fetchWalletAssets(walletState);
