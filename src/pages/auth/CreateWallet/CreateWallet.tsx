@@ -104,7 +104,6 @@ export const CreateWallet = () => {
   /* ******************************************************************************************* */
   /* David Current TODOs */
   // TODO: handle refetch of data after queries
-  // TODO: test path and create error for no wallet exists and user attempts login
   /* ******************************************************************************************* */
 
   /* Current TODOs */
