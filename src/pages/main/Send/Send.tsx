@@ -542,7 +542,7 @@ export const Send = () => {
         <div className={`flex justify-between items-center text-sm text-blue font-bold`}>
           <p>Fee</p>
           <p className={simulatedFee?.textClass}>
-            {simulatedFee && sendState.amount !== 0 ? simulatedFee?.fee : '- MLD'}
+            {simulatedFee && sendState.amount !== 0 ? simulatedFee?.fee : '-'}
           </p>
         </div>
 
