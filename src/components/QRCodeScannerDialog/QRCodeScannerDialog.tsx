@@ -26,16 +26,12 @@ export const QRCodeScannerDialog: React.FC<QRCodeScannerDialogProps> = ({ update
 
   const handleScan = (result: string | null) => {
     if (result) {
-      console.log('QR Code Scanned:', result);
-
       try {
         const parsedResult = JSON.parse(result);
         if (parsedResult.address && parsedResult.denomPreference) {
-          console.log('parsed result', parsedResult);
           const preferredAsset = filteredAssets.find(
             asset => asset.denom === parsedResult.denomPreference,
           );
-          console.log('preferred asset', preferredAsset);
 
           setAddress(parsedResult.address);
           updateSendAsset(preferredAsset as Asset, true);
@@ -53,7 +49,6 @@ export const QRCodeScannerDialog: React.FC<QRCodeScannerDialogProps> = ({ update
   const handleError = (error: any) => {
     console.error('QR Scanner Error:', error);
     if (error.name === 'NotAllowedError') {
-      console.log('Please grant camera permissions to use the QR scanner.');
       setPermissionDenied(true);
     }
   };
@@ -66,9 +61,7 @@ export const QRCodeScannerDialog: React.FC<QRCodeScannerDialogProps> = ({ update
         const result = await qrCodeReader.decodeFromImageUrl(url);
         handleScan(result.getText());
         URL.revokeObjectURL(url);
-      } catch (error) {
-        console.error('Error scanning file:', error);
-      }
+      } catch (error) {}
     }
   };
 
@@ -102,9 +95,7 @@ export const QRCodeScannerDialog: React.FC<QRCodeScannerDialogProps> = ({ update
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
       stream.getTracks().forEach(track => track.stop());
       setPermissionDenied(false);
-      console.log('Camera access granted.');
     } catch (error) {
-      console.error('Permission error:', error);
       setPermissionDenied(true);
     }
   };

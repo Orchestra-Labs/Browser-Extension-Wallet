@@ -48,7 +48,6 @@ export const TileScroller: React.FC<TileScrollerProps> = ({
     if (isRefreshing) {
       if (activeIndex === 0) {
         refreshWalletAssets();
-      } else {
         refreshValidatorData();
       }
     }

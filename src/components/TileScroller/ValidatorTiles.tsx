@@ -27,8 +27,6 @@ export const ValidatorTiles: React.FC<ValidatorTilesProps> = ({
     return <p className="text-base text-neutral-1">No validators found</p>;
   }
 
-  console.log('filtered validators:', filteredValidators);
-
   return (
     <>
       {filteredValidators.map(combinedStakingInfo => (
