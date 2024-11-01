@@ -12,11 +12,12 @@ import {
   sendStateAtom,
   walletStateAtom,
   selectedAssetAtom,
+  addressVerifiedAtom,
 } from '@/atoms';
 import { Asset, TransactionResult, TransactionSuccess } from '@/types';
 import { AssetInput, WalletSuccessScreen } from '@/components';
 import {
-  cn,
+  // cn,
   formatBalanceDisplay,
   removeTrailingZeroes,
   sendTransaction,
@@ -36,6 +37,7 @@ export const Send = () => {
   const [callbackChangeMap, setCallbackChangeMap] = useAtom(callbackChangeMapAtom);
   const [isLoading, setLoading] = useAtom(loadingAtom);
   const [recipientAddress, setRecipientAddress] = useAtom(recipientAddressAtom);
+  const addressVerified = useAtomValue(addressVerifiedAtom);
   const [selectedAsset, setSelectedAsset] = useAtom(selectedAssetAtom);
 
   // TODO: only query for exchange rate on transaction type swap
@@ -48,63 +50,101 @@ export const Send = () => {
   });
   const [simulatedFee, setSimulatedFee] = useState<{
     fee: string;
-    textClass: 'text-error' | 'text-warn' | '';
-  } | null>({ fee: '0', textClass: '' });
+    textClass: 'text-error' | 'text-warn' | 'text-blue';
+  } | null>({ fee: '0 MLD', textClass: 'text-blue' });
   const [sendPlaceholder, setSendPlaceholder] = useState<string>('');
   const [receivePlaceholder, setReceivePlaceholder] = useState<string>('');
-  const [transactionMessage, setTransactionMessage] = useState<string>('');
+  // const [transactionMessage, setTransactionMessage] = useState<string>('');
   const [isSuccess, setIsSuccess] = useState<TransactionSuccess>({ success: false });
 
   const handleTransaction = async ({ simulateTransaction = false } = {}) => {
+    console.log('Starting handleTransaction function');
+    console.log('transactionType.isValid:', transactionType.isValid);
+
     if (!transactionType.isValid) return;
-    // TODO: simulate against user's own address (build one if none exists)
-    if (!recipientAddress) return;
+
+    let currentRecipientAddress = '';
+    if (!addressVerified || !recipientAddress) {
+      currentRecipientAddress = walletState.address;
+    } else {
+      currentRecipientAddress = recipientAddress;
+    }
+
+    console.log('Recipient address:', currentRecipientAddress);
+    if (!currentRecipientAddress) return;
 
     const sendAsset = sendState.asset;
     const sendAmount = sendState.amount;
     const receiveAsset = receiveState.asset;
 
+    console.log('sendAsset:', sendAsset);
+    console.log('receiveAsset:', receiveAsset);
+
     if (!sendAsset || !receiveAsset) return;
+
     const assetToSend = walletAssets.find(a => a.denom === sendAsset.denom);
+    console.log('assetToSend:', assetToSend);
     if (!assetToSend) return;
 
     const adjustedAmount = (
       sendAmount * Math.pow(10, assetToSend.exponent || GREATER_EXPONENT_DEFAULT)
     ).toFixed(0); // No decimals, minor unit
 
+    console.log('Adjusted amount:', adjustedAmount);
+
     const sendObject = {
-      recipientAddress,
+      recipientAddress: currentRecipientAddress,
       amount: adjustedAmount,
       denom: sendAsset.denom,
     };
 
-    if (!simulateTransaction) setLoading(true);
+    console.log('sendObject:', sendObject);
+
+    if (!simulateTransaction) {
+      console.log('Setting loading state');
+      setLoading(true);
+    }
 
     try {
       let result: TransactionResult;
       // Routing logic based on transactionType
+      console.log('transaction type', transactionType.isSwap);
+
       if (!transactionType.isSwap) {
+        console.log('Executing sendTransaction');
         result = await sendTransaction(walletState.address, sendObject, simulateTransaction);
+        console.log('sendTransaction result:', result);
       } else if (transactionType.isSwap) {
         const swapObject = { sendObject, resultDenom: receiveAsset.denom };
+        console.log('Executing swapTransaction with swapObject:', swapObject);
         result = await swapTransaction(walletState.address, swapObject, simulateTransaction);
+        console.log('swapTransaction result:', result);
       } else {
         throw new Error('Invalid transaction type');
       }
 
+      console.log('Result data:', simulateTransaction, result?.data?.code);
+
       // Process result for simulation or actual transaction
       if (simulateTransaction && result?.data?.code === 0) {
+        console.log('Simulation successful');
         return result;
       } else if (result.success && result.data?.code === 0) {
+        console.log('Transaction successful:', result.data.txHash);
         setIsSuccess({ success: true, txHash: result.data.txHash });
       } else {
-        console.error('Transaction failed', result.data);
+        console.error('Transaction failed:', result.data);
       }
     } catch (error) {
-      console.error('Error in transaction handling', error);
+      console.error('Error in transaction handling:', error);
     } finally {
-      if (!simulateTransaction) setLoading(false);
+      if (!simulateTransaction) {
+        console.log('Resetting loading state');
+        setLoading(false);
+      }
     }
+
+    console.log('Ending handleTransaction function');
     // TODO: also put refetch after the stake and unstake functions
     // TODO: re-apply refetch if helpers are changed into hooks
     // refetch();
@@ -116,6 +156,11 @@ export const Send = () => {
     if (!walletAsset) return 0;
 
     const maxAmount = parseFloat(walletAsset.amount || '0');
+    console.log('simulated fee', simulatedFee ? parseFloat(simulatedFee.fee) : 0);
+    console.log(
+      'alternative representation',
+      simulatedFee ? parseFloat(simulatedFee.fee.split(' ')[0]) : 0,
+    );
     const feeAmount = simulatedFee ? parseFloat(simulatedFee.fee) : 0;
 
     const maxAvailable = Math.max(0, maxAmount - feeAmount);
@@ -224,10 +269,13 @@ export const Send = () => {
 
   const updateFee = async () => {
     const simulationResponse = await handleTransaction({ simulateTransaction: true });
+    console.log('simulationResponse', simulationResponse, simulationResponse?.data);
 
     if (simulationResponse && simulationResponse.data) {
       const gasWanted = parseInt(simulationResponse.data.gasWanted || '0', 10);
+      console.log('gas wanted', simulationResponse.data.gasWanted, gasWanted);
 
+      // TODO; get default gas price from chain registry
       const defaultGasPrice = 0.025;
       const exponent = sendState.asset?.exponent || GREATER_EXPONENT_DEFAULT;
       const symbol = sendState.asset.symbol || DEFAULT_ASSET.symbol || 'MLD';
@@ -238,7 +286,8 @@ export const Send = () => {
 
       setSimulatedFee({
         fee: formatBalanceDisplay(feeInGreaterUnit.toFixed(exponent), symbol),
-        textClass: feePercentage > 1 ? 'text-error' : feePercentage > 0.75 ? 'text-warn' : '',
+        textClass:
+          feePercentage > 1 ? 'text-error' : feePercentage > 0.75 ? 'text-warn' : 'text-blue',
       });
     } else {
       // TODO: handle error on fee return
@@ -259,17 +308,17 @@ export const Send = () => {
 
     if (sendAsset.denom === receiveAsset.denom) {
       newTransactionType.isSwap = false;
-      setTransactionMessage(`Sending ${sendAsset.symbol} through Symphony.`);
+      // setTransactionMessage(`Sending ${sendAsset.symbol} through Symphony.`);
     } else if (!sendAsset.isIbc && !receiveAsset.isIbc && sendAsset.denom !== receiveAsset.denom) {
       newTransactionType.isSwap = true;
-      setTransactionMessage(
-        newTransactionType.isValid
-          ? `Sending ${sendAsset.symbol} into ${receiveAsset.symbol} on Symphony.`
-          : `No exchange on current pair`,
-      );
+      // setTransactionMessage(
+      //   newTransactionType.isValid
+      //     ? `Sending ${sendAsset.symbol} into ${receiveAsset.symbol} on Symphony.`
+      //     : `No exchange on current pair`,
+      // );
     } else {
       newTransactionType.isValid = false;
-      setTransactionMessage('Not yet supported');
+      // setTransactionMessage('Not yet supported');
     }
 
     setTransactionType(newTransactionType);
@@ -442,9 +491,10 @@ export const Send = () => {
         </NavLink>
         <div>
           <h1 className="text-h5 text-white font-bold">Send</h1>
-          <div className={cn(`${transactionType.isValid ? 'text-neutral-1' : 'text-error'}`)}>
+          {/* TODO: remove if remains unused.  potential spot for info and error messages */}
+          {/* <div className={cn(`${transactionType.isValid ? 'text-neutral-1' : 'text-error'}`)}>
             {transactionMessage}
-          </div>
+          </div> */}
         </div>
         <div className="max-w-5 w-full max-h-5" />
       </div>
@@ -489,10 +539,10 @@ export const Send = () => {
         <div className="flex flex-grow" />
 
         {/* Fee Section */}
-        <div className="flex justify-between items-center text-blue text-sm font-bold">
+        <div className={`flex justify-between items-center text-sm text-blue font-bold`}>
           <p>Fee</p>
           <p className={simulatedFee?.textClass}>
-            {simulatedFee ? simulatedFee.fee : 'Unknown...'}
+            {simulatedFee && sendState.amount !== 0 ? simulatedFee?.fee : '-'}
           </p>
         </div>
 

@@ -1,6 +1,6 @@
 import { Input } from '@/ui-kit';
-import { useAtom, useSetAtom } from 'jotai';
-import { addressVerifiedAtom, recipientAddressAtom } from '@/atoms';
+import { useAtom, useAtomValue, useSetAtom } from 'jotai';
+import { addressVerifiedAtom, recipientAddressAtom, walletStateAtom } from '@/atoms';
 import { useEffect, useState } from 'react';
 import { WALLET_PREFIX } from '@/constants';
 import { cn } from '@/helpers';
@@ -12,12 +12,15 @@ interface AddressInputProps {
   updateSendAsset: (asset: Asset, propagateChanges: boolean) => void;
 }
 
+// TODO: set placeholder as user's address.
+// TODO: return validity
 export const AddressInput: React.FC<AddressInputProps> = ({
   addBottomMargin = true,
   updateSendAsset,
 }) => {
   const [address, setAddress] = useAtom(recipientAddressAtom);
   const setAddressVerified = useSetAtom(addressVerifiedAtom);
+  const walletState = useAtomValue(walletStateAtom);
 
   const [addressStatus, setAddressStatus] = useState<'error' | 'success' | null>(null);
   const [allowValidateAddress, setAllowValidatePassword] = useState(false);
@@ -37,6 +40,7 @@ export const AddressInput: React.FC<AddressInputProps> = ({
 
     const isAddressValid = hasPrefix && isValidLength && isAlphanumeric;
     setAddressStatus(isAddressValid ? 'success' : 'error');
+    setAddressVerified(isAddressValid); // Set the verified state for address validity check
   };
 
   const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -95,7 +99,7 @@ export const AddressInput: React.FC<AddressInputProps> = ({
           status={addressStatus}
           showMessageText={true}
           messageText={addressStatus === 'error' ? 'Address not in supported format' : ''}
-          placeholder="Wallet Address or ICNS"
+          placeholder={walletState.address || 'Wallet Address or ICNS'}
           icon={<QRCodeScannerDialog updateSendAsset={updateSendAsset} />}
           value={address}
           onChange={handleAddressChange}

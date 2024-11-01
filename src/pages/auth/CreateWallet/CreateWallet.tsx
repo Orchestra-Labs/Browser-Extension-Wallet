@@ -97,33 +97,39 @@ export const CreateWallet = () => {
   /* ******************************************************************************************* */
   /* Chris current TODO */
   // TODO: show errors to user (user displayable values)
-  // TODO: provide updates to user as staking, claim, and unstaking information changes (successes, errors, and changing gas fees)
-  // TODO: provide updates to user as send information updates (errors and changing gas fees)
+  // TODO: provide updates to user as staking, claim, and unstaking information changes (errors)
+  // TODO: provide updates to user as send information updates (errors)
   /* ******************************************************************************************* */
 
   /* ******************************************************************************************* */
   /* David Current TODOs */
+  // TODO: put Loader on loading screen, not "loading"
+  // TODO: amend fee showing as 0 rather than 0 MLD (send page)
   // TODO: add fee display and updates for stake, unstake, and claim
+  // TODO: refresh on complete of query (call validator and wallet refresh hooks or make other hook that fully updates all information)
   /* ******************************************************************************************* */
 
   /* Current TODOs */
   // TODO: ensure logout after blur + timeout (blur is click outside application to close).  to remove sensitive data after time period
+  // TODO: enable transaction fees for wallet transactions (revenue)
+  // TODO: abstract wallet prefix and mnemonic decryption
+  // TODO: modify accounts/wallets management for scalability (password per account, multiple wallets per account, multiple accounts in storage, search by password+decryption)
+
+  /* Nice to have TODOs */
+  // TODO: fix copytextfield issue of enlarged border on click
+  // TODO: clean up helper functions and hooks
+  // TODO: make "clear" and "max" button send screen inputs.  make placement and appearance for these uniform (send and unstake sections)
+  // TODO: add search icon to search field, add onclick
+  // TODO: keep track of current page for case of re-open before timeout
+  // TODO: prevent re-building auth every time wallet updates
+  // TODO: ensure new encrypted mnemonic overwrites old in case of same password and name (but let user know first)
   // TODO: test path and create error for no wallet exists and user attempts login
   // TODO: ensure new encrypted mnemonic overwrites old in case of same password and name (but let user know first)
   // TODO: handle error printout for create/import wallet (in place of subtitle on verify screen?)
   // TODO: modify auth to accounts & wallets structure to make this scalable for later upgrades
 
-  /* Less Critical TODOs */
-  // TODO: amend fee showing as 0 rather than 0 MLD (send page)
-  // TODO: make "clear" and "max" button send screen inputs.  make placement and appearance for these uniform (send and unstake sections)
-  // TODO: keep track of current page for case of re-open after timeout
-  // TODO: clean up helper functions and hooks
-  // TODO: prevent re-building auth every time wallet updates
-  // TODO: add search icon to search field (component), add onclick
-
   /* Interchain-compatibility TODOs (mobile version before this) */
   // TODO: add button to "add chain" at bottom of Holdings list
-  // TODO: abstract wallet prefix and mnemonic decryption
   // TODO: add link to github repo for registry
   // TODO: abstract IBC needs
   // TODO: ensure pipeline to other registries is functional.  change here auto-PRs there
