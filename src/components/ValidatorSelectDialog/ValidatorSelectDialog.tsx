@@ -155,7 +155,11 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
   };
 
   // TODO: non-simulation transactions not going through.  find out why
+  // TODO: rather than below, add a bundleTransaction function/functions and
   // TODO: need to bundle transactions for the all if greater than 29 (set to 20 to be safe).  one bundle per block
+  // TODO: for ^ consider using queue and record of last block submitted on.  query every 5 seconds by default, or at time between last two blocks plus latest block time otherwise
+  // TODO: clear block height and block time data if time between blocks has elapsed without new message coming in
+  // TODO: for simulations, get one bundle, average per bundle and re-apply as changes keep coming in, then
   const handleClaimToWallet = async (isSimulation: boolean = false) => {
     if (!isSimulation) setAsLoading(TransactionType.CLAIM_TO_WALLET);
 
