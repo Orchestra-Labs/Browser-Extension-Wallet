@@ -104,12 +104,11 @@ export const AssetScrollTile = ({ asset, isSelectable = false, onClick }: AssetS
 
           {/* Action Buttons */}
           <div className="flex flex-col items-center justify-center grid grid-cols-3 w-full gap-x-4 px-2">
-            {/* Use the custom handler for the send button */}
-            <Button className={'w-full'} onClick={handleSendClick}>
+            <Button size="medium" className={'w-full'} onClick={handleSendClick}>
               Send
             </Button>
-            <ReceiveDialog />
-            <Button className={'w-full'} onClick={() => setActiveIndex(1)}>
+            <ReceiveDialog buttonSize="medium" />
+            <Button size="medium" className={'w-full'} onClick={() => setActiveIndex(1)}>
               Stake
             </Button>
           </div>

@@ -130,7 +130,7 @@ export const Send = () => {
         console.log('Simulation successful');
         return result;
       } else if (result.success && result.data?.code === 0) {
-        console.log('Transaction successful:', result.data.txHash);
+        // TODO: much like on validator actions, set to toast if not on page
         setIsSuccess({ success: true, txHash: result.data.txHash });
       } else {
         console.error('Transaction failed:', result.data);
@@ -536,10 +536,9 @@ export const Send = () => {
           />
         </>
 
-        <div className="flex flex-grow" />
-
         {/* Fee Section */}
-        <div className={`flex justify-between items-center text-sm text-blue font-bold`}>
+        <div className="flex flex-grow" />
+        <div className="flex justify-between items-center text-blue text-sm font-bold">
           <p>Fee</p>
           <p className={simulatedFee?.textClass}>
             {simulatedFee && sendState.amount !== 0 ? simulatedFee?.fee : '-'}
