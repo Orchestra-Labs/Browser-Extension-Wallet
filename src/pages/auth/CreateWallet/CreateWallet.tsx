@@ -109,11 +109,19 @@ export const CreateWallet = () => {
   // TODO: handle error printout for create/import wallet (in place of subtitle on verify screen?)
 
   // TODO: put Loader on loading screen, not "loading"
-  // TODO: refresh on complete of query (call validator and wallet refresh hooks or make other hook that fully updates all information)
+  // TODO: handle refetch of data after queries
+  // TODO: change onHover, click and active colors for selected tiles vs unselected tiles. model after buttons. currently look like the same action
+  // TODO: modify auth to accounts & wallets structure to make this scalable for later upgrades
   /* ******************************************************************************************* */
 
   /* Current TODOs */
-  // TODO: ensure logout after blur + timeout (blur is click outside application to close).  to remove sensitive data after time period
+  // TODO: fix claim and restake error.  make consistent
+  // TODO: ensure fees are added properly (gasUsed = gasWanted) for claim-to-wallet and claim-to-restake for both single claim messages and multiple claim messages
+  // TODO: versioning: minimum, recommended, and current versions.  recommended update for versions lower than recommended, link to update, no login for versions below minimum
+  // TODO: ensure new encrypted mnemonic overwrites old in case of same password and name (but let user know first)
+  // TODO: handle error printout for create/import wallet (in place of subtitle on verify screen?)
+  // TODO: refresh on complete of query (call validator and wallet refresh hooks or make other hook that fully updates all information)
+
   // TODO: enable transaction fees for wallet transactions (revenue)
   // TODO: abstract wallet prefix and mnemonic decryption
 
@@ -127,11 +135,9 @@ export const CreateWallet = () => {
   // TODO: keep track of current page for case of re-open before timeout
   // TODO: prevent re-building auth every time wallet updates
   // TODO: ensure new encrypted mnemonic overwrites old in case of same password and name (but let user know first)
-  // TODO: test path and create error for no wallet exists and user attempts login
-  // TODO: ensure new encrypted mnemonic overwrites old in case of same password and name (but let user know first)
-  // TODO: handle error printout for create/import wallet (in place of subtitle on verify screen?)
-  // TODO: modify auth to accounts & wallets structure to make this scalable for later upgrades
   // TODO: make data text in asset and validator tiles scrollable
+  // TODO: add feeLoading state to update fees between
+  // TODO: ensure logout after blur + timeout (blur is click outside application to close).  to remove sensitive data after time period
 
   /* Interchain-compatibility TODOs (mobile version before this) */
   // TODO: add button to "add chain" at bottom of Holdings list
@@ -157,6 +163,7 @@ export const CreateWallet = () => {
   // TODO: Add dApp page
   // TODO: Add NFT page
   // TODO: Add page view selection in options
+  // TODO: handle stake to all (add total, it distributes that total amongst all selected). david sees as beneficial.  do others?
 
   /* Less Critical Wallet TODOs */
   // TODO: add data transfer method for extension to wallet or back (including account data)

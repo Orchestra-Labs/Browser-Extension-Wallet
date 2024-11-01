@@ -6,7 +6,11 @@ import { truncateWalletAddress } from '@/helpers';
 import { DEFAULT_ASSET, WALLET_PREFIX } from '@/constants';
 import { QRCodeContainer } from '../QRCodeContainer';
 
-export const ReceiveDialog: React.FC = () => {
+interface ReceiveDialogProps {
+  buttonSize?: 'default' | 'medium' | 'small' | 'xsmall';
+}
+
+export const ReceiveDialog: React.FC<ReceiveDialogProps> = ({ buttonSize = 'default' }) => {
   const walletState = useAtomValue(walletStateAtom);
 
   const [includeCoinPreference, setIncludeCoinPreference] = useState(false);
@@ -23,7 +27,7 @@ export const ReceiveDialog: React.FC = () => {
   return (
     <SlideTray
       triggerComponent={
-        <Button variant="secondary" className="w-full">
+        <Button size={buttonSize} variant="secondary" className="w-full">
           Receive
         </Button>
       }

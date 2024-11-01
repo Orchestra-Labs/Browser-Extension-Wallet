@@ -12,6 +12,7 @@ interface AssetInputProps {
   variant?: 'send' | 'receive' | 'stake';
   assetState: Asset | null;
   amountState: number;
+  reducedHeight?: boolean;
   updateAsset?: (newAsset: Asset, propagateChanges?: boolean) => void;
   updateAmount: (newAmount: number, propagateChanges?: boolean) => void;
 }
@@ -22,6 +23,7 @@ export const AssetInput: React.FC<AssetInputProps> = ({
   variant = 'stake',
   assetState,
   amountState,
+  reducedHeight = false,
   updateAsset,
   updateAmount,
 }) => {
@@ -151,6 +153,7 @@ export const AssetInput: React.FC<AssetInputProps> = ({
               <AssetSelectDialog isSendDialog={variant === 'send'} onClick={updateAsset} />
             ) : null
           }
+          reducedHeight={reducedHeight}
           className={cn(
             variant === 'stake'
               ? 'text-white mx-2'

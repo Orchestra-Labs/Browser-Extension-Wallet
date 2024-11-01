@@ -1,4 +1,6 @@
 export const truncateWalletAddress = (prefix: string, hashString: string) => {
+  if (!hashString) return '';
+
   const prefixExists = hashString.startsWith(prefix);
   const returningPrefix = prefixExists ? prefix : '';
   const remainingHash = prefixExists ? hashString.slice(prefix.length) : hashString;

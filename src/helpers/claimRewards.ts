@@ -3,6 +3,7 @@ import { queryRpcNode } from './queryNodes';
 import { DelegationResponse, TransactionResult } from '@/types';
 import { fetchRewards } from './fetchStakingInfo';
 
+// TODO: verify multiple messages add fees from queryNodes properly.  shouldn't need magic number below
 export const buildClaimMessage = ({
   endpoint,
   delegatorAddress,
@@ -18,15 +19,6 @@ export const buildClaimMessage = ({
   denom?: string;
   delegations?: DelegationResponse[];
 }): any => {
-  console.log('Building claim message:', {
-    endpoint,
-    delegatorAddress,
-    validatorAddress,
-    amount,
-    denom,
-    delegations,
-  });
-
   if (delegations) {
     // Handle multiple delegations
     return delegations.map(delegation => ({
@@ -60,34 +52,26 @@ export const buildClaimMessage = ({
   }));
 };
 
-// Function to claim rewards from one or multiple validators
 export const claimRewards = async (
   delegatorAddress: string,
   validatorAddress: string | string[],
+  simulateOnly = false,
 ): Promise<TransactionResult> => {
   const endpoint = CHAIN_ENDPOINTS.claimRewards;
-
-  // Make sure validatorAddress is always an array
   const validatorAddressesArray = Array.isArray(validatorAddress)
     ? validatorAddress
     : [validatorAddress];
-
   const messages = buildClaimMessage({
     endpoint,
     delegatorAddress,
-    validatorAddress: validatorAddressesArray, // Pass array for consistency
-  });
-
-  console.log('Claiming rewards from validator(s):', {
-    delegatorAddress,
-    validatorAddressesArray,
-    messages,
+    validatorAddress: validatorAddressesArray,
   });
 
   try {
     const response = await queryRpcNode({
       endpoint,
       messages,
+      simulateOnly,
     });
 
     if (!response) {
@@ -100,17 +84,18 @@ export const claimRewards = async (
       };
     }
 
-    console.log('Rewards claimed successfully:', response);
+    if (simulateOnly) {
+      return {
+        success: true,
+        message: 'Simulation successful',
+        data: response,
+      };
+    }
+
     return {
       success: true,
       message: 'Transaction successful',
-      data: {
-        code: response.code || 0,
-        txHash: response.txHash,
-        gasUsed: response.gasUsed,
-        gasWanted: response.gasWanted,
-        height: response.height,
-      },
+      data: response,
     };
   } catch (error) {
     console.error('Error claiming rewards:', error);
@@ -125,134 +110,97 @@ export const claimRewards = async (
 };
 
 // TODO: fails occasionally on restake.  find out why and fix.  needs timeout?
-// Function to claim rewards and restake for one or multiple validators
 export const claimAndRestake = async (
   delegations: DelegationResponse | DelegationResponse[],
-  rewards?: {
-    validator: string;
-    rewards: { denom: string; amount: string }[];
-  }[],
+  rewards?: { validator: string; rewards: { denom: string; amount: string }[] }[],
+  simulateOnly = false,
 ): Promise<TransactionResult> => {
   const delegateEndpoint = CHAIN_ENDPOINTS.delegateToValidator;
-
-  // Ensure delegations is always an array
   const delegationsArray = Array.isArray(delegations) ? delegations : [delegations];
   const delegatorAddress = delegationsArray[0].delegation.delegator_address;
   const validatorAddresses = delegationsArray.map(d => d.delegation.validator_address);
 
   try {
-    // If rewards weren't passed in, fetch them
     const validatorRewards =
       rewards ||
       (await fetchRewards(
         delegatorAddress,
         validatorAddresses.map(addr => ({ validator_address: addr })),
       ));
-
-    // Check if there are any non-zero rewards
-    const hasRewards = validatorRewards.some(reward => {
-      if (!reward.rewards || reward.rewards.length === 0) return false;
-      const amount = parseFloat(reward.rewards[0].amount);
-      return amount > 0;
-    });
+    const hasRewards = validatorRewards.some(
+      reward => parseFloat(reward.rewards[0]?.amount || '0') > 0,
+    );
 
     if (!hasRewards) {
-      console.log('No non-zero rewards to claim and delegate');
-      return {
-        success: false,
-        message: 'No rewards to claim',
-        data: {
-          code: 1,
-        },
-      };
+      return { success: false, message: 'No rewards to claim', data: { code: 1 } };
     }
 
-    // Claim rewards first and check for success
-    const claimResponse = await claimRewards(delegatorAddress, validatorAddresses);
-
+    const claimResponse = await claimRewards(delegatorAddress, validatorAddresses, simulateOnly);
     if (!claimResponse.success || claimResponse.data?.code !== 0) {
       return claimResponse;
     }
 
-    // Create delegation messages for each validator with their respective reward amounts
-    const delegateMessages = validatorRewards.flatMap(reward => {
-      // Skip if no rewards or zero rewards
-      if (!reward.rewards || reward.rewards.length === 0) return [];
+    let totalGasWanted = parseFloat(claimResponse.data?.gasWanted || '0');
 
-      const { denom, amount } = reward.rewards[0];
-
-      // Skip if reward amount is zero
-      if (parseFloat(amount) <= 0) return [];
-
-      // Format the amount according to the asset's exponent
-      const formattedAmount = amount.split('.')[0]; // Remove any decimal places if present
-
-      return buildClaimMessage({
+    const delegateMessages = validatorRewards.flatMap(reward =>
+      buildClaimMessage({
         endpoint: delegateEndpoint,
         delegatorAddress,
         validatorAddress: reward.validator,
-        amount: formattedAmount,
-        denom,
-      });
-    });
+        amount: reward.rewards[0].amount.split('.')[0],
+        denom: reward.rewards[0].denom,
+      }),
+    );
 
-    // Only proceed with delegation if there are messages (implying non-zero rewards)
     if (delegateMessages.length > 0) {
-      const response = await queryRpcNode({
+      const delegateResponse = await queryRpcNode({
         endpoint: delegateEndpoint,
         messages: delegateMessages.flat(),
+        simulateOnly,
       });
 
-      if (!response) {
+      if (!delegateResponse) {
         return {
           success: false,
-          message: 'No response received from restake transaction',
+          message: 'No response received from delegation',
+          data: { code: 1 },
+        };
+      }
+
+      // If simulation, sum the gas from claim and delegate, and return
+      if (simulateOnly) {
+        totalGasWanted += parseFloat(delegateResponse.gasWanted || '0');
+
+        return {
+          success: true,
+          message: 'Simulation successful',
           data: {
-            code: 1,
+            ...claimResponse.data,
+            gasWanted: totalGasWanted.toFixed(GREATER_EXPONENT_DEFAULT),
           },
         };
       }
 
-      console.log('Rewards claimed and delegated successfully:', response);
-      return {
-        success: true,
-        message: 'Transaction successful',
-        data: {
-          code: response.code || 0,
-          txHash: response.txHash,
-          gasUsed: response.gasUsed,
-          gasWanted: response.gasWanted,
-          height: response.height,
-        },
-      };
-    } else {
-      console.log('No rewards to delegate after filtering zero amounts');
-      return {
-        success: false,
-        message: 'No rewards to delegate',
-        data: {
-          code: 1,
-        },
-      };
+      return { success: true, message: 'Transaction successful', data: delegateResponse };
     }
+
+    return { success: false, message: 'No rewards to delegate', data: { code: 1 } };
   } catch (error) {
     console.error('Error during claim and restake process:', error);
     return {
       success: false,
       message: error instanceof Error ? error.message : 'Unknown error occurred',
-      data: {
-        code: 1,
-      },
+      data: { code: 1 },
     };
   }
 };
 
-// Function to stake to a validator
 export const stakeToValidator = async (
   amount: string,
   denom: string,
   walletAddress: string,
   validatorAddress: string,
+  simulateOnly = false,
 ): Promise<TransactionResult> => {
   const endpoint = CHAIN_ENDPOINTS.delegateToValidator;
   const formattedAmount = (
@@ -272,85 +220,84 @@ export const stakeToValidator = async (
     const response = await queryRpcNode({
       endpoint,
       messages,
+      simulateOnly,
     });
 
     if (!response) {
       return {
         success: false,
         message: 'No response received from transaction',
-        data: {
-          code: 1,
-        },
+        data: { code: 1 },
       };
     }
 
-    console.log('Successfully staked:', response);
-    return {
-      success: true,
-      message: 'Transaction successful',
-      data: {
-        code: response.code || 0,
-        txHash: response.txHash,
-        gasUsed: response.gasUsed,
-        gasWanted: response.gasWanted,
-        height: response.height,
-      },
-    };
+    if (simulateOnly) {
+      return { success: true, message: 'Simulation successful', data: response };
+    }
+
+    return { success: true, message: 'Transaction successful', data: response };
   } catch (error) {
-    console.error('Error during staking:', error);
     return {
       success: false,
       message: error instanceof Error ? error.message : 'Unknown error occurred',
-      data: {
-        code: 1,
-      },
+      data: { code: 1 },
     };
   }
 };
 
-// Function to unstake from a validator
-export const unstakeFromValidator = async (
-  amount: string,
-  delegation: DelegationResponse,
-): Promise<TransactionResult> => {
+export const unstakeFromValidator = async ({
+  delegations,
+  amount,
+  simulateOnly = false,
+}: {
+  delegations: DelegationResponse | DelegationResponse[];
+  amount?: string;
+  simulateOnly?: boolean;
+}): Promise<TransactionResult> => {
   const endpoint = CHAIN_ENDPOINTS.undelegateFromValidator;
-  const delegatorAddress = delegation.delegation.delegator_address;
-  const validatorAddress = delegation.delegation.validator_address;
-  const denom = delegation.balance.denom;
+  const delegationsArray = Array.isArray(delegations) ? delegations : [delegations];
+  const isSingleDelegation = delegationsArray.length === 1 && amount;
 
-  // Convert the amount to the smallest unit by multiplying by 10^exponent
-  const formattedAmount = (
-    parseFloat(amount) *
-    Math.pow(10, LOCAL_ASSET_REGISTRY[denom].exponent || GREATER_EXPONENT_DEFAULT)
-  ).toFixed(0);
-
-  console.log('Formatted amount (in smallest unit):', formattedAmount);
-
-  const messages = buildClaimMessage({
-    endpoint,
-    delegatorAddress,
-    validatorAddress,
-    amount: formattedAmount,
-    denom,
-  });
+  // If there's a single delegation and amount is provided, format the amount
+  const messages = isSingleDelegation
+    ? buildClaimMessage({
+        endpoint,
+        delegatorAddress: delegationsArray[0].delegation.delegator_address,
+        validatorAddress: delegationsArray[0].delegation.validator_address,
+        amount: (
+          parseFloat(amount!) *
+          Math.pow(
+            10,
+            LOCAL_ASSET_REGISTRY[delegationsArray[0].balance.denom].exponent ||
+              GREATER_EXPONENT_DEFAULT,
+          )
+        ).toFixed(0),
+        denom: delegationsArray[0].balance.denom,
+      })
+    : buildClaimMessage({
+        endpoint,
+        delegations: delegationsArray,
+      });
 
   try {
     const response = await queryRpcNode({
       endpoint,
       messages,
+      simulateOnly,
     });
 
     if (!response) {
       return {
         success: false,
         message: 'No response received from transaction',
-        data: {
-          code: 1,
-        },
+        data: { code: 1 },
       };
     }
 
-    console.log('Successfully unstaked:', response);
+    if (simulateOnly) {
+      return { success: true, message: 'Simulation successful', data: response };
+    }
+
     return {
       success: true,
       message: 'Transaction successful',
@@ -367,60 +314,7 @@ export const unstakeFromValidator = async (
     return {
       success: false,
       message: error instanceof Error ? error.message : 'Unknown error occurred',
-      data: {
-        code: 1,
-      },
-    };
-  }
-};
-
-// Function to unstake from multiple validators
-export const unstakeFromAllValidators = async (
-  delegations: DelegationResponse[],
-): Promise<TransactionResult> => {
-  const endpoint = CHAIN_ENDPOINTS.undelegateFromValidator;
-
-  const messages = buildClaimMessage({
-    endpoint,
-    delegations,
-  });
-
-  try {
-    const response = await queryRpcNode({
-      endpoint,
-      messages,
-    });
-
-    if (!response) {
-      return {
-        success: false,
-        message: 'No response received from transaction',
-        data: {
-          code: 1,
-        },
-      };
-    }
-
-    console.log('Successfully unstaked:', response);
-    return {
-      success: true,
-      message: 'Transaction successful',
-      data: {
-        code: response.code || 0,
-        txHash: response.txHash,
-        gasUsed: response.gasUsed,
-        gasWanted: response.gasWanted,
-        height: response.height,
-      },
-    };
-  } catch (error) {
-    console.error('Error during unstaking:', error);
-    return {
-      success: false,
-      message: error instanceof Error ? error.message : 'Unknown error occurred',
-      data: {
-        code: 1,
-      },
+      data: { code: 1 },
     };
   }
 };

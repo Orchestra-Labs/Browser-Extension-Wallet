@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useAtom } from 'jotai';
-import { isRefreshingAtom } from '@/atoms';
+import { shouldRefreshDataAtom } from '@/atoms';
 import { ScrollArea } from '@/ui-kit';
 import { Asset, CombinedStakingInfo } from '@/types';
 import { useDrag } from '@use-gesture/react';
@@ -28,7 +28,7 @@ export const TileScroller: React.FC<TileScrollerProps> = ({
   isDialog = false,
   isReceiveDialog = false,
 }) => {
-  const [isRefreshing, setIsRefreshing] = useAtom(isRefreshingAtom);
+  const [shouldRefreshData, setShouldRefreshData] = useAtom(shouldRefreshDataAtom);
 
   const [isMouseDown, setIsMouseDown] = useState(false);
   const [dragStarted, setDragStarted] = useState(false);
@@ -44,21 +44,21 @@ export const TileScroller: React.FC<TileScrollerProps> = ({
 
   const [{ y, loaderOpacity }, api] = useSpring(() => ({ y: 0, loaderOpacity: 0 }));
 
+  // TODO: infinite spin on validator page.  fix this.
   useEffect(() => {
-    if (isRefreshing) {
+    if (shouldRefreshData) {
       if (activeIndex === 0) {
         refreshWalletAssets();
-      } else {
         refreshValidatorData();
       }
     }
-  }, [isRefreshing, activeIndex]);
+  }, [shouldRefreshData, activeIndex]);
 
   useEffect(() => {
-    if (!isRefreshing) {
+    if (!shouldRefreshData) {
       api.start({ y: 0, loaderOpacity: 0 });
     }
-  }, [isRefreshing, api]);
+  }, [shouldRefreshData, api]);
 
   const bind = useDrag(
     ({
@@ -95,7 +95,7 @@ export const TileScroller: React.FC<TileScrollerProps> = ({
             viewport.scrollTop = memo - my;
             api.start({ y: 0, loaderOpacity: 0 });
           }
-        } else if (last && !isRefreshing) {
+        } else if (last && !shouldRefreshData) {
           const velocityMagnitude = Math.sqrt(velocity[0] ** 2 + velocity[1] ** 2);
 
           if (
@@ -103,7 +103,7 @@ export const TileScroller: React.FC<TileScrollerProps> = ({
             limitedOverscroll > OVERSCROLL_ACTIVATION_THRESHOLD &&
             velocityMagnitude < MAX_REFRESH_VELOCITY
           ) {
-            setIsRefreshing(true);
+            setShouldRefreshData(true);
             api.start({ y: TOP_OVERSCROLL_LIMIT, loaderOpacity: 1 });
           } else {
             api.start({ y: 0, loaderOpacity: 0 });
@@ -121,7 +121,7 @@ export const TileScroller: React.FC<TileScrollerProps> = ({
   const handleMouseUp = () => {
     setIsMouseDown(false);
     setDragStarted(false);
-    if (!isRefreshing) {
+    if (!shouldRefreshData) {
       api.start({ y: 0, loaderOpacity: 0 });
     }
   };
@@ -130,7 +130,7 @@ export const TileScroller: React.FC<TileScrollerProps> = ({
     const resetDrag = () => {
       setIsMouseDown(false);
       setDragStarted(false);
-      if (!isRefreshing) {
+      if (!shouldRefreshData) {
         api.start({ y: 0, loaderOpacity: 0 });
       }
     };
@@ -144,7 +144,7 @@ export const TileScroller: React.FC<TileScrollerProps> = ({
       window.removeEventListener('mouseleave', resetDrag);
       window.removeEventListener('pointercancel', resetDrag);
     };
-  }, [api, isRefreshing]);
+  }, [api, shouldRefreshData]);
 
   return (
     <ScrollArea
@@ -169,7 +169,7 @@ export const TileScroller: React.FC<TileScrollerProps> = ({
             transform: y.to(v => `translateY(${Math.max(v - 52, -52)}px)`),
           }}
         >
-          <Loader isSpinning={isRefreshing} />
+          <Loader isSpinning={shouldRefreshData} />
         </animated.div>
 
         {activeIndex === 0 ? (

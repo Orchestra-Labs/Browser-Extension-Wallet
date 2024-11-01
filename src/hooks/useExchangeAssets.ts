@@ -80,8 +80,8 @@ export const useExchangeAssets = () => {
     }
   };
 
-  // TODO: examine why refetch on wallet change and why this depends on existing wallet asset information
   useEffect(() => {
+    // TODO: call only when valid transaction of type swap
     fetchExchangeAssets();
   }, [walletState?.assets]); // Refetch when wallet assets change
 
