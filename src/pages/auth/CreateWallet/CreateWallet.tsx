@@ -146,6 +146,7 @@ export const CreateWallet = () => {
   // TODO: Add dApp page
   // TODO: Add NFT page
   // TODO: Add page view selection in options
+  // TODO: handle stake to all (add total, it distributes that total amongst all selected). david sees as beneficial.  do others?
 
   /* Less Critical Wallet TODOs */
   // TODO: add data transfer method for extension to wallet or back (including account data)
