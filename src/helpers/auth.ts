@@ -123,38 +123,35 @@ export const saveSessionAuthToken = async (wallet: Secp256k1HdWallet): Promise<S
  * @param password The password entered by the user.
  * @returns True if authorization was successful, or false otherwise.
  */
-export const tryAuthorizeWalletAccess = async (password: string): Promise<boolean> => {
-  const isVerified = verifyPassword(password);
-
-  if (!isVerified) {
-    return false;
-  }
-
+export const tryAuthorizeWalletAccess = async (
+  password: string,
+): Promise<'success' | 'no_wallet' | 'error'> => {
   const encryptedMnemonic = getStoredMnemonic();
   if (!encryptedMnemonic) {
-    return false;
+    console.log('No wallet found');
+    return 'no_wallet';
+  }
+
+  const isVerified = verifyPassword(password);
+  if (!isVerified) {
+    return 'error';
   }
 
   try {
-    // Decrypt the mnemonic using the provided password
     const mnemonic = decryptMnemonic(encryptedMnemonic, password);
-
     if (!mnemonic) {
-      return false;
+      return 'error';
     }
 
-    // Create a wallet instance using the mnemonic and get the address
     const wallet = await getWallet(mnemonic);
     const [{ address }] = await wallet.getAccounts();
 
-    // TODO: add "remember me" feature
-    // Generate and save both the access token and session token
     savePersistentAuthToken(address);
     saveSessionAuthToken(wallet);
 
-    return true;
+    return 'success';
   } catch (error) {
     console.error('Authorization failed:', error);
-    return false;
+    return 'error';
   }
 };

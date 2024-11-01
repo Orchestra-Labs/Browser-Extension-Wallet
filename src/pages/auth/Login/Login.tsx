@@ -11,6 +11,7 @@ export const Login: React.FC = () => {
   const [password, setPassword] = useState('');
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [passwordStatus, setPasswordStatus] = useState<'error' | 'success' | null>(null);
+  const [passwordMessage, setPasswordMessage] = useState<string>('');
 
   // Reset status on typing
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -20,6 +21,7 @@ export const Login: React.FC = () => {
     // Only reset the error state if the user had an error before
     if (passwordStatus === 'error') {
       setPasswordStatus(null);
+      setPasswordMessage('');
     }
   };
 
@@ -31,19 +33,22 @@ export const Login: React.FC = () => {
     // Only reset the error state if the user had an error before
     if (passwordStatus === 'error') {
       setPasswordStatus(null);
+      setPasswordMessage('');
     }
   };
 
   const handleUnlock = async () => {
-    // TOOD: include error message if no wallet exists on this device
-    const isAuthorized = await tryAuthorizeWalletAccess(password);
-    if (isAuthorized) {
+    const authStatus = await tryAuthorizeWalletAccess(password);
+
+    if (authStatus === 'success') {
       resetNodeErrorCounts();
-      // If password is correct, set wallet address and navigate to app root
       navigate(ROUTES.APP.ROOT);
-    } else {
-      // If password is incorrect, set status to error
+    } else if (authStatus === 'no_wallet') {
       setPasswordStatus('error');
+      setPasswordMessage('No wallet found.  Make or import a new one.');
+    } else {
+      setPasswordStatus('error');
+      setPasswordMessage('Incorrect password.');
     }
   };
 
@@ -64,7 +69,7 @@ export const Login: React.FC = () => {
             variant="primary"
             showMessageText={true}
             status={passwordStatus}
-            messageText={passwordStatus === 'error' ? 'Incorrect password' : ''}
+            messageText={passwordMessage}
             className="w-full"
             wrapperClass="mb-4"
             label="Password"

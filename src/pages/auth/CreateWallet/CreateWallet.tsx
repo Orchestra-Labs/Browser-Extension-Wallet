@@ -96,6 +96,7 @@ export const CreateWallet = () => {
 
   /* ******************************************************************************************* */
   /* Chris current TODO */
+  // TODO: diagnose and fix issue with gas on 'all' button for validator selections
   // TODO: show errors to user (user displayable values)
   // TODO: provide updates to user as staking, claim, and unstaking information changes (errors)
   // TODO: provide updates to user as send information updates (errors)
@@ -103,6 +104,8 @@ export const CreateWallet = () => {
 
   /* ******************************************************************************************* */
   /* David Current TODOs */
+  // TODO: ensure new encrypted mnemonic overwrites old in case of same password and name (but let user know first)
+  // TODO: handle error printout for create/import wallet (in place of subtitle on verify screen?)
   // TODO: put Loader on loading screen, not "loading"
   // TODO: amend fee showing as 0 rather than 0 MLD (send page)
   // TODO: add fee display and updates for stake, unstake, and claim
