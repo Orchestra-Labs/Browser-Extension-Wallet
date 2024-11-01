@@ -12,6 +12,11 @@ interface AuthGuardProps {
 
 export const AuthGuard = ({ children }: AuthGuardProps) => {
   console.log('auth guard');
+  const token = getStoredAccessToken();
+  if (!token) {
+    return <Navigate to={ROUTES.AUTH.NEW_WALLET.ROOT} />;
+  }
+
   const { pathname } = useLocation();
   const [walletState, setWalletState] = useAtom(walletStateAtom);
   const [requestedLocation, setRequestedLocation] = useState<string | null>(null);
