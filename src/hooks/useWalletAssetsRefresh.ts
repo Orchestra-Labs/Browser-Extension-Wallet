@@ -1,13 +1,13 @@
 import { fetchWalletAssets } from '@/helpers';
-import { walletStateAtom, isRefreshingAtom } from '@/atoms';
+import { walletStateAtom, shouldRefreshDataAtom } from '@/atoms';
 import { useAtom } from 'jotai';
 
 export function useWalletAssetsRefresh() {
   const [walletState, setWalletState] = useAtom(walletStateAtom);
-  const [isRefreshing, setIsRefreshing] = useAtom(isRefreshingAtom);
+  const [shouldRefreshData, setShouldRefreshData] = useAtom(shouldRefreshDataAtom);
 
   const refreshWalletAssets = async () => {
-    if (isRefreshing) {
+    if (shouldRefreshData) {
       console.log('refreshing data');
 
       try {
@@ -20,7 +20,7 @@ export function useWalletAssetsRefresh() {
       } catch (error) {
         console.error('Error refreshing wallet assets:', error);
       } finally {
-        setIsRefreshing(false);
+        setShouldRefreshData(false);
       }
     }
   };

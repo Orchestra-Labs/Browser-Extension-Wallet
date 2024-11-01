@@ -1,11 +1,11 @@
 import { fetchValidatorData } from '@/helpers';
-import { validatorDataAtom, isRefreshingAtom, walletStateAtom } from '@/atoms';
+import { validatorDataAtom, shouldRefreshDataAtom, walletStateAtom } from '@/atoms';
 import { useAtomValue, useSetAtom } from 'jotai';
 
 export function useValidatorDataRefresh() {
   const walletState = useAtomValue(walletStateAtom);
   const setValidatorState = useSetAtom(validatorDataAtom);
-  const setIsRefreshing = useSetAtom(isRefreshingAtom);
+  const setIsRefreshing = useSetAtom(shouldRefreshDataAtom);
 
   const refreshValidatorData = async () => {
     const delegatorAddress = walletState.address;

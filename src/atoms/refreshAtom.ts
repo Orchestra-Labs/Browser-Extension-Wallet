@@ -1,3 +1,3 @@
 import { atom } from 'jotai';
 
-export const isRefreshingAtom = atom(false);
+export const shouldRefreshDataAtom = atom(false);
