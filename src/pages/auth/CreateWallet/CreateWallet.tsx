@@ -104,6 +104,7 @@ export const CreateWallet = () => {
   /* ******************************************************************************************* */
   /* David Current TODOs */
   // TODO: handle refetch of data after queries
+  // TODO: change onHover, click and active colors for selected tiles vs unselected tiles. model after buttons. currently look like the same action
   /* ******************************************************************************************* */
 
   /* Current TODOs */
@@ -119,7 +120,6 @@ export const CreateWallet = () => {
   // TODO: clean up helper functions and hooks
   // TODO: prevent re-building auth every time wallet updates
   // TODO: add search icon to search field (component), add onclick
-  // TODO: change click and active colors for selected tiles vs unselected tiles.  currently look like the same action
 
   /* Interchain-compatibility TODOs (mobile version before this) */
   // TODO: add button to "add chain" at bottom of Holdings list
