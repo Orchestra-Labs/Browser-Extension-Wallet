@@ -59,27 +59,29 @@ export function filterAndSortValidators(
   const lowercasedSearchTerm = searchTerm.toLowerCase();
 
   const filteredByStatus = validators.filter(validator => {
-    // Ensure user always sees their own delegations
     const isDelegatedTo = parseFloat(validator.balance.amount) > 0;
-    if (statusFilter === ValidatorStatusFilter.STATUS_ACTIVE) {
-      return validator.validator.status === BondStatus.BONDED || isDelegatedTo;
-    } else if (statusFilter === ValidatorStatusFilter.STATUS_NON_JAILED || isDelegatedTo) {
-      return !validator.validator.jailed;
-    }
-    return true;
+
+    const statusMatch =
+      statusFilter === ValidatorStatusFilter.STATUS_ACTIVE
+        ? validator.validator.status === BondStatus.BONDED || isDelegatedTo
+        : statusFilter === ValidatorStatusFilter.STATUS_NON_JAILED || isDelegatedTo
+          ? !validator.validator.jailed
+          : true;
+
+    return statusMatch;
   });
 
-  // Filter validators based on search term
-  const filteredValidators = filteredByStatus.filter(validator =>
-    validator.validator.description.moniker.toLowerCase().includes(lowercasedSearchTerm),
-  );
+  const filteredValidators = filteredByStatus.filter(validator => {
+    const matchesSearch = validator.validator.description.moniker
+      .toLowerCase()
+      .includes(lowercasedSearchTerm);
+    return matchesSearch;
+  });
 
-  // Filter current validators based on user preference (current or all)
   const finalValidators = showCurrentValidators
     ? filteredValidators.filter(item => parseFloat(item.balance.amount) > 0)
     : filteredValidators;
 
-  // Sort the validators
   return finalValidators.sort((a, b) => {
     let valueA, valueB;
 
@@ -98,6 +100,7 @@ export function filterAndSortValidators(
       valueB = b.rewards.reduce((sum, reward) => sum + parseFloat(reward.amount), 0);
     }
 
-    return sortOrder === 'Asc' ? (valueA > valueB ? 1 : -1) : valueA < valueB ? 1 : -1;
+    const result = sortOrder === 'Asc' ? (valueA > valueB ? 1 : -1) : valueA < valueB ? 1 : -1;
+    return result;
   });
 }

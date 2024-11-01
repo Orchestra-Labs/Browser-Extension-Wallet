@@ -53,13 +53,6 @@ export const Main = () => {
     }
   }, [walletState.address]);
 
-  // Sync the swiper visual state
-  useEffect(() => {
-    if (swiperRef.current) {
-      swiperRef.current.slideTo(activeIndex);
-    }
-  }, [activeIndex]);
-
   // Toggle between "Non-Zero" and "All" holdings
   const assetViewToggleChange = (shouldShowAllAssets: boolean) => {
     setShowAllAssets(shouldShowAllAssets);
@@ -88,7 +81,6 @@ export const Main = () => {
     symbol,
   );
 
-  // TODO: test removal of array.isarray.  does it proc .filter error?
   // Calculate total rewards with safety check
   const totalStakedRewards = Array.isArray(validatorData)
     ? validatorData.reduce((sum, item) => {

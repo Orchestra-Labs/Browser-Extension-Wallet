@@ -44,6 +44,7 @@ export const TileScroller: React.FC<TileScrollerProps> = ({
 
   const [{ y, loaderOpacity }, api] = useSpring(() => ({ y: 0, loaderOpacity: 0 }));
 
+  // TODO: infinite spin on validator page.  fix this.
   useEffect(() => {
     if (shouldRefreshData) {
       if (activeIndex === 0) {

@@ -184,9 +184,10 @@ export const ValidatorScrollTile = ({
       if (result.success && result.data?.code === 0) {
         const txType = TransactionType.STAKE;
         const txHash = result.data.txHash as string;
+
         handleTransactionSuccess(txType, txHash);
       } else {
-        console.warn('Stake failed with code:', result.data?.code);
+        console.warn('Stake transaction failed with code:', result.data?.code);
         console.warn('Error message:', result.message || 'No error message provided');
       }
     } catch (error) {
@@ -196,21 +197,19 @@ export const ValidatorScrollTile = ({
     }
   };
 
-  //   const handleTransaction = async ({ simulateTransaction = false } = {}) => {
   const handleUnstake = async (amount: string) => {
     setIsLoading(true);
 
     try {
       const result = await unstakeFromValidator({ amount, delegations: delegationResponse });
 
-      console.log('Unstake result:', result);
-
       if (result.success && result.data?.code === 0) {
         const txType = TransactionType.UNSTAKE;
         const txHash = result.data.txHash as string;
+
         handleTransactionSuccess(txType, txHash);
       } else {
-        console.warn('Unstake failed with code:', result.data?.code);
+        console.warn('Unstake transaction failed with code:', result.data?.code);
         console.warn('Error message:', result.message || 'No error message provided');
       }
     } catch (error) {
@@ -220,7 +219,6 @@ export const ValidatorScrollTile = ({
     }
   };
 
-  //   const handleTransaction = async ({ simulateTransaction = false } = {}) => {
   const handleClaimToWallet = async () => {
     setIsLoading(true);
 
@@ -230,6 +228,7 @@ export const ValidatorScrollTile = ({
       if (result.success && result.data?.code === 0) {
         const txType = TransactionType.CLAIM_TO_WALLET;
         const txHash = result.data.txHash as string;
+
         handleTransactionSuccess(txType, txHash);
       } else {
         console.warn('Claim to wallet failed with code:', result.data?.code);
@@ -242,7 +241,6 @@ export const ValidatorScrollTile = ({
     }
   };
 
-  //   const handleTransaction = async ({ simulateTransaction = false } = {}) => {
   const handleClaimAndRestake = async () => {
     setIsLoading(true);
 
@@ -253,8 +251,6 @@ export const ValidatorScrollTile = ({
           rewards: rewards,
         },
       ]);
-
-      console.log('Claim and restake result:', result);
 
       if (result.success && result.data?.code === 0) {
         const txType = TransactionType.CLAIM_TO_RESTAKE;
@@ -303,15 +299,6 @@ export const ValidatorScrollTile = ({
         if (selectedAction === 'claim') {
           const result = await claimRewards(walletState.address, validator.operator_address, true);
 
-          // Separate for claim and restake
-          const stakeResult = await stakeToValidator(
-            amount.toString(),
-            LOCAL_ASSET_REGISTRY.note.denom,
-            walletState.address,
-            validator.operator_address,
-            true,
-          );
-          console.log('Restake simulation fee result:', stakeResult);
           formatFee(parseFloat(result.data?.gasWanted || '0'));
         } else if (selectedAction === 'stake') {
           const result = await unstakeFromValidator({
@@ -319,6 +306,7 @@ export const ValidatorScrollTile = ({
             delegations: delegationResponse,
             simulateOnly: true,
           });
+
           formatFee(parseFloat(result.data?.gasWanted || '0'));
         } else if (selectedAction === 'unstake') {
           const result = await unstakeFromValidator({
@@ -326,6 +314,7 @@ export const ValidatorScrollTile = ({
             delegations: delegationResponse,
             simulateOnly: true,
           });
+
           formatFee(parseFloat(result.data?.gasWanted || '0'));
         }
       } catch (error) {
@@ -340,6 +329,7 @@ export const ValidatorScrollTile = ({
 
   return (
     <>
+      {/* UI Rendering as per original code */}
       {isSelectable ? (
         <ScrollTile
           title={title}
@@ -416,6 +406,7 @@ export const ValidatorScrollTile = ({
             {delegation && (
               <div className="flex justify-between w-full px-2 mb-2">
                 <Button
+                  size="small"
                   className="w-full"
                   onClick={() => setSelectedAction('stake')}
                   disabled={isLoading}
@@ -423,6 +414,7 @@ export const ValidatorScrollTile = ({
                   Stake
                 </Button>
                 <Button
+                  size="small"
                   variant="secondary"
                   className="w-full mx-2"
                   onClick={() => setSelectedAction('unstake')}
@@ -431,6 +423,7 @@ export const ValidatorScrollTile = ({
                   Unstake
                 </Button>
                 <Button
+                  size="small"
                   className="w-full"
                   onClick={() => setSelectedAction('claim')}
                   disabled={isLoading}
@@ -440,7 +433,7 @@ export const ValidatorScrollTile = ({
               </div>
             )}
 
-            <div className="flex flex-col items-center justify-center h-[4rem] px-[1.5rem]">
+            <div className="flex flex-grow flex-col items-center justify-center min-h-[4rem] px-[1.5rem]">
               {transactionSuccess.success && (
                 <WalletSuccessTile
                   txHash={truncateWalletAddress('', transactionSuccess.txHash as string)}
@@ -456,14 +449,14 @@ export const ValidatorScrollTile = ({
               {!isLoading && (selectedAction === 'stake' || selectedAction === 'unstake') && (
                 <>
                   <div className="flex items-center w-full">
-                    {/* TODO: set height to h-8 */}
                     <div className="flex-grow mr-2">
                       <AssetInput
-                        placeholder="Enter amount"
+                        placeholder={`Enter ${selectedAction} amount`}
                         variant="stake"
                         assetState={DEFAULT_ASSET}
                         amountState={amount}
                         updateAmount={newAmount => setAmount(newAmount)}
+                        reducedHeight
                       />
                     </div>
                     <Button
@@ -505,6 +498,7 @@ export const ValidatorScrollTile = ({
               {!isLoading && selectedAction === 'claim' && (
                 <div className="flex justify-between w-full px-4 mb-2">
                   <Button
+                    size="small"
                     variant="secondary"
                     className="w-full"
                     disabled={isLoading}
@@ -513,6 +507,7 @@ export const ValidatorScrollTile = ({
                     Claim to Wallet
                   </Button>
                   <Button
+                    size="small"
                     className="w-full ml-2"
                     disabled={isLoading}
                     onClick={handleClaimAndRestake}
@@ -521,15 +516,15 @@ export const ValidatorScrollTile = ({
                   </Button>
                 </div>
               )}
+            </div>
 
-              {/* Fee Section */}
-              <div className="flex flex-grow" />
-              <div className="flex justify-between items-center text-blue text-sm font-bold w-full">
-                <p>Fee</p>
-                <p className={simulatedFee?.textClass}>
-                  {simulatedFee && selectedAction ? simulatedFee.fee : '-'}
-                </p>
-              </div>
+            {/* Fee Section */}
+            <div className="flex flex-grow" />
+            <div className="flex justify-between items-center text-blue text-sm font-bold w-full">
+              <p>Fee</p>
+              <p className={simulatedFee?.textClass}>
+                {simulatedFee && selectedAction ? simulatedFee.fee : '-'}
+              </p>
             </div>
           </>
         </SlideTray>

@@ -12,10 +12,7 @@ export function useValidatorDataRefresh() {
 
     try {
       const newValidatorData = await fetchValidatorData(delegatorAddress);
-      setValidatorState(prevState => ({
-        ...prevState,
-        validators: newValidatorData,
-      }));
+      setValidatorState(newValidatorData);
     } catch (error) {
       console.error('Error refreshing validator data:', error);
     } finally {

@@ -14,6 +14,7 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
   wrapperClass?: string;
   iconRole?: string;
   onIconClick?: () => void;
+  reducedHeight?: boolean;
 }
 
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
@@ -30,6 +31,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
       wrapperClass,
       iconRole,
       onIconClick,
+      reducedHeight = false,
       ...props
     },
     ref,
@@ -47,7 +49,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
               type={type}
               className={cn(
                 'select-text',
-                'flex h-10 w-full rounded-md border border-neutral-3 bg-transparent px-2 py-1.5 text-base text-neutral-3',
+                `flex ${reducedHeight ? 'h-8' : 'h-10'} w-full rounded-md border border-neutral-3 bg-transparent px-2 py-1.5 text-base text-neutral-3`,
                 'hover:border-neutral-1 hover:text-neutral-1',
                 'focus:outline-0 focus:border-blue focus:text-white',
                 'placeholder:text-xs placeholder:text-neutral-3',

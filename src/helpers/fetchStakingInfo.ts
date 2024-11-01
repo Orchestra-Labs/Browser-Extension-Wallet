@@ -15,13 +15,6 @@ export const fetchDelegations = async (
       endpoint = `${CHAIN_ENDPOINTS.getSpecificDelegations}${delegatorAddress}/delegations/${validatorAddress}`;
     }
 
-    console.log(
-      'Fetching delegations for delegator:',
-      delegatorAddress,
-      'Validator:',
-      validatorAddress || 'all',
-    );
-
     const response = await queryRestNode({ endpoint });
 
     return {
@@ -71,16 +64,7 @@ export const fetchAllValidators = async (bondStatus?: BondStatus): Promise<Valid
         endpoint += `&status=${bondStatus}`;
       }
 
-      console.log(
-        'Fetching validators, page key:',
-        nextKey || 'first page',
-        'status:',
-        bondStatus || 'all',
-      );
-
       const response = await queryRestNode({ endpoint });
-
-      console.log('Validators response:', response);
 
       allValidators = allValidators.concat(response.validators ?? []);
 
@@ -102,9 +86,7 @@ export const fetchValidators = async (
   try {
     if (validatorAddress) {
       let endpoint = `${CHAIN_ENDPOINTS.getValidators}${validatorAddress}`;
-      console.log('Fetching validator info for:', validatorAddress);
       const response = await queryRestNode({ endpoint });
-      console.log('Validator response:', response);
 
       // Filter single validator by bond status if provided
       if (bondStatus && response?.validator?.status !== bondStatus) {
@@ -151,13 +133,11 @@ export const fetchRewards = async (
       });
 
       const rewardsData = await Promise.all(rewardsPromises);
-      console.log('Fetched rewards for specific delegations:', rewardsData);
       return rewardsData;
     }
 
     // Fetch all rewards for the delegator
     const response = await queryRestNode({ endpoint });
-    console.log('Fetched all rewards for delegator:', response);
 
     // Process the response and map rewards for each validator
     return (response.rewards ?? []).map((reward: any) => ({
@@ -166,46 +146,6 @@ export const fetchRewards = async (
     }));
   } catch (error) {
     console.error(`Error fetching rewards for ${delegatorAddress}:`, error);
-    throw error;
-  }
-};
-
-export const fetchStakingData = async (
-  delegatorAddress: string,
-): Promise<CombinedStakingInfo[]> => {
-  try {
-    const { delegations } = await fetchDelegations(delegatorAddress);
-    const validatorPromises = delegations.map(delegation =>
-      fetchValidators(delegation.delegation.validator_address),
-    );
-    const validatorResults = await Promise.all(validatorPromises);
-    const validators = validatorResults.flatMap(result => result.validators);
-    const delegationAddresses = delegations.map(delegation => ({
-      validator_address: delegation.delegation.validator_address,
-    }));
-    const rewards = await fetchRewards(delegatorAddress, delegationAddresses);
-
-    // Combine delegations, validators, and rewards into one object per validator
-    const combinedData: CombinedStakingInfo[] = delegations.map(delegation => {
-      const validatorInfo =
-        validators.find(
-          validator => validator.operator_address === delegation.delegation.validator_address,
-        ) || ({} as ValidatorInfo);
-      const rewardInfo = rewards.find(
-        reward => reward.validator === delegation.delegation.validator_address,
-      );
-
-      return {
-        delegation: delegation.delegation,
-        balance: delegation.balance,
-        validator: validatorInfo,
-        rewards: rewardInfo ? rewardInfo.rewards : [],
-      };
-    });
-
-    return combinedData;
-  } catch (error) {
-    console.error('Error fetching staking data:', error);
     throw error;
   }
 };
@@ -238,7 +178,7 @@ export const fetchValidatorData = async (
   delegatorAddress: string,
 ): Promise<CombinedStakingInfo[]> => {
   try {
-    // Fetch validator, delegation, and rewards data concurrently
+    // Fetch validator, delegation, rewards, and stakingParams data concurrently
     const [validatorResponse, delegationResponse, rewards, stakingParams] = await Promise.all([
       fetchValidators(),
       fetchDelegations(delegatorAddress),
@@ -254,9 +194,10 @@ export const fetchValidatorData = async (
       const delegationInfo = delegations.find(
         delegation => delegation.delegation.validator_address === validator.operator_address,
       );
+
       const rewardInfo = rewards.find(reward => reward.validator === validator.operator_address);
 
-      return {
+      const combinedInfo = {
         validator,
         delegation: delegationInfo?.delegation || {
           delegator_address: '',
@@ -270,6 +211,8 @@ export const fetchValidatorData = async (
         rewards: rewardInfo?.rewards || [],
         stakingParams,
       };
+
+      return combinedInfo;
     });
 
     return combinedData;
