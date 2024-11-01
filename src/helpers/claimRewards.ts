@@ -3,6 +3,7 @@ import { queryRpcNode } from './queryNodes';
 import { DelegationResponse, TransactionResult } from '@/types';
 import { fetchRewards } from './fetchStakingInfo';
 
+// TODO: verify multiple messages add fees from queryNodes properly.  shouldn't need magic number below
 export const buildClaimMessage = ({
   endpoint,
   delegatorAddress,
@@ -18,15 +19,6 @@ export const buildClaimMessage = ({
   denom?: string;
   delegations?: DelegationResponse[];
 }): any => {
-  console.log('Building claim message:', {
-    endpoint,
-    delegatorAddress,
-    validatorAddress,
-    amount,
-    denom,
-    delegations,
-  });
-
   if (delegations) {
     // Handle multiple delegations
     return delegations.map(delegation => ({
@@ -75,12 +67,6 @@ export const claimRewards = async (
     validatorAddress: validatorAddressesArray,
   });
 
-  console.log('Claiming rewards from validator(s):', {
-    delegatorAddress,
-    validatorAddressesArray,
-    messages,
-  });
-
   try {
     const response = await queryRpcNode({
       endpoint,
@@ -99,7 +85,6 @@ export const claimRewards = async (
     }
 
     if (simulateOnly) {
-      console.log('Simulation result for claim rewards:', response);
       return {
         success: true,
         message: 'Simulation successful',
@@ -107,7 +92,6 @@ export const claimRewards = async (
       };
     }
 
-    console.log('Rewards claimed successfully:', response);
     return {
       success: true,
       message: 'Transaction successful',
@@ -186,7 +170,7 @@ export const claimAndRestake = async (
       // If simulation, sum the gas from claim and delegate, and return
       if (simulateOnly) {
         totalGasWanted += parseFloat(delegateResponse.gasWanted || '0');
-        console.log('Simulation total gas wanted (claim + delegate):', totalGasWanted);
+
         return {
           success: true,
           message: 'Simulation successful',
@@ -197,7 +181,6 @@ export const claimAndRestake = async (
         };
       }
 
-      console.log('Restaked rewards successfully:', delegateResponse);
       return { success: true, message: 'Transaction successful', data: delegateResponse };
     }
 
@@ -249,13 +232,11 @@ export const stakeToValidator = async (
     }
 
     if (simulateOnly) {
-      console.log('Simulation result for staking:', response);
       return { success: true, message: 'Simulation successful', data: response };
     }
 
     return { success: true, message: 'Transaction successful', data: response };
   } catch (error) {
-    console.error('Error during staking:', error);
     return {
       success: false,
       message: error instanceof Error ? error.message : 'Unknown error occurred',
@@ -314,11 +295,9 @@ export const unstakeFromValidator = async ({
     }
 
     if (simulateOnly) {
-      console.log('Simulation result for unstaking:', response);
       return { success: true, message: 'Simulation successful', data: response };
     }
 
-    console.log('Successfully unstaked:', response);
     return {
       success: true,
       message: 'Transaction successful',

@@ -108,18 +108,21 @@ export const CreateWallet = () => {
   /* ******************************************************************************************* */
 
   /* Current TODOs */
+  // TODO: ensure fees are added properly (gasUsed = gasWanted) for claim-to-wallet and claim-to-restake for both single claim messages and multiple claim messages
+  // TODO: versioning: minimum, recommended, and current versions.  recommended update for versions lower than recommended, link to update, no login for versions below minimum
   // TODO: fix claim and restake error.  make consistent
-  // TODO: ensure logout after blur + timeout (blur is click outside application to close).  to remove sensitive data after time period
   // TODO: ensure new encrypted mnemonic overwrites old in case of same password and name (but let user know first)
   // TODO: handle error printout for create/import wallet (in place of subtitle on verify screen?)
   // TODO: modify auth to accounts & wallets structure to make this scalable for later upgrades
 
   /* Less Critical TODOs */
+  // TODO: add feeLoading state to update fees between
   // TODO: make "clear" and "max" button send screen inputs.  make placement and appearance for these uniform (send and unstake sections)
   // TODO: keep track of current page for case of re-open after timeout
   // TODO: clean up helper functions and hooks
   // TODO: prevent re-building auth every time wallet updates
   // TODO: add search icon to search field (component), add onclick
+  // TODO: ensure logout after blur + timeout (blur is click outside application to close).  to remove sensitive data after time period
 
   /* Interchain-compatibility TODOs (mobile version before this) */
   // TODO: add button to "add chain" at bottom of Holdings list

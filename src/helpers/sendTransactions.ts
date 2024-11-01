@@ -31,7 +31,6 @@ export const sendTransaction = async (
     });
 
     if (simulateOnly) {
-      console.log('Simulation result:', response);
       return {
         success: true,
         message: 'Simulation completed successfully!',
@@ -39,7 +38,6 @@ export const sendTransaction = async (
       };
     }
 
-    console.log('Successfully sent:', response);
     return {
       success: true,
       message: 'Transaction sent successfully!',
@@ -91,7 +89,6 @@ export const multiSendTransaction = async (
     });
 
     if (simulateOnly) {
-      console.log('Multi-send simulation result:', response);
       return {
         success: true,
         message: 'Simulation of multi-send completed successfully!',
@@ -99,7 +96,6 @@ export const multiSendTransaction = async (
       };
     }
 
-    console.log('Successfully sent to all recipients:', response);
     return {
       success: true,
       message: 'Transactions sent successfully to all recipients!',

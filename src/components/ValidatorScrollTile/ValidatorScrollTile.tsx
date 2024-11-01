@@ -406,7 +406,7 @@ export const ValidatorScrollTile = ({
             {delegation && (
               <div className="flex justify-between w-full px-2 mb-2">
                 <Button
-                  size="small"
+                  size="medium"
                   className="w-full"
                   onClick={() => setSelectedAction('stake')}
                   disabled={isLoading}
@@ -414,7 +414,7 @@ export const ValidatorScrollTile = ({
                   Stake
                 </Button>
                 <Button
-                  size="small"
+                  size="medium"
                   variant="secondary"
                   className="w-full mx-2"
                   onClick={() => setSelectedAction('unstake')}
@@ -423,7 +423,7 @@ export const ValidatorScrollTile = ({
                   Unstake
                 </Button>
                 <Button
-                  size="small"
+                  size="medium"
                   className="w-full"
                   onClick={() => setSelectedAction('claim')}
                   disabled={isLoading}
@@ -433,9 +433,10 @@ export const ValidatorScrollTile = ({
               </div>
             )}
 
-            <div className="flex flex-grow flex-col items-center justify-center min-h-[4rem] px-[1.5rem]">
+            <div className="flex flex-grow flex-col items-center justify-center px-[1.5rem]">
               {transactionSuccess.success && (
                 <WalletSuccessTile
+                  size="sm"
                   txHash={truncateWalletAddress('', transactionSuccess.txHash as string)}
                 />
               )}
@@ -498,7 +499,7 @@ export const ValidatorScrollTile = ({
               {!isLoading && selectedAction === 'claim' && (
                 <div className="flex justify-between w-full px-4 mb-2">
                   <Button
-                    size="small"
+                    size="medium"
                     variant="secondary"
                     className="w-full"
                     disabled={isLoading}
@@ -507,7 +508,7 @@ export const ValidatorScrollTile = ({
                     Claim to Wallet
                   </Button>
                   <Button
-                    size="small"
+                    size="medium"
                     className="w-full ml-2"
                     disabled={isLoading}
                     onClick={handleClaimAndRestake}
@@ -519,7 +520,6 @@ export const ValidatorScrollTile = ({
             </div>
 
             {/* Fee Section */}
-            <div className="flex flex-grow" />
             <div className="flex justify-between items-center text-blue text-sm font-bold w-full">
               <p>Fee</p>
               <p className={simulatedFee?.textClass}>

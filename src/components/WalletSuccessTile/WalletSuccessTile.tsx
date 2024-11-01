@@ -13,7 +13,7 @@ export const WalletSuccessTile: React.FC<WalletSuccessTileProps> = ({ txHash, si
 
   const headerTextSize = size === 'sm' ? 'text-sm' : 'text-lg';
   const subHeaderTextSize = size === 'sm' ? 'text-xs' : 'text-sm';
-  const iconSize = size === 'sm' ? '4rem' : '6rem';
+  const iconSize = size === 'sm' ? '3.5rem' : '6rem';
   const padding = size === 'sm' ? 'px-4' : '';
 
   return (

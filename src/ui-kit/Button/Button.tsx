@@ -53,6 +53,7 @@ const buttonVariants = cva<ButtonConfig>(
       },
       size: {
         default: 'h-10 p-2.5',
+        medium: 'h-8 p-0 min-h-8',
         small: 'h-6 p-0 min-h-6',
         'rounded-default': 'max-w-8 max-h-8 w-8 h-8',
         xsmall: 'h-[18px] p-0',
