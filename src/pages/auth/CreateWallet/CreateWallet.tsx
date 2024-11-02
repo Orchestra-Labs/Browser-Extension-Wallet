@@ -104,7 +104,6 @@ export const CreateWallet = () => {
 
   /* ******************************************************************************************* */
   /* David Current TODOs */
-  // TODO: format claim fees for both claim to wallet and claim to restake.
   // TODO: prevent errors on send page for queries to get fees (prevent calls in cases of non-swap transactions)
 
   // TODO: modify auth to accounts & wallets structure to make this scalable for later upgrades
