@@ -102,7 +102,7 @@ export interface TransactionResult {
 }
 
 export interface TransactionSuccess {
-  success: boolean;
+  isSuccess: boolean;
   txHash?: string;
 }
 

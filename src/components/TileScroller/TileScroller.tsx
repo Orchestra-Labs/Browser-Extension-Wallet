@@ -28,14 +28,14 @@ export const TileScroller: React.FC<TileScrollerProps> = ({
   isDialog = false,
   isReceiveDialog = false,
 }) => {
+  const { refreshWalletAssets } = useWalletAssetsRefresh();
+  const { refreshValidatorData } = useValidatorDataRefresh();
+  const viewportRef = useRef<HTMLDivElement>(null);
+
   const [shouldRefreshData, setShouldRefreshData] = useAtom(shouldRefreshDataAtom);
 
   const [isMouseDown, setIsMouseDown] = useState(false);
   const [dragStarted, setDragStarted] = useState(false);
-  const viewportRef = useRef<HTMLDivElement>(null);
-
-  const { refreshWalletAssets } = useWalletAssetsRefresh();
-  const { refreshValidatorData } = useValidatorDataRefresh();
 
   const TOP_OVERSCROLL_LIMIT = 52;
   const OVERSCROLL_ACTIVATION_THRESHOLD = TOP_OVERSCROLL_LIMIT * 0.75;

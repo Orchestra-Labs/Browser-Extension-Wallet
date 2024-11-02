@@ -149,7 +149,6 @@ const queryWithRetry = async ({
     for (const provider of providers) {
       try {
         const queryMethod = useRPC ? provider.rpc : provider.rest;
-        console.log(`Querying node ${queryMethod} with endpoint: ${endpoint}`);
 
         if (useRPC) {
           const sessionToken = getSessionToken();

@@ -21,11 +21,11 @@ import {
   LOCAL_ASSET_REGISTRY,
   TransactionType,
 } from '@/constants';
-import { useAtomValue } from 'jotai';
-import { selectedValidatorsAtom, walletStateAtom } from '@/atoms';
+import { useAtom, useAtomValue } from 'jotai';
+import { selectedValidatorsAtom, shouldRefreshDataAtom, walletStateAtom } from '@/atoms';
 import { AssetInput } from '../AssetInput';
 import { Loader } from '../Loader';
-import { useToast } from '@/hooks';
+import { useToast, useValidatorDataRefresh, useWalletAssetsRefresh } from '@/hooks';
 import { WalletSuccessTile } from '../WalletSuccessTile';
 
 interface ValidatorScrollTileProps {
@@ -40,10 +40,13 @@ export const ValidatorScrollTile = ({
   onClick,
 }: ValidatorScrollTileProps) => {
   const { toast } = useToast();
+  const { refreshWalletAssets } = useWalletAssetsRefresh();
+  const { refreshValidatorData } = useValidatorDataRefresh();
   const slideTrayRef = useRef<{ isOpen: () => void }>(null);
 
   const selectedValidators = useAtomValue(selectedValidatorsAtom);
   const walletState = useAtomValue(walletStateAtom);
+  const [shouldRefreshData, setShouldRefreshData] = useAtom(shouldRefreshDataAtom);
 
   const [amount, setAmount] = useState(0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -167,6 +170,8 @@ export const ValidatorScrollTile = ({
         success: false,
       }));
     }
+
+    setShouldRefreshData(true);
   };
 
   //   const handleTransaction = async ({ simulateTransaction = false } = {}) => {
@@ -326,6 +331,13 @@ export const ValidatorScrollTile = ({
   useEffect(() => {
     if (slideTrayIsOpen) updateFee();
   }, [slideTrayIsOpen, selectedAction, amount]);
+
+  useEffect(() => {
+    if (shouldRefreshData && transactionSuccess.success) {
+      refreshWalletAssets();
+      refreshValidatorData();
+    }
+  }, [transactionSuccess.success]);
 
   return (
     <>
