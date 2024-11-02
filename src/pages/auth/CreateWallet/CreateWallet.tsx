@@ -96,7 +96,7 @@ export const CreateWallet = () => {
 
   /* ******************************************************************************************* */
   /* Chris current TODO */
-  // TODO: diagnose and fix issue with gas on 'all' button for validator selections
+  // TODO: fix issue with gas on 'all' button for validator selections (bundle transactions)
   // TODO: show errors to user (user displayable values)
   // TODO: provide updates to user as staking, claim, and unstaking information changes (errors)
   // TODO: provide updates to user as send information updates (errors)
@@ -104,9 +104,15 @@ export const CreateWallet = () => {
 
   /* ******************************************************************************************* */
   /* David Current TODOs */
-  // TODO: handle refetch of data after queries
-  // TODO: change onHover, click and active colors for selected tiles vs unselected tiles. model after buttons. currently look like the same action
+  // TODO: format claim fees for both claim to wallet and claim to restake.
+  // TODO: prevent errors on send page for queries to get fees (prevent calls in cases of non-swap transactions)
+
   // TODO: modify auth to accounts & wallets structure to make this scalable for later upgrades
+  // TODO: modify accounts/wallets management for scalability (password per account, multiple wallets per account, multiple accounts in storage, search by password+decryption)
+  // TODO: ensure new encrypted mnemonic overwrites old in case of same password and name (but let user know first)
+  // TODO: handle error printout for create/import wallet (in place of subtitle on verify screen?)
+
+  // TODO: change onHover, click and active colors for selected tiles vs unselected tiles. model after buttons. currently look like the same action
   // TODO: put Loader on loading screen, not "loading"
   /* ******************************************************************************************* */
 
@@ -114,15 +120,11 @@ export const CreateWallet = () => {
   // TODO: fix claim and restake error.  make consistent
   // TODO: ensure fees are added properly (gasUsed = gasWanted) for claim-to-wallet and claim-to-restake for both single claim messages and multiple claim messages
   // TODO: versioning: minimum, recommended, and current versions.  recommended update for versions lower than recommended, link to update, no login for versions below minimum
-  // TODO: ensure new encrypted mnemonic overwrites old in case of same password and name (but let user know first)
-  // TODO: handle error printout for create/import wallet (in place of subtitle on verify screen?)
-  // TODO: refresh on complete of query (call validator and wallet refresh hooks or make other hook that fully updates all information)
-
   // TODO: enable transaction fees for wallet transactions (revenue)
-  // TODO: abstract wallet prefix and mnemonic decryption
-  // TODO: modify accounts/wallets management for scalability (password per account, multiple wallets per account, multiple accounts in storage, search by password+decryption)
 
   /* Nice to have TODOs */
+  // TODO: abstract wallet prefix and mnemonic decryption
+  // TODO: make toasts copy-on-click
   // TODO: fix copytextfield issue of enlarged border on click
   // TODO: clean up helper functions and hooks
   // TODO: make "clear" and "max" button send screen inputs.  make placement and appearance for these uniform (send and unstake sections)
@@ -130,8 +132,10 @@ export const CreateWallet = () => {
   // TODO: keep track of current page for case of re-open before timeout
   // TODO: prevent re-building auth every time wallet updates
   // TODO: ensure new encrypted mnemonic overwrites old in case of same password and name (but let user know first)
+  // TODO: make data text in asset and validator tiles scrollable
   // TODO: add feeLoading state to update fees between
   // TODO: ensure logout after blur + timeout (blur is click outside application to close).  to remove sensitive data after time period
+  // TODO: speed up resolution on rpc queries (send, stake, unstake, claim)
 
   /* Interchain-compatibility TODOs (mobile version before this) */
   // TODO: add button to "add chain" at bottom of Holdings list

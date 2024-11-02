@@ -13,6 +13,7 @@ import {
   walletStateAtom,
   selectedAssetAtom,
   addressVerifiedAtom,
+  shouldRefreshDataAtom,
 } from '@/atoms';
 import { Asset, TransactionResult, TransactionSuccess } from '@/types';
 import { AssetInput, WalletSuccessScreen } from '@/components';
@@ -24,10 +25,13 @@ import {
   swapTransaction,
 } from '@/helpers';
 import { loadingAtom } from '@/atoms/loadingAtom';
-import { useExchangeRate } from '@/hooks/';
+import { useExchangeRate, useWalletAssetsRefresh } from '@/hooks/';
 import { AddressInput } from './AddressInput';
 
 export const Send = () => {
+  const { refreshWalletAssets } = useWalletAssetsRefresh();
+
+  const [shouldRefreshData, setShouldRefreshData] = useAtom(shouldRefreshDataAtom);
   const walletState = useAtomValue(walletStateAtom);
   const walletAssets = walletState?.assets || [];
 
@@ -55,10 +59,12 @@ export const Send = () => {
   const [sendPlaceholder, setSendPlaceholder] = useState<string>('');
   const [receivePlaceholder, setReceivePlaceholder] = useState<string>('');
   // const [transactionMessage, setTransactionMessage] = useState<string>('');
-  const [isSuccess, setIsSuccess] = useState<TransactionSuccess>({ success: false });
+  const [transactionState, setTransactionState] = useState<TransactionSuccess>({
+    isSuccess: false,
+  });
 
   const handleTransaction = async ({ simulateTransaction = false } = {}) => {
-    console.log('Starting handleTransaction function');
+    console.log('Starting handleTransaction');
     console.log('transactionType.isValid:', transactionType.isValid);
 
     if (!transactionType.isValid) return;
@@ -130,8 +136,13 @@ export const Send = () => {
         console.log('Simulation successful');
         return result;
       } else if (result.success && result.data?.code === 0) {
-        // TODO: much like on validator actions, set to toast if not on page
-        setIsSuccess({ success: true, txHash: result.data.txHash });
+        // TODO: much like on validator actions, set to toast if not on page.  useLocation?
+        // toast({
+        //   title: `${transactionType} success!`,
+        //   description: `Transaction hash ${displayTransactionHash} has been copied.`,
+        // });
+        setTransactionState({ isSuccess: true, txHash: result.data.txHash });
+        setShouldRefreshData(true);
       } else {
         console.error('Transaction failed:', result.data);
       }
@@ -465,6 +476,12 @@ export const Send = () => {
   }, [exchangeRate]);
 
   useEffect(() => {
+    if (shouldRefreshData && transactionState.isSuccess) {
+      refreshWalletAssets();
+    }
+  }, [transactionState.isSuccess]);
+
+  useEffect(() => {
     updateSendAsset(selectedAsset);
     updateReceiveAsset(selectedAsset);
     updateTransactionType();
@@ -475,8 +492,8 @@ export const Send = () => {
     };
   }, []);
 
-  if (isSuccess.success) {
-    return <WalletSuccessScreen caption="Transaction success!" txHash={isSuccess.txHash} />;
+  if (transactionState.isSuccess) {
+    return <WalletSuccessScreen caption="Transaction success!" txHash={transactionState.txHash} />;
   }
 
   return (

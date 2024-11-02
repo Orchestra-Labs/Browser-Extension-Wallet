@@ -7,6 +7,7 @@ import {
   dialogSearchTermAtom,
   filteredDialogValidatorsAtom,
   selectedValidatorsAtom,
+  shouldRefreshDataAtom,
   validatorDialogSortOrderAtom,
   validatorDialogSortTypeAtom,
 } from '@/atoms';
@@ -19,7 +20,7 @@ import {
   unstakeFromValidator,
 } from '@/helpers';
 import { CombinedStakingInfo } from '@/types';
-import { useToast } from '@/hooks';
+import { useToast, useValidatorDataRefresh, useWalletAssetsRefresh } from '@/hooks';
 import { DEFAULT_ASSET, GREATER_EXPONENT_DEFAULT, TransactionType } from '@/constants';
 import { WalletSuccessTile } from '../WalletSuccessTile';
 import { Loader } from '../Loader';
@@ -36,6 +37,8 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
   isClaimDialog = false,
 }) => {
   const { toast } = useToast();
+  const { refreshWalletAssets } = useWalletAssetsRefresh();
+  const { refreshValidatorData } = useValidatorDataRefresh();
   const slideTrayRef = useRef<{ isOpen: () => void }>(null);
 
   const setSearchTerm = useSetAtom(dialogSearchTermAtom);
@@ -43,6 +46,7 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
   const setSortType = useSetAtom(validatorDialogSortTypeAtom);
   const [selectedValidators, setSelectedValidators] = useAtom(selectedValidatorsAtom);
   const filteredValidators = useAtomValue(filteredDialogValidatorsAtom);
+  const [shouldRefreshData, setShouldRefreshData] = useAtom(shouldRefreshDataAtom);
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isClaimToRestake, setIsClaimToRestake] = useState<boolean>(true);
@@ -121,6 +125,8 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
         success: false,
       }));
     }
+
+    setShouldRefreshData(true);
   };
 
   const resetDefaults = () => {
@@ -274,6 +280,13 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
   useEffect(() => {
     if (slideTrayIsOpen) updateFee();
   }, [slideTrayIsOpen, selectedValidators, isClaimDialog]);
+
+  useEffect(() => {
+    if (shouldRefreshData && transactionSuccess.success) {
+      refreshWalletAssets();
+      refreshValidatorData();
+    }
+  }, [transactionSuccess.success]);
 
   return (
     <SlideTray

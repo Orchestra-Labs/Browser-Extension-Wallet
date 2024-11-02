@@ -21,11 +21,11 @@ import {
   LOCAL_ASSET_REGISTRY,
   TransactionType,
 } from '@/constants';
-import { useAtomValue } from 'jotai';
-import { selectedValidatorsAtom, walletStateAtom } from '@/atoms';
+import { useAtom, useAtomValue } from 'jotai';
+import { selectedValidatorsAtom, shouldRefreshDataAtom, walletStateAtom } from '@/atoms';
 import { AssetInput } from '../AssetInput';
 import { Loader } from '../Loader';
-import { useToast } from '@/hooks';
+import { useToast, useValidatorDataRefresh, useWalletAssetsRefresh } from '@/hooks';
 import { WalletSuccessTile } from '../WalletSuccessTile';
 
 interface ValidatorScrollTileProps {
@@ -40,10 +40,13 @@ export const ValidatorScrollTile = ({
   onClick,
 }: ValidatorScrollTileProps) => {
   const { toast } = useToast();
+  const { refreshWalletAssets } = useWalletAssetsRefresh();
+  const { refreshValidatorData } = useValidatorDataRefresh();
   const slideTrayRef = useRef<{ isOpen: () => void }>(null);
 
   const selectedValidators = useAtomValue(selectedValidatorsAtom);
   const walletState = useAtomValue(walletStateAtom);
+  const [shouldRefreshData, setShouldRefreshData] = useAtom(shouldRefreshDataAtom);
 
   const [amount, setAmount] = useState(0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -167,6 +170,8 @@ export const ValidatorScrollTile = ({
         success: false,
       }));
     }
+
+    setShouldRefreshData(true);
   };
 
   //   const handleTransaction = async ({ simulateTransaction = false } = {}) => {
@@ -327,6 +332,13 @@ export const ValidatorScrollTile = ({
     if (slideTrayIsOpen) updateFee();
   }, [slideTrayIsOpen, selectedAction, amount]);
 
+  useEffect(() => {
+    if (shouldRefreshData && transactionSuccess.success) {
+      refreshWalletAssets();
+      refreshValidatorData();
+    }
+  }, [transactionSuccess.success]);
+
   return (
     <>
       {/* UI Rendering as per original code */}
@@ -358,7 +370,7 @@ export const ValidatorScrollTile = ({
           showBottomBorder
           status={statusColor}
         >
-          <>
+          <div className="flex flex-col h-full">
             {rewards && (
               <div className="text-center mb-2">
                 <div className="truncate text-base font-medium text-neutral-1">
@@ -520,13 +532,14 @@ export const ValidatorScrollTile = ({
             </div>
 
             {/* Fee Section */}
+            <div className="flex flex-grow" />
             <div className="flex justify-between items-center text-blue text-sm font-bold w-full">
               <p>Fee</p>
               <p className={simulatedFee?.textClass}>
                 {simulatedFee && selectedAction ? simulatedFee.fee : '-'}
               </p>
             </div>
-          </>
+          </div>
         </SlideTray>
       )}
     </>
