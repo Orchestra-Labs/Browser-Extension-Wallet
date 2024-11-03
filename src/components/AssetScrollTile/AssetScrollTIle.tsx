@@ -33,17 +33,14 @@ export const AssetScrollTile = ({
   const navigate = useNavigate();
 
   const symbol = asset.symbol || DEFAULT_ASSET.symbol || 'MLD';
-
   const title = asset.symbol || 'Unknown Asset';
-  console.log(asset.symbol, asset.exchangeRate);
+  const logo = asset.logo;
 
   const valueAmount = isReceiveDialog
     ? asset.exchangeRate === '0'
       ? '-'
       : asset.exchangeRate || '1'
     : asset.amount;
-
-  console.log('value isNan for ', symbol, ':', isNaN(parseFloat(valueAmount)));
 
   let value = '';
   if (isReceiveDialog) {
@@ -59,9 +56,6 @@ export const AssetScrollTile = ({
     const unitSymbol = symbol;
     value = formatBalanceDisplay(valueAmount, unitSymbol);
   }
-
-  console.log('value amount for ', symbol, ':', valueAmount);
-  const logo = asset.logo;
 
   const handleSendClick = () => {
     setSelectedAsset(asset);

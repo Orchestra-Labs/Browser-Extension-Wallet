@@ -19,7 +19,6 @@ export function useExchangeRate() {
 
   // Check if swap is valid
   const validSwap = isValidSwap({ sendAsset, receiveAsset });
-  console.log('Exchange rate validity check (isValidSwap):', validSwap);
 
   const queryExchangeRate = useQuery<string | null, Error, string | null>({
     queryKey: ['exchangeRate', sendDenom, receiveDenom],
@@ -34,20 +33,11 @@ export function useExchangeRate() {
       const exponent = LOCAL_ASSET_REGISTRY[sendAsset]?.exponent || GREATER_EXPONENT_DEFAULT;
       const formattedOfferAmount = (1 * Math.pow(10, exponent)).toFixed(0);
 
-      console.log('Formatted offer amount:', formattedOfferAmount);
-
       // Use queryRestNode to query exchange rates
       const response = await queryRestNode({
         endpoint: `${CHAIN_ENDPOINTS.swap}offerCoin=${formattedOfferAmount}${sendAsset}&askDenom=${receiveAsset}`,
         queryType: 'GET',
       });
-
-      console.log('Exchange rate response (useExchangeRate function):', response);
-      console.log(
-        'Exchange rate params (useExchangeRate function):',
-        `${formattedOfferAmount}${sendAsset}`,
-        receiveAsset,
-      );
 
       const returnExchange = (response.return_coin?.amount / Math.pow(10, exponent)).toFixed(
         GREATER_EXPONENT_DEFAULT,
@@ -62,17 +52,11 @@ export function useExchangeRate() {
 
   const exchangeRate = useMemo(() => {
     if (!validSwap) {
-      console.log('Returning default exchange rate of 1 due to invalid swap');
       return 1;
     }
     if (queryExchangeRate.data) {
-      console.log(
-        'Returning calculated exchange rate:',
-        new BigNumber(queryExchangeRate.data).toNumber(),
-      );
       return new BigNumber(queryExchangeRate.data).toNumber();
     }
-    console.log('No exchange rate data available, returning 0');
     return 0;
   }, [queryExchangeRate.data, validSwap]);
 

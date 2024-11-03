@@ -39,13 +39,10 @@ export const useExchangeAssets = () => {
       const defaultAsset = DEFAULT_ASSET;
       const sendAsset = sendState.asset;
 
-      console.log('Fetching exchange assets...');
       const response = (await queryRestNode({
         endpoint: `${CHAIN_ENDPOINTS.exchangeRequirements}`,
         queryType: 'GET',
       })) as unknown as ExchangeRequirementResponse;
-
-      console.log('Raw response from API:', response);
 
       if (!response.exchange_requirements) {
         throw new Error('Invalid response format');
@@ -61,10 +58,6 @@ export const useExchangeAssets = () => {
         });
 
         adjustmentRate = parseFloat(exchangeRateResponse.return_coin.amount) / 1000000;
-        console.log(
-          `Adjustment rate from ${sendAsset.denom} to ${defaultAsset.denom}:`,
-          adjustmentRate,
-        );
       }
 
       const exchangeAssets = Object.values(LOCAL_ASSET_REGISTRY).map(registryAsset => {
@@ -93,14 +86,12 @@ export const useExchangeAssets = () => {
         };
       });
 
-      console.log('Final available assets with adjusted rates:', exchangeAssets);
       setAvailableAssets(exchangeAssets);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch exchange assets');
       console.error('Error fetching exchange assets:', err);
     } finally {
       setIsLoading(false);
-      console.log('Finished fetching exchange assets.');
     }
   };
 

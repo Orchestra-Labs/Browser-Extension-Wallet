@@ -53,13 +53,5 @@ export const isValidTransaction = ({
   const isSend = isValidSend({ sendAsset, receiveAsset });
   const result = isSend || isSwap;
 
-  console.log('Checking if valid transaction:', {
-    sendAsset,
-    receiveAsset,
-    isSwap,
-    isSend,
-    result,
-  });
-
   return result;
 };
