@@ -2,7 +2,8 @@ export interface SessionToken {
   mnemonic: string;
   address: string;
   network: string;
-  expiresIn: number;
+  rememberMe: boolean;
+  timestamp: string;
 }
 
 export interface Asset {

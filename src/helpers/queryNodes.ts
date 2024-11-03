@@ -4,11 +4,11 @@ import {
   LOCAL_ASSET_REGISTRY,
   MAX_NODES_PER_QUERY,
 } from '@/constants';
-import { getNodeErrorCounts, getSessionToken, storeNodeErrorCounts } from './localStorage';
 import { SigningStargateClient, GasPrice } from '@cosmjs/stargate';
-import { createOfflineSignerFromMnemonic } from './wallet';
+import { createOfflineSignerFromMnemonic } from './dataHelpers/wallet';
 import { delay } from './timer';
 import { RPCResponse } from '@/types';
+import { getNodeErrorCounts, getSessionToken, storeNodeErrorCounts } from './dataHelpers';
 
 //indexer specific error - i.e tx submitted, but indexer disabled so returned incorrect
 

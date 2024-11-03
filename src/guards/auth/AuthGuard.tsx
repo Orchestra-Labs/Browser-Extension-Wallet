@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, Navigate } from 'react-router-dom';
-import { fetchWalletAssets, getSessionToken, getStoredAccessToken } from '@/helpers';
+import { fetchWalletAssets, getSessionToken, userCanLogIn, userIsLoggedIn } from '@/helpers';
 import { useInactivityCheck, useUpdateWalletTimer } from '@/hooks';
 import { walletStateAtom } from '@/atoms';
 import { useAtom } from 'jotai';
@@ -10,19 +10,33 @@ interface AuthGuardProps {
   children?: React.ReactNode;
 }
 
-export const AuthGuard = ({ children }: AuthGuardProps) => {
-  console.log('auth guard');
-  const token = getStoredAccessToken();
-  if (!token) {
+const checkLoginStatus = () => {
+  const canLogIn = userCanLogIn();
+  const isLoggedIn = userIsLoggedIn();
+  if (!canLogIn) {
+    console.log("Can't log in, navigating to new wallet page");
     return <Navigate to={ROUTES.AUTH.NEW_WALLET.ROOT} />;
   }
+  if (!isLoggedIn) {
+    console.log('Not logged in, navigating to login page');
+    return <Navigate to={ROUTES.AUTH.ROOT} />;
+  }
+};
+
+export const AuthGuard = ({ children }: AuthGuardProps) => {
+  console.log('auth guard');
+  checkLoginStatus();
+
+  const sessionToken = getSessionToken();
 
   const { pathname } = useLocation();
+
+  // TODO: wallet state not getting set
   const [walletState, setWalletState] = useAtom(walletStateAtom);
   const [requestedLocation, setRequestedLocation] = useState<string | null>(null);
-  const walletInfoNotInState = walletState.address === '';
   const [isLoading, setIsLoading] = useState(true);
 
+  const walletInfoNotInState = walletState.address === sessionToken?.address;
   console.log('Current wallet state:', walletState);
 
   useInactivityCheck();
@@ -31,11 +45,9 @@ export const AuthGuard = ({ children }: AuthGuardProps) => {
   const setTokenToState = () => {
     if (walletInfoNotInState) {
       console.log('Fetching wallet address from token...');
-      const accessToken = getStoredAccessToken();
       const sessionToken = getSessionToken();
-      const walletAddress = accessToken?.walletAddress;
+      const walletAddress = sessionToken?.address;
 
-      console.log('Access token:', accessToken);
       console.log('Session token:', sessionToken);
       console.log('Wallet address from token:', walletAddress);
 

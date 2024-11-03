@@ -3,7 +3,6 @@ import { NavLink } from 'react-router-dom';
 import { CreatePasswordForm, RecoveryPhraseGrid, WalletSuccessScreen } from '@/components';
 import { ROUTES } from '@/constants';
 import { Button, Stepper } from '@/ui-kit';
-import { createWallet, generateToken } from '@/helpers/wallet';
 import { useAtom, useSetAtom } from 'jotai';
 import {
   confirmPasswordAtom,
@@ -14,6 +13,7 @@ import {
   passwordsVerifiedAtom,
   use24WordsState,
 } from '@/atoms';
+import { createWallet, saveSessionAuthToken } from '@/helpers';
 
 const STEPS_LABELS = ['Enter Passphrase', 'Create password'];
 
@@ -61,8 +61,10 @@ export const ImportWallet = () => {
   const handleCreateWallet = async () => {
     try {
       // Generate wallet from the mnemonic and create the token
-      const { walletAddress } = await createWallet(getStringMnemonic(), password);
-      generateToken(walletAddress);
+      // TODO: extract block to function and move to utils
+      const mnemonic = getStringMnemonic();
+      const wallet = await createWallet(mnemonic, password);
+      saveSessionAuthToken(wallet);
 
       // Clear state and navigate to confirmation page after wallet creation
       clearState();
