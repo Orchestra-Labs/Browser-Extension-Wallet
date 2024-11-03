@@ -1,6 +1,6 @@
 import { osmosis } from '@orchestra-labs/symphonyjs';
 import { incrementErrorCount, performRpcQuery, selectNodeProviders } from './queryNodes';
-import { SwapObject, TransactionResult, RPCResponse } from '@/types';
+import { SwapObject, TransactionResult, RPCResponse, Asset } from '@/types';
 import { CHAIN_ENDPOINTS, DELAY_BETWEEN_NODE_ATTEMPTS, MAX_NODES_PER_QUERY } from '@/constants';
 import { createOfflineSignerFromMnemonic } from './wallet';
 import { getSigningOsmosisClient } from '@orchestra-labs/symphonyjs';
@@ -9,6 +9,18 @@ import { getSessionToken } from './localStorage';
 import { getValidFeeDenom } from './feeDenom';
 
 const { swapSend } = osmosis.market.v1beta1.MessageComposer.withTypeUrl;
+
+export const isValidSwap = ({
+  sendAsset,
+  receiveAsset,
+}: {
+  sendAsset: Asset;
+  receiveAsset: Asset;
+}) => {
+  const result = !sendAsset.isIbc && !receiveAsset.isIbc && sendAsset.denom !== receiveAsset.denom;
+  console.log('Checking if valid swap:', { sendAsset, receiveAsset, result });
+  return result;
+};
 
 // TODO: merge in with queryNodes.  do not need separate signer if endpoint and message object are used
 const queryWithRetry = async ({

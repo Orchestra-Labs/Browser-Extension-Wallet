@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Asset } from '@/types';
-import { LOCAL_ASSET_REGISTRY, CHAIN_ENDPOINTS } from '@/constants';
+import { LOCAL_ASSET_REGISTRY, DEFAULT_ASSET, CHAIN_ENDPOINTS } from '@/constants';
 import { queryRestNode } from '@/helpers';
 import { useAtomValue } from 'jotai';
-import { walletStateAtom } from '@/atoms';
+import { sendStateAtom } from '@/atoms';
 
 interface ExchangeRequirementResponse {
   exchange_requirements: {
@@ -21,69 +21,65 @@ interface ExchangeRequirementResponse {
 
 export const useExchangeAssets = () => {
   const [availableAssets, setAvailableAssets] = useState<Asset[]>([]);
+  const sendState = useAtomValue(sendStateAtom);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const walletState = useAtomValue(walletStateAtom);
 
+  // TODO: if send asset is not default asset, convert to default asset as simulation) before checking rates against these.
   const fetchExchangeAssets = async () => {
     setIsLoading(true);
     setError(null);
 
     try {
+      const defaultAsset = sendState.asset || DEFAULT_ASSET;
+
+      console.log('Fetching exchange assets...');
       const response = (await queryRestNode({
         endpoint: `${CHAIN_ENDPOINTS.exchangeRequirements}`,
         queryType: 'GET',
       })) as unknown as ExchangeRequirementResponse;
 
+      console.log('Raw response from API:', response);
+
       if (!response.exchange_requirements) {
         throw new Error('Invalid response format');
       }
 
-      // Transform exchange requirements into assets
-      const exchangeAssets = response.exchange_requirements
-        .filter(req => req.base_currency.denom !== 'note')
-        .reduce<Asset[]>((acc, req) => {
-          const registryAsset = LOCAL_ASSET_REGISTRY[req.base_currency.denom];
+      const exchangeAssets = Object.values(LOCAL_ASSET_REGISTRY).map(registryAsset => {
+        const exchangeRequirement = response.exchange_requirements.find(
+          req => req.base_currency.denom === registryAsset.denom,
+        );
 
-          if (!registryAsset) {
-            console.warn(`Asset ${req.base_currency.denom} not found in registry`);
-            return acc;
-          }
+        const exchangeRate =
+          registryAsset.denom === defaultAsset.denom
+            ? `1 ${registryAsset.symbol}`
+            : registryAsset.isIbc
+              ? '-'
+              : (1 / parseFloat(exchangeRequirement?.exchange_rate || '1')).toFixed(
+                  registryAsset.exponent,
+                );
 
-          // Just use registry asset properties with the new amount
-          const newAsset: Asset = {
-            ...registryAsset,
-            amount: req.base_currency.amount,
-          };
+        return {
+          ...registryAsset,
+          amount: exchangeRequirement?.base_currency.amount || '0',
+          exchangeRate,
+        };
+      });
 
-          return [...acc, newAsset];
-        }, []);
-
-      // Combine wallet assets and exchange assets
-      const walletAssets = walletState?.assets || [];
-
-      // Create a map of existing denoms to avoid duplicates
-      const existingDenoms = new Set(walletAssets.map(asset => asset.denom));
-
-      // Only add exchange assets that aren't in the wallet
-      const uniqueExchangeAssets = exchangeAssets.filter(asset => !existingDenoms.has(asset.denom));
-
-      // Combine all assets
-      const combinedAssets = [...walletAssets, ...uniqueExchangeAssets];
-
-      setAvailableAssets(combinedAssets);
+      console.log('Final available assets:', exchangeAssets);
+      setAvailableAssets(exchangeAssets);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch exchange assets');
       console.error('Error fetching exchange assets:', err);
     } finally {
       setIsLoading(false);
+      console.log('Finished fetching exchange assets.');
     }
   };
 
   useEffect(() => {
-    // TODO: call only when valid transaction of type swap
     fetchExchangeAssets();
-  }, [walletState?.assets]); // Refetch when wallet assets change
+  }, []);
 
   return {
     availableAssets,

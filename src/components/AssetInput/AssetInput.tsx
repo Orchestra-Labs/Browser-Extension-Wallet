@@ -150,7 +150,7 @@ export const AssetInput: React.FC<AssetInputProps> = ({
           disabled={isDisabled}
           icon={
             updateAsset ? (
-              <AssetSelectDialog isSendDialog={variant === 'send'} onClick={updateAsset} />
+              <AssetSelectDialog isReceiveDialog={variant === 'receive'} onClick={updateAsset} />
             ) : null
           }
           reducedHeight={reducedHeight}

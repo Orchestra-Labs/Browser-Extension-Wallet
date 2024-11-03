@@ -104,7 +104,7 @@ export const CreateWallet = () => {
 
   /* ******************************************************************************************* */
   /* David Current TODOs */
-  // TODO: prevent errors on send page for queries to get fees (prevent calls in cases of non-swap transactions)
+  // TODO: prevent blinking on re-renders.  usememo?
 
   // TODO: modify auth to accounts & wallets structure to make this scalable for later upgrades
   // TODO: modify accounts/wallets management for scalability (password per account, multiple wallets per account, multiple accounts in storage, search by password+decryption)
