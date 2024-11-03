@@ -104,8 +104,6 @@ export const CreateWallet = () => {
 
   /* ******************************************************************************************* */
   /* David Current TODOs */
-  // TODO: prevent blinking on re-render in receive tile.  usememo?
-
   // TODO: modify auth to accounts & wallets structure to make this scalable for later upgrades
   // TODO: modify accounts/wallets management for scalability (password per account, multiple wallets per account, multiple accounts in storage, search by password+decryption)
   // TODO: ensure new encrypted mnemonic overwrites old in case of same password and name (but let user know first)
