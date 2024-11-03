@@ -31,6 +31,7 @@ export const useExchangeAssets = () => {
     setError(null);
 
     try {
+      // TODO: if sendState.asset.denom and sendState.asset.isIbc are not equal to DEFAULT_ASSET, get exchange rate to DEFAULT ASSET and multiple all exchange rates by that value before returning
       const defaultAsset = sendState.asset || DEFAULT_ASSET;
 
       console.log('Fetching exchange assets...');
@@ -50,6 +51,7 @@ export const useExchangeAssets = () => {
           req => req.base_currency.denom === registryAsset.denom,
         );
 
+        console.log('registry asset', registryAsset.symbol, registryAsset);
         const exchangeRate =
           registryAsset.denom === defaultAsset.denom
             ? `1 ${registryAsset.symbol}`
