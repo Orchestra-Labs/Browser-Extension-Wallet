@@ -2,10 +2,15 @@ import { Asset } from '@/types';
 import { SlideTray, Button } from '@/ui-kit';
 import { ScrollTile } from '../ScrollTile';
 import { ReceiveDialog } from '../ReceiveDialog';
-import { useAtom, useSetAtom } from 'jotai';
+import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { useNavigate } from 'react-router-dom';
 import { DEFAULT_ASSET, ROUTES } from '@/constants';
-import { swiperIndexState, selectedAssetAtom, dialogSelectedAssetAtom } from '@/atoms/';
+import {
+  swiperIndexState,
+  selectedAssetAtom,
+  dialogSelectedAssetAtom,
+  sendStateAtom,
+} from '@/atoms/';
 import { formatBalanceDisplay } from '@/helpers';
 
 interface AssetScrollTileProps {
@@ -42,10 +47,12 @@ export const AssetScrollTile = ({
 
   let value = '';
   if (isReceiveDialog) {
+    const sendState = useAtomValue(sendStateAtom);
+
     if (isNaN(parseFloat(valueAmount))) {
       value = '-';
     } else {
-      const unitSymbol = DEFAULT_ASSET.symbol || 'MLD';
+      const unitSymbol = sendState.asset.symbol || 'MLD';
       value = formatBalanceDisplay(valueAmount, unitSymbol);
     }
   } else {

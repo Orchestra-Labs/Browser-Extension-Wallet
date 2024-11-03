@@ -104,7 +104,6 @@ export const CreateWallet = () => {
 
   /* ******************************************************************************************* */
   /* David Current TODOs */
-  // TODO: if sendState.asset.denom and sendState.asset.isIbc are not equal to DEFAULT_ASSET, get exchange rate to DEFAULT ASSET and multiple all exchange rates by that value before returning
   // TODO: prevent blinking on re-render in receive tile.  usememo?
 
   // TODO: modify auth to accounts & wallets structure to make this scalable for later upgrades

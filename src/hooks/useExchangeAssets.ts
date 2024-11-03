@@ -1,9 +1,15 @@
 import { useState, useEffect } from 'react';
 import { Asset } from '@/types';
-import { LOCAL_ASSET_REGISTRY, DEFAULT_ASSET, CHAIN_ENDPOINTS } from '@/constants';
+import {
+  LOCAL_ASSET_REGISTRY,
+  DEFAULT_ASSET,
+  CHAIN_ENDPOINTS,
+  GREATER_EXPONENT_DEFAULT,
+} from '@/constants';
 import { queryRestNode } from '@/helpers';
 import { useAtomValue } from 'jotai';
 import { sendStateAtom } from '@/atoms';
+import BigNumber from 'bignumber.js';
 
 interface ExchangeRequirementResponse {
   exchange_requirements: {
@@ -25,14 +31,13 @@ export const useExchangeAssets = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // TODO: if send asset is not default asset, convert to default asset as simulation) before checking rates against these.
   const fetchExchangeAssets = async () => {
     setIsLoading(true);
     setError(null);
 
     try {
-      // TODO: if sendState.asset.denom and sendState.asset.isIbc are not equal to DEFAULT_ASSET, get exchange rate to DEFAULT ASSET and multiple all exchange rates by that value before returning
-      const defaultAsset = sendState.asset || DEFAULT_ASSET;
+      const defaultAsset = DEFAULT_ASSET;
+      const sendAsset = sendState.asset;
 
       console.log('Fetching exchange assets...');
       const response = (await queryRestNode({
@@ -46,20 +51,40 @@ export const useExchangeAssets = () => {
         throw new Error('Invalid response format');
       }
 
+      let adjustmentRate = 1;
+
+      // If sendAsset is different from DEFAULT_ASSET, get the exchange rate from sendAsset to DEFAULT_ASSET
+      if (sendAsset.denom !== defaultAsset.denom) {
+        const exchangeRateResponse = await queryRestNode({
+          endpoint: `${CHAIN_ENDPOINTS.swap}offerCoin=1000000${sendAsset.denom}&askDenom=${defaultAsset.denom}`,
+          queryType: 'GET',
+        });
+
+        adjustmentRate = parseFloat(exchangeRateResponse.return_coin.amount) / 1000000;
+        console.log(
+          `Adjustment rate from ${sendAsset.denom} to ${defaultAsset.denom}:`,
+          adjustmentRate,
+        );
+      }
+
       const exchangeAssets = Object.values(LOCAL_ASSET_REGISTRY).map(registryAsset => {
         const exchangeRequirement = response.exchange_requirements.find(
           req => req.base_currency.denom === registryAsset.denom,
         );
 
-        console.log('registry asset', registryAsset.symbol, registryAsset);
-        const exchangeRate =
-          registryAsset.denom === defaultAsset.denom
-            ? `1 ${registryAsset.symbol}`
-            : registryAsset.isIbc
-              ? '-'
-              : (1 / parseFloat(exchangeRequirement?.exchange_rate || '1')).toFixed(
-                  registryAsset.exponent,
-                );
+        let exchangeRate;
+
+        if (registryAsset.denom === sendAsset.denom) {
+          exchangeRate = '1';
+        } else if (registryAsset.isIbc) {
+          exchangeRate = '-';
+        } else {
+          const baseExchangeRate = parseFloat(exchangeRequirement?.exchange_rate || '1');
+          const exponent = sendAsset.exponent || GREATER_EXPONENT_DEFAULT;
+          exchangeRate = new BigNumber(baseExchangeRate)
+            .dividedBy(adjustmentRate)
+            .toFixed(exponent);
+        }
 
         return {
           ...registryAsset,
@@ -68,7 +93,7 @@ export const useExchangeAssets = () => {
         };
       });
 
-      console.log('Final available assets:', exchangeAssets);
+      console.log('Final available assets with adjusted rates:', exchangeAssets);
       setAvailableAssets(exchangeAssets);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch exchange assets');
