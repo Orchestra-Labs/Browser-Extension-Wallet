@@ -111,6 +111,8 @@ export const CreateWallet = () => {
 
   // TODO: change onHover, click and active colors for selected tiles vs unselected tiles. model after buttons. currently look like the same action
   // TODO: put Loader on loading screen, not "loading"
+
+  // TODO: allow validation against more than just Symphony addresses.  all addresses?  just set green when it's verifiable?
   /* ******************************************************************************************* */
 
   /* Current TODOs */
