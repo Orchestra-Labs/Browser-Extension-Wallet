@@ -13,7 +13,7 @@ import {
   passwordsVerifiedAtom,
   use24WordsState,
 } from '@/atoms';
-import { createWallet, saveSessionAuthToken } from '@/helpers';
+import { createWallet } from '@/helpers';
 
 const STEPS_LABELS = ['Enter Passphrase', 'Create password'];
 
@@ -61,10 +61,8 @@ export const ImportWallet = () => {
   const handleCreateWallet = async () => {
     try {
       // Generate wallet from the mnemonic and create the token
-      // TODO: extract block to function and move to utils
       const mnemonic = getStringMnemonic();
-      const wallet = await createWallet(mnemonic, password);
-      saveSessionAuthToken(wallet);
+      await createWallet(mnemonic, password);
 
       // Clear state and navigate to confirmation page after wallet creation
       clearState();
