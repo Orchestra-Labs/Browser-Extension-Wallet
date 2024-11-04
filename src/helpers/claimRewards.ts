@@ -121,13 +121,13 @@ export const claimAndRestake = async (
   const validatorAddresses = delegationsArray.map(d => d.delegation.validator_address);
 
   try {
-    console.log("claim and restake:")
     const validatorRewards =
       rewards ||
       (await fetchRewards(
         delegatorAddress,
         validatorAddresses.map(addr => ({ validator_address: addr })),
       ));
+    
     const hasRewards = validatorRewards.some(
       reward => parseFloat(reward.rewards[0]?.amount || '0') > 0,
     );
@@ -135,13 +135,13 @@ export const claimAndRestake = async (
     if (!hasRewards) { 
       return { success: false, message: 'No rewards to claim', data: { code: 1 } };
     }
-    // Create claim messages using same structure as claimRewards
+
+    // Create messages for simulation or execution
     const claimMessages = buildClaimMessage({
       endpoint: CHAIN_ENDPOINTS.claimRewards,
       delegatorAddress,
       validatorAddress: validatorAddresses,
     });
-
     // Create delegate messages
     const delegateMessages = validatorRewards.flatMap(reward =>
       buildClaimMessage({
@@ -152,43 +152,40 @@ export const claimAndRestake = async (
         denom: reward.rewards[0].denom,
       }),
     );
-
-    // Combine messages in correct order
+  // Combine messages in correct order
     const batchedMessages = [...claimMessages, ...delegateMessages];
 
+    // Always use simulateOnly mode for queryRpcNode when simulating
+    const response = await queryRpcNode({
+      endpoint: delegateEndpoint,
+      messages: batchedMessages,
+      simulateOnly: simulateOnly
+    });
+
+    if (!response) {
+      return {
+        success: false,
+        message: 'No response received from transaction',
+        data: { code: 1 },
+      };
+    }
+
     if (simulateOnly) {
-      const simulateResponse = await queryRpcNode({
-        endpoint: delegateEndpoint,
-        messages: batchedMessages,
-        simulateOnly: true
-      });
-      if (!simulateResponse) {
-        return {
-          success: false,
-          message: 'No response received from delegation',
-          data: { code: 1 },
-        };
-      }
-      
       return {
         success: true,
         message: 'Simulation successful',
-        data: {...simulateResponse.data, 
-          gasWanted: parseFloat(simulateResponse.gasWanted || '0')
+        data: {
+          ...response,
+          gasWanted: (parseFloat(response.gasWanted || '0')).toString()
         }
       };
     }
-    console.log("made it to batched tx submission")
-    // Execute batched transaction
-    if (batchedMessages.length > 0) {
-      const response = await queryRpcNode({
-        endpoint: delegateEndpoint,
-        messages: batchedMessages,
-      });
-      return { success: true, message: 'Batch transaction successful', data: response };
-    }
 
-    return { success: false, message: 'No messages to process', data: { code: 1 } };
+    return {
+      success: true,
+      message: 'Transaction successful',
+      data: response
+    };
   } catch (error) {
     console.error('Error during batch claim and restake process:', error);
     return {
