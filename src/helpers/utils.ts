@@ -1,5 +1,8 @@
+import { Asset } from '@/types';
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { isValidSwap } from './swapTransactions';
+import { isValidSend } from './sendTransactions';
 
 export const cn = (...inputs: ClassValue[]) => {
   return twMerge(clsx(inputs, { strict: false }));
@@ -37,4 +40,18 @@ export const isValidUrl = (url: string): boolean => {
 // Validate numeric input and restrict to selectedAsset.exponent decimal places
 export const getRegexForDecimals = (exponent: number) => {
   return new RegExp(`^\\d*\\.?\\d{0,${exponent}}$`);
+};
+
+export const isValidTransaction = ({
+  sendAsset,
+  receiveAsset,
+}: {
+  sendAsset: Asset;
+  receiveAsset: Asset;
+}) => {
+  const isSwap = isValidSwap({ sendAsset, receiveAsset });
+  const isSend = isValidSend({ sendAsset, receiveAsset });
+  const result = isSend || isSwap;
+
+  return result;
 };

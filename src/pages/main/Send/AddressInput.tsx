@@ -27,7 +27,7 @@ export const AddressInput: React.FC<AddressInputProps> = ({
 
   const validAddressLength = 47;
 
-  // Validate address
+  // TODO: allow validation against more than just Symphony addresses.  all addresses?  just set green when it's verifiable?
   const validateAddress = () => {
     if (address === '') {
       setAddressStatus(null);
@@ -40,7 +40,7 @@ export const AddressInput: React.FC<AddressInputProps> = ({
 
     const isAddressValid = hasPrefix && isValidLength && isAlphanumeric;
     setAddressStatus(isAddressValid ? 'success' : 'error');
-    setAddressVerified(isAddressValid); // Set the verified state for address validity check
+    setAddressVerified(isAddressValid);
   };
 
   const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {

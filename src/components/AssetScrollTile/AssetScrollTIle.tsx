@@ -2,19 +2,30 @@ import { Asset } from '@/types';
 import { SlideTray, Button } from '@/ui-kit';
 import { ScrollTile } from '../ScrollTile';
 import { ReceiveDialog } from '../ReceiveDialog';
-import { useAtom, useSetAtom } from 'jotai';
+import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { useNavigate } from 'react-router-dom';
 import { DEFAULT_ASSET, ROUTES } from '@/constants';
-import { swiperIndexState, selectedAssetAtom, dialogSelectedAssetAtom } from '@/atoms/';
+import {
+  swiperIndexState,
+  selectedAssetAtom,
+  dialogSelectedAssetAtom,
+  sendStateAtom,
+} from '@/atoms/';
 import { formatBalanceDisplay } from '@/helpers';
 
 interface AssetScrollTileProps {
   asset: Asset;
   isSelectable?: boolean;
+  isReceiveDialog?: boolean;
   onClick?: (asset: Asset) => void;
 }
 
-export const AssetScrollTile = ({ asset, isSelectable = false, onClick }: AssetScrollTileProps) => {
+export const AssetScrollTile = ({
+  asset,
+  isSelectable = false,
+  isReceiveDialog = false,
+  onClick,
+}: AssetScrollTileProps) => {
   const setActiveIndex = useSetAtom(swiperIndexState);
   const setSelectedAsset = useSetAtom(selectedAssetAtom);
   const [dialogSelectedAsset, setDialogSelectedAsset] = useAtom(dialogSelectedAssetAtom);
@@ -22,10 +33,29 @@ export const AssetScrollTile = ({ asset, isSelectable = false, onClick }: AssetS
   const navigate = useNavigate();
 
   const symbol = asset.symbol || DEFAULT_ASSET.symbol || 'MLD';
-
   const title = asset.symbol || 'Unknown Asset';
-  const value = formatBalanceDisplay(asset.amount, symbol);
   const logo = asset.logo;
+
+  const valueAmount = isReceiveDialog
+    ? asset.exchangeRate === '0'
+      ? '-'
+      : asset.exchangeRate || '1'
+    : asset.amount;
+
+  let value = '';
+  if (isReceiveDialog) {
+    const sendState = useAtomValue(sendStateAtom);
+
+    if (isNaN(parseFloat(valueAmount))) {
+      value = '-';
+    } else {
+      const unitSymbol = sendState.asset.symbol || 'MLD';
+      value = formatBalanceDisplay(valueAmount, unitSymbol);
+    }
+  } else {
+    const unitSymbol = symbol;
+    value = formatBalanceDisplay(valueAmount, unitSymbol);
+  }
 
   const handleSendClick = () => {
     setSelectedAsset(asset);
