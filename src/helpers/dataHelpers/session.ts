@@ -1,7 +1,7 @@
-import { TOKEN_EXPIRATION_TIME, WALLET_PREFIX } from '@/constants';
 import { SessionToken } from '@/types';
 import { removeLocalStorageItem, setLocalStorageItem } from './localStorage';
 import { Secp256k1HdWallet } from '@cosmjs/amino';
+import { TOKEN_EXPIRATION_TIME } from '@/constants';
 
 const SESSION_KEY = 'sessionToken';
 
@@ -10,7 +10,7 @@ export const userIsLoggedIn = () => {
   return token;
 };
 
-export const saveSessionToken = (sessionToken: SessionToken): void => {
+const saveSessionToken = (sessionToken: SessionToken): void => {
   const sessionTokenJSON = JSON.stringify(sessionToken);
   setLocalStorageItem(SESSION_KEY, sessionTokenJSON);
   console.log('Session token saved to localStorage');
@@ -19,14 +19,12 @@ export const saveSessionToken = (sessionToken: SessionToken): void => {
 export const getSessionToken = (): SessionToken | null => {
   try {
     const tokenString = localStorage.getItem(SESSION_KEY);
-    if (!tokenString) {
-      return null;
-    }
+    if (!tokenString) return null;
 
     const token = JSON.parse(tokenString);
 
     // Validate token structure
-    if (!token || !token.mnemonic || !token.address) {
+    if (!token || !token.mnemonic || !token.accountID) {
       console.error('Invalid token structure:', token);
       return null;
     }
@@ -38,7 +36,7 @@ export const getSessionToken = (): SessionToken | null => {
   }
 };
 
-export const removeSessionToken = (): void => {
+export const removeSessionData = (): void => {
   removeLocalStorageItem(SESSION_KEY);
   console.log('Session token removed');
 };
@@ -55,18 +53,17 @@ export const isTokenValid = (): boolean => {
 };
 
 // TODO: save full wallet information or just address depending on auth vs UX level selected.  only need 1 function to handle both cases
-// TODO: move to auth or call from auth
-export const saveSessionAuthToken = async (
+export const saveSessionData = async (
   wallet: Secp256k1HdWallet,
+  accountID: string,
   persist: boolean = false,
 ): Promise<SessionToken> => {
-  const [{ address }] = await wallet.getAccounts();
+  const mnemonic = wallet.mnemonic;
   const sessionStartTime = new Date().toISOString();
 
-  const sessionToken = {
-    mnemonic: wallet.mnemonic,
-    address,
-    network: WALLET_PREFIX,
+  const sessionToken: SessionToken = {
+    mnemonic,
+    accountID,
     rememberMe: persist,
     timestamp: sessionStartTime,
   };

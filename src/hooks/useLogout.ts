@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { removeSessionToken, resetNodeErrorCounts } from '@/helpers';
+import { removeSessionData, resetNodeErrorCounts } from '@/helpers';
 import { ROUTES } from '@/constants';
 
 export const useLogout = () => {
@@ -8,8 +8,8 @@ export const useLogout = () => {
   const logout = () => {
     // Clear necessary data
     resetNodeErrorCounts();
-    removeSessionToken();
-    removeSessionToken();
+    removeSessionData();
+    removeSessionData();
 
     // Use React Router's navigate instead of window.location.href
     navigate(ROUTES.AUTH.ROOT);

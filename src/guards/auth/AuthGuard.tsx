@@ -1,83 +1,79 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, Navigate } from 'react-router-dom';
-import { fetchWalletAssets, getSessionToken, userCanLogIn, userIsLoggedIn } from '@/helpers';
-import { useInactivityCheck, useUpdateWalletTimer } from '@/hooks';
-import { walletStateAtom } from '@/atoms';
-import { useAtom } from 'jotai';
+import { getAddress, getSessionToken, userCanLogIn, userIsLoggedIn } from '@/helpers';
+import { useInactivityCheck, useUpdateWalletTimer, useWalletAssetsRefresh } from '@/hooks';
+import { shouldRefreshDataAtom, walletStateAtom } from '@/atoms';
+import { useAtom, useSetAtom } from 'jotai';
 import { ROUTES } from '@/constants';
+import { loadingInitialDataAtom } from '@/atoms/loadingAtom';
 
 interface AuthGuardProps {
   children?: React.ReactNode;
 }
 
-const checkLoginStatus = () => {
+export const AuthGuard = ({ children }: AuthGuardProps) => {
+  console.log('Initializing AuthGuard');
+
   const canLogIn = userCanLogIn();
-  const isLoggedIn = userIsLoggedIn();
+  console.log('Checking if the user can log in:', canLogIn);
+
   if (!canLogIn) {
     console.log("Can't log in, navigating to new wallet page");
     return <Navigate to={ROUTES.AUTH.NEW_WALLET.ROOT} />;
   }
+
+  const isLoggedIn = userIsLoggedIn();
+  console.log('Checking if the user is logged in:', isLoggedIn);
+
   if (!isLoggedIn) {
     console.log('Not logged in, navigating to login page');
     return <Navigate to={ROUTES.AUTH.ROOT} />;
   }
-};
-
-export const AuthGuard = ({ children }: AuthGuardProps) => {
-  console.log('auth guard');
-  checkLoginStatus();
-
-  const sessionToken = getSessionToken();
 
   const { pathname } = useLocation();
+  const { refreshWalletAssets } = useWalletAssetsRefresh();
 
-  // TODO: wallet state not getting set
   const [walletState, setWalletState] = useAtom(walletStateAtom);
-  const [requestedLocation, setRequestedLocation] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const setShouldRefreshData = useSetAtom(shouldRefreshDataAtom);
+  const setIsLoading = useSetAtom(loadingInitialDataAtom);
 
-  const walletInfoNotInState = walletState.address === sessionToken?.address;
+  const [requestedLocation, setRequestedLocation] = useState<string | null>(null);
+
+  const walletInfoNotInState = walletState.address === '';
   console.log('Current wallet state:', walletState);
+  console.log('Wallet info not in state:', walletInfoNotInState);
 
   useInactivityCheck();
   useUpdateWalletTimer();
 
-  const setTokenToState = () => {
+  const setTokenToState = async () => {
     if (walletInfoNotInState) {
+      setIsLoading(true);
       console.log('Fetching wallet address from token...');
+
       const sessionToken = getSessionToken();
-      const walletAddress = sessionToken?.address;
+      console.log('Session token retrieved:', sessionToken);
 
-      console.log('Session token:', sessionToken);
-      console.log('Wallet address from token:', walletAddress);
+      if (!sessionToken?.mnemonic) {
+        console.log('No mnemonic found in session token');
+        return;
+      }
 
-      // If access token is set (logged in) and state hasn't been set (first mount)
-      if (walletAddress && walletState.address === '') {
-        // Set wallet address in the global state (atom)
-        console.log('Setting wallet address and assets in state:', walletAddress);
-        setIsLoading(true);
+      try {
+        const address = await getAddress(sessionToken.mnemonic);
+        console.log('Wallet address derived from token mnemonic:', address);
 
-        // TODO: move fetch of assets to lower level of state
-        // Fetch wallet assets and update the state
-        fetchWalletAssets({ address: walletAddress, assets: [] })
-          .then(assets => {
-            console.log('Fetched wallet assets:', assets);
-            setWalletState({
-              address: walletAddress,
-              assets,
-            });
-            setIsLoading(false);
-          })
-          .catch(error => {
-            console.error('Error fetching wallet assets:', error);
-            setWalletState(prevState => ({
-              ...prevState,
-              address: walletAddress,
-              assets: [],
-            }));
-            setIsLoading(false);
+        if (address) {
+          console.log('Setting wallet address and assets in state:', address);
+          setWalletState({
+            address: address,
+            assets: [],
           });
-      } else {
+          setShouldRefreshData(true);
+        }
+      } catch (error) {
+        console.error('Error retrieving wallet address:', error);
+      } finally {
         setIsLoading(false);
       }
     }
@@ -85,8 +81,11 @@ export const AuthGuard = ({ children }: AuthGuardProps) => {
 
   useEffect(() => {
     if (walletInfoNotInState) {
+      console.log('Wallet info missing in state; setting token to state');
       setTokenToState();
     } else {
+      console.log('Refreshing wallet assets');
+      refreshWalletAssets();
       setIsLoading(false);
     }
   }, [walletState.address]);
@@ -115,31 +114,22 @@ export const AuthGuard = ({ children }: AuthGuardProps) => {
     };
   }, []);
 
-  // TODO: remove?  is this necessary?
-  // Prevent redirect or rendering while loading
-  if (isLoading) {
-    // TODO: change with centered scroll wheel or similar
-    return <div>Loading...</div>;
-  }
-
-  // If no wallet address is found, redirect to login
   if (walletInfoNotInState) {
     console.log('No token found, redirecting to login.');
     if (pathname !== requestedLocation) {
-      console.log('pathname:', pathname);
+      console.log('Setting requested location as pathname:', pathname);
       setRequestedLocation(pathname);
     }
     return <Navigate to={ROUTES.AUTH.ROOT} />;
   }
 
-  // If requestedLocation is set, redirect to it
   if (requestedLocation && pathname !== requestedLocation) {
+    console.log('Redirecting to previously requested location:', requestedLocation);
     const redirectLocation = requestedLocation;
-    console.log('Redirecting to requested location:', redirectLocation);
     setRequestedLocation(null);
     return <Navigate to={redirectLocation} />;
   }
 
-  console.log('returning child components');
+  console.log('AuthGuard returning child components');
   return <>{children}</>;
 };

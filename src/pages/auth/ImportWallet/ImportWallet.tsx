@@ -13,7 +13,7 @@ import {
   passwordsVerifiedAtom,
   use24WordsState,
 } from '@/atoms';
-import { createWallet } from '@/helpers';
+import { createAccount } from '@/helpers/dataHelpers/account';
 
 const STEPS_LABELS = ['Enter Passphrase', 'Create password'];
 
@@ -60,9 +60,13 @@ export const ImportWallet = () => {
   // Check everything is completed properly and pass to confirmation screen
   const handleCreateWallet = async () => {
     try {
+      console.log('trying to create wallet');
       // Generate wallet from the mnemonic and create the token
       const mnemonic = getStringMnemonic();
-      await createWallet(mnemonic, password);
+      const walletName = 'Default';
+      // TODO: make create/add depending on source of origin
+      await createAccount(mnemonic, password, walletName);
+      console.log('create wallet function ended');
 
       // Clear state and navigate to confirmation page after wallet creation
       clearState();

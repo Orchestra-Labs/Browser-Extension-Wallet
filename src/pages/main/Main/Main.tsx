@@ -14,6 +14,7 @@ import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { Button } from '@/ui-kit';
 import { convertToGreaterUnit, fetchValidatorData, formatBalanceDisplay } from '@/helpers';
 import { DEFAULT_ASSET, GREATER_EXPONENT_DEFAULT, LOCAL_ASSET_REGISTRY } from '@/constants';
+import { loadingInitialDataAtom } from '@/atoms/loadingAtom';
 
 export const Main = () => {
   const walletState = useAtomValue(walletStateAtom);
@@ -22,6 +23,7 @@ export const Main = () => {
   const [showCurrentValidators, setShowCurrentValidators] = useAtom(showCurrentValidatorsAtom);
   const [showAllAssets, setShowAllAssets] = useAtom(showAllAssetsAtom);
   const setSearchTerm = useSetAtom(searchTermAtom);
+  const loadingInitialData = useAtomValue(loadingInitialDataAtom);
 
   const swiperRef = useRef<SwiperClass | null>(null);
   const totalSlides = 2;
@@ -39,7 +41,7 @@ export const Main = () => {
 
   // Fetch all validator data (delegations, validators, rewards) in one go
   useEffect(() => {
-    if (walletState.address) {
+    if (walletState.address && !loadingInitialData) {
       // setIsLoading(true);
       fetchValidatorData(walletState.address)
         .then(data => {
@@ -93,15 +95,6 @@ export const Main = () => {
     convertToGreaterUnit(totalStakedRewards, 6).toFixed(6),
     symbol,
   );
-
-  // TODO: replace with individual displays on balance card and tilescroller
-  // if (isLoading) {
-  //   return (
-  //     <div className="h-full flex items-center justify-center">
-  //       <div className="text-white">Loading validator data...</div>
-  //     </div>
-  //   );
-  // }
 
   return (
     <div className="h-full flex flex-col overflow-hidden">

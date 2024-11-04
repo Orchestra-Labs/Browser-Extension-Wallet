@@ -9,5 +9,6 @@ export * from './sendTransactions';
 export * from './sort';
 export * from './swapTransactions';
 export * from './timer';
-export * from './utils';
 export * from './truncateString';
+export * from './utils';
+export * from './uuid';

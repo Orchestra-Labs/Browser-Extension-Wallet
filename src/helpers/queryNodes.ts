@@ -5,7 +5,7 @@ import {
   MAX_NODES_PER_QUERY,
 } from '@/constants';
 import { SigningStargateClient, GasPrice } from '@cosmjs/stargate';
-import { createOfflineSignerFromMnemonic } from './dataHelpers/wallet';
+import { createOfflineSignerFromMnemonic, getAddress } from './dataHelpers/wallet';
 import { delay } from './timer';
 import { RPCResponse } from '@/types';
 import { getNodeErrorCounts, getSessionToken, storeNodeErrorCounts } from './dataHelpers';
@@ -156,7 +156,7 @@ const queryWithRetry = async ({
             throw new Error('Session token doesnt exist');
           }
           const mnemonic = sessionToken.mnemonic;
-          const address = sessionToken.address;
+          const address = await getAddress(mnemonic);
           if (!mnemonic) {
             throw new Error('Wallet is locked or unavailable');
           }
