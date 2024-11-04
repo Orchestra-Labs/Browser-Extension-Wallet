@@ -298,7 +298,6 @@ export const RecoveryPhraseGrid: React.FC<RecoveryPhraseGridProps> = ({
     return () => window.removeEventListener('mouseup', resetDrag);
   }, []);
 
-  // TODO: add drag to scroll
   useLayoutEffect(() => {
     const handleScroll = () => {
       const el = phraseBoxRef.current;

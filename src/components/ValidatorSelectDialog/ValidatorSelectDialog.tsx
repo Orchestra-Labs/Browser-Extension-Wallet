@@ -194,7 +194,7 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
           balance: v.balance,
         })),
         validatorRewards,
-        isSimulation 
+        isSimulation,
       );
 
       if (isSimulation) return claimResult;

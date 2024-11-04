@@ -5,18 +5,23 @@ import { useMemo } from 'react';
 
 import { CHAIN_ENDPOINTS, GREATER_EXPONENT_DEFAULT, LOCAL_ASSET_REGISTRY } from '@/constants';
 import { receiveStateAtom, sendStateAtom } from '@/atoms';
-import { queryRestNode } from '@/helpers';
+import { isValidSwap, queryRestNode } from '@/helpers';
 
 export function useExchangeRate() {
-  // Use the combined SendStateAtom and ReceiveStateAtom
   const sendState = useAtomValue(sendStateAtom);
   const receiveState = useAtomValue(receiveStateAtom);
 
-  const sendAsset = sendState.asset?.denom || '';
-  const receiveAsset = receiveState.asset?.denom || '';
+  const sendAsset = sendState.asset;
+  const receiveAsset = receiveState.asset;
+
+  const sendDenom = sendState.asset?.denom || '';
+  const receiveDenom = receiveState.asset?.denom || '';
+
+  // Check if swap is valid
+  const validSwap = isValidSwap({ sendAsset, receiveAsset });
 
   const queryExchangeRate = useQuery<string | null, Error, string | null>({
-    queryKey: ['exchangeRate', sendAsset, receiveAsset],
+    queryKey: ['exchangeRate', sendDenom, receiveDenom],
     queryFn: async ({ queryKey }): Promise<string | null> => {
       const [, sendAsset, receiveAsset] = queryKey as [string, string, string];
       if (!sendAsset || !receiveAsset) return null;
@@ -33,32 +38,27 @@ export function useExchangeRate() {
         endpoint: `${CHAIN_ENDPOINTS.swap}offerCoin=${formattedOfferAmount}${sendAsset}&askDenom=${receiveAsset}`,
         queryType: 'GET',
       });
-      console.log('Exchange rate update (useExchangeRate function):', response);
-      console.log(
-        'Exchange rate params (useExchangeRate function):',
-        `${formattedOfferAmount}${sendAsset}`,
-        receiveAsset,
+
+      const returnExchange = (response.return_coin?.amount / Math.pow(10, exponent)).toFixed(
+        GREATER_EXPONENT_DEFAULT,
       );
 
-      return response.return_coin?.amount ?? null;
+      return returnExchange;
     },
-    enabled: !!sendAsset && !!receiveAsset,
-    // TODO: be sure this timeout isn't re-triggering after leaving send page.  convert to helper otherwise
+    enabled: validSwap && !!sendDenom && !!receiveDenom,
     staleTime: 30000, // Consider the data stale after 30 seconds
     refetchInterval: 60000, // Refetch every 60 seconds
   });
 
   const exchangeRate = useMemo(() => {
+    if (!validSwap) {
+      return 1;
+    }
     if (queryExchangeRate.data) {
-      // Use BigNumber for precise decimal arithmetic
-      console.log(
-        'Returning exchange rate (useExchangeRate function):',
-        new BigNumber(queryExchangeRate.data).toNumber(),
-      );
       return new BigNumber(queryExchangeRate.data).toNumber();
     }
     return 0;
-  }, [queryExchangeRate.data]);
+  }, [queryExchangeRate.data, validSwap]);
 
   return {
     isLoading: queryExchangeRate.isLoading,

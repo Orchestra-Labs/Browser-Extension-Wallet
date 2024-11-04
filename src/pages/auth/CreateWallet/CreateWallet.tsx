@@ -104,9 +104,6 @@ export const CreateWallet = () => {
 
   /* ******************************************************************************************* */
   /* David Current TODOs */
-  // TODO: format claim fees for both claim to wallet and claim to restake.
-  // TODO: prevent errors on send page for queries to get fees (prevent calls in cases of non-swap transactions)
-
   // TODO: modify auth to accounts & wallets structure to make this scalable for later upgrades
   // TODO: modify accounts/wallets management for scalability (password per account, multiple wallets per account, multiple accounts in storage, search by password+decryption)
   // TODO: ensure new encrypted mnemonic overwrites old in case of same password and name (but let user know first)
@@ -114,6 +111,8 @@ export const CreateWallet = () => {
 
   // TODO: change onHover, click and active colors for selected tiles vs unselected tiles. model after buttons. currently look like the same action
   // TODO: put Loader on loading screen, not "loading"
+
+  // TODO: allow validation against more than just Symphony addresses.  all addresses?  just set green when it's verifiable?
   /* ******************************************************************************************* */
 
   /* Current TODOs */
