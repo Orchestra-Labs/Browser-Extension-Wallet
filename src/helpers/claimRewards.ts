@@ -121,6 +121,7 @@ export const claimAndRestake = async (
   const validatorAddresses = delegationsArray.map(d => d.delegation.validator_address);
 
   try {
+    console.log("claim and restake:")
     const validatorRewards =
       rewards ||
       (await fetchRewards(
@@ -130,18 +131,18 @@ export const claimAndRestake = async (
     const hasRewards = validatorRewards.some(
       reward => parseFloat(reward.rewards[0]?.amount || '0') > 0,
     );
-
-    if (!hasRewards) {
+  
+    if (!hasRewards) { 
       return { success: false, message: 'No rewards to claim', data: { code: 1 } };
     }
+    // Create claim messages using same structure as claimRewards
+    const claimMessages = buildClaimMessage({
+      endpoint: CHAIN_ENDPOINTS.claimRewards,
+      delegatorAddress,
+      validatorAddress: validatorAddresses,
+    });
 
-    const claimResponse = await claimRewards(delegatorAddress, validatorAddresses, simulateOnly);
-    if (!claimResponse.success || claimResponse.data?.code !== 0) {
-      return claimResponse;
-    }
-
-    let totalGasWanted = parseFloat(claimResponse.data?.gasWanted || '0');
-
+    // Create delegate messages
     const delegateMessages = validatorRewards.flatMap(reward =>
       buildClaimMessage({
         endpoint: delegateEndpoint,
@@ -152,41 +153,44 @@ export const claimAndRestake = async (
       }),
     );
 
-    if (delegateMessages.length > 0) {
-      const delegateResponse = await queryRpcNode({
-        endpoint: delegateEndpoint,
-        messages: delegateMessages.flat(),
-        simulateOnly,
-      });
+    // Combine messages in correct order
+    const batchedMessages = [...claimMessages, ...delegateMessages];
 
-      if (!delegateResponse) {
+    if (simulateOnly) {
+      const simulateResponse = await queryRpcNode({
+        endpoint: delegateEndpoint,
+        messages: batchedMessages,
+        simulateOnly: true
+      });
+      if (!simulateResponse) {
         return {
           success: false,
           message: 'No response received from delegation',
           data: { code: 1 },
         };
       }
-
-      // If simulation, sum the gas from claim and delegate, and return
-      if (simulateOnly) {
-        totalGasWanted += parseFloat(delegateResponse.gasWanted || '0');
-
-        return {
-          success: true,
-          message: 'Simulation successful',
-          data: {
-            ...claimResponse.data,
-            gasWanted: totalGasWanted.toFixed(GREATER_EXPONENT_DEFAULT),
-          },
-        };
-      }
-
-      return { success: true, message: 'Transaction successful', data: delegateResponse };
+      
+      return {
+        success: true,
+        message: 'Simulation successful',
+        data: {...simulateResponse.data, 
+          gasWanted: parseFloat(simulateResponse.gasWanted || '0')
+        }
+      };
+    }
+    console.log("made it to batched tx submission")
+    // Execute batched transaction
+    if (batchedMessages.length > 0) {
+      const response = await queryRpcNode({
+        endpoint: delegateEndpoint,
+        messages: batchedMessages,
+      });
+      return { success: true, message: 'Batch transaction successful', data: response };
     }
 
-    return { success: false, message: 'No rewards to delegate', data: { code: 1 } };
+    return { success: false, message: 'No messages to process', data: { code: 1 } };
   } catch (error) {
-    console.error('Error during claim and restake process:', error);
+    console.error('Error during batch claim and restake process:', error);
     return {
       success: false,
       message: error instanceof Error ? error.message : 'Unknown error occurred',
