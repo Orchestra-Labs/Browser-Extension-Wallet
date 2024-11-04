@@ -20,14 +20,12 @@ export const hashPassword = (password: string, salt: string): string => {
   return hashed;
 };
 
-export const getPasswordHash = (inputPassword: string): string | null => {
+export const getPasswordIndexByID = (passwordID: string): number => {
   console.log('Searching for password hash in records');
   const passwords = getPasswordRecords();
-  const index = passwords.findIndex(
-    record => hashPassword(inputPassword, record.salt) === record.hash,
-  );
-  console.log('Password hash found at index:', index);
-  return index !== -1 ? passwords[index].hash : null;
+  const index = passwords.findIndex(record => record.id === passwordID);
+
+  return index;
 };
 
 export const savePasswordHash = (id: string, password: string): string => {

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useAtom } from 'jotai';
-import { shouldRefreshDataAtom } from '@/atoms';
+import { useAtomValue } from 'jotai';
+import { isFetchingValidatorDataAtom, isFetchingWalletDataAtom } from '@/atoms';
 import { ScrollArea } from '@/ui-kit';
 import { Asset, CombinedStakingInfo } from '@/types';
 import { useDrag } from '@use-gesture/react';
@@ -8,8 +8,7 @@ import { animated, useSpring } from 'react-spring';
 import { Loader } from '../Loader';
 import { ValidatorTiles } from '../TileScroller/ValidatorTiles';
 import { AssetTiles } from '../TileScroller/AssetTiles';
-import { useWalletAssetsRefresh } from '@/hooks/useWalletAssetsRefresh';
-import { useValidatorDataRefresh } from '@/hooks/useValidatorDataRefresh';
+import { useRefreshData } from '@/hooks';
 
 interface TileScrollerProps {
   activeIndex: number;
@@ -28,14 +27,15 @@ export const TileScroller: React.FC<TileScrollerProps> = ({
   isDialog = false,
   isReceiveDialog = false,
 }) => {
-  const { refreshWalletAssets } = useWalletAssetsRefresh();
-  const { refreshValidatorData } = useValidatorDataRefresh();
   const viewportRef = useRef<HTMLDivElement>(null);
+  const { refreshData } = useRefreshData();
 
-  const [shouldRefreshData, setShouldRefreshData] = useAtom(shouldRefreshDataAtom);
-
+  const isFetchingData = useAtomValue(
+    activeIndex === 0 ? isFetchingWalletDataAtom : isFetchingValidatorDataAtom,
+  );
   const [isMouseDown, setIsMouseDown] = useState(false);
   const [dragStarted, setDragStarted] = useState(false);
+  const [isRefreshTriggered, setIsRefreshTriggered] = useState(false);
 
   const TOP_OVERSCROLL_LIMIT = 52;
   const OVERSCROLL_ACTIVATION_THRESHOLD = TOP_OVERSCROLL_LIMIT * 0.75;
@@ -45,21 +45,27 @@ export const TileScroller: React.FC<TileScrollerProps> = ({
   const [{ y, loaderOpacity }, api] = useSpring(() => ({ y: 0, loaderOpacity: 0 }));
 
   useEffect(() => {
-    if (shouldRefreshData) {
+    if (isRefreshTriggered && !isFetchingData) {
       // Split refresh to just the affected tiles
       if (activeIndex === 0) {
-        refreshWalletAssets();
+        refreshData({ wallet: true });
       } else {
-        refreshValidatorData();
+        refreshData({ validator: true });
       }
     }
-  }, [shouldRefreshData, activeIndex]);
+  }, [isRefreshTriggered, activeIndex]);
 
   useEffect(() => {
-    if (!shouldRefreshData) {
+    if (isRefreshTriggered) {
+      setIsRefreshTriggered(isFetchingData);
+    }
+  }, [isFetchingData]);
+
+  useEffect(() => {
+    if (!isRefreshTriggered) {
       api.start({ y: 0, loaderOpacity: 0 });
     }
-  }, [shouldRefreshData, api]);
+  }, [isRefreshTriggered, api]);
 
   const bind = useDrag(
     ({
@@ -96,7 +102,7 @@ export const TileScroller: React.FC<TileScrollerProps> = ({
             viewport.scrollTop = memo - my;
             api.start({ y: 0, loaderOpacity: 0 });
           }
-        } else if (last && !shouldRefreshData) {
+        } else if (last && !isRefreshTriggered) {
           const velocityMagnitude = Math.sqrt(velocity[0] ** 2 + velocity[1] ** 2);
 
           if (
@@ -104,7 +110,7 @@ export const TileScroller: React.FC<TileScrollerProps> = ({
             limitedOverscroll > OVERSCROLL_ACTIVATION_THRESHOLD &&
             velocityMagnitude < MAX_REFRESH_VELOCITY
           ) {
-            setShouldRefreshData(true);
+            setIsRefreshTriggered(true);
             api.start({ y: TOP_OVERSCROLL_LIMIT, loaderOpacity: 1 });
           } else {
             api.start({ y: 0, loaderOpacity: 0 });
@@ -122,7 +128,7 @@ export const TileScroller: React.FC<TileScrollerProps> = ({
   const handleMouseUp = () => {
     setIsMouseDown(false);
     setDragStarted(false);
-    if (!shouldRefreshData) {
+    if (!isRefreshTriggered) {
       api.start({ y: 0, loaderOpacity: 0 });
     }
   };
@@ -131,7 +137,7 @@ export const TileScroller: React.FC<TileScrollerProps> = ({
     const resetDrag = () => {
       setIsMouseDown(false);
       setDragStarted(false);
-      if (!shouldRefreshData) {
+      if (!isRefreshTriggered) {
         api.start({ y: 0, loaderOpacity: 0 });
       }
     };
@@ -145,7 +151,7 @@ export const TileScroller: React.FC<TileScrollerProps> = ({
       window.removeEventListener('mouseleave', resetDrag);
       window.removeEventListener('pointercancel', resetDrag);
     };
-  }, [api, shouldRefreshData]);
+  }, [api, isRefreshTriggered]);
 
   return (
     <ScrollArea
@@ -170,7 +176,7 @@ export const TileScroller: React.FC<TileScrollerProps> = ({
             transform: y.to(v => `translateY(${Math.max(v - 52, -52)}px)`),
           }}
         >
-          <Loader isSpinning={shouldRefreshData} />
+          <Loader isSpinning={isRefreshTriggered} />
         </animated.div>
 
         {activeIndex === 0 ? (

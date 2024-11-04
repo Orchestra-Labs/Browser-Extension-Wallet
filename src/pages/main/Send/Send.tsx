@@ -13,7 +13,6 @@ import {
   walletStateAtom,
   selectedAssetAtom,
   addressVerifiedAtom,
-  shouldRefreshDataAtom,
 } from '@/atoms';
 import { Asset, TransactionResult, TransactionSuccess } from '@/types';
 import { AssetInput, WalletSuccessScreen } from '@/components';
@@ -25,13 +24,12 @@ import {
   swapTransaction,
 } from '@/helpers';
 import { loadingAtom } from '@/atoms/loadingAtom';
-import { useExchangeRate, useWalletAssetsRefresh } from '@/hooks/';
+import { useExchangeRate, useRefreshData } from '@/hooks/';
 import { AddressInput } from './AddressInput';
 
 export const Send = () => {
-  const { refreshWalletAssets } = useWalletAssetsRefresh();
+  const { refreshData } = useRefreshData();
 
-  const [shouldRefreshData, setShouldRefreshData] = useAtom(shouldRefreshDataAtom);
   const walletState = useAtomValue(walletStateAtom);
   const walletAssets = walletState?.assets || [];
 
@@ -142,7 +140,6 @@ export const Send = () => {
         //   description: `Transaction hash ${displayTransactionHash} has been copied.`,
         // });
         setTransactionState({ isSuccess: true, txHash: result.data.txHash });
-        setShouldRefreshData(true);
       } else {
         console.error('Transaction failed:', result.data);
       }
@@ -476,8 +473,8 @@ export const Send = () => {
   }, [exchangeRate]);
 
   useEffect(() => {
-    if (shouldRefreshData && transactionState.isSuccess) {
-      refreshWalletAssets();
+    if (transactionState.isSuccess) {
+      refreshData({ wallet: true });
     }
   }, [transactionState.isSuccess]);
 

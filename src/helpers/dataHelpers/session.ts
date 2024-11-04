@@ -7,7 +7,7 @@ const SESSION_KEY = 'sessionToken';
 
 export const userIsLoggedIn = () => {
   const token = getSessionToken();
-  return token;
+  return token != null;
 };
 
 const saveSessionToken = (sessionToken: SessionToken): void => {

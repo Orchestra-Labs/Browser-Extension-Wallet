@@ -1,17 +1,19 @@
 import { useEffect, useRef } from 'react';
-import { shouldRefreshDataAtom, walletStateAtom } from '@/atoms';
-import { useAtom, useSetAtom } from 'jotai';
+import { walletStateAtom } from '@/atoms';
+import { useAtom } from 'jotai';
 import { DATA_FRESHNESS_TIMEOUT } from '@/constants';
+import { useRefreshData } from './useRefreshData';
 
 export const useUpdateWalletTimer = () => {
-  const [walletState] = useAtom(walletStateAtom);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const shouldRefreshData = useSetAtom(shouldRefreshDataAtom);
+  const { refreshData } = useRefreshData();
+
+  const [walletState] = useAtom(walletStateAtom);
 
   const updateWalletAssets = () => {
     if (walletState.address) {
       console.log('Refreshing wallet assets on interval for', walletState);
-      shouldRefreshData(true);
+      refreshData();
     }
   };
 

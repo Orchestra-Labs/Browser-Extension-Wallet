@@ -1,9 +1,7 @@
 import { NavLink } from 'react-router-dom';
-import { Loader, ReceiveDialog, ValidatorSelectDialog } from '@/components';
+import { ReceiveDialog, ValidatorSelectDialog } from '@/components';
 import { ROUTES } from '@/constants';
 import { Button } from '@/ui-kit';
-import { useAtomValue } from 'jotai';
-import { loadingInitialDataAtom } from '@/atoms/loadingAtom';
 
 interface BalanceCardProps {
   title: string;
@@ -20,21 +18,11 @@ export const BalanceCard = ({
   currentStep,
   totalSteps,
 }: BalanceCardProps) => {
-  const loadingInitialData = useAtomValue(loadingInitialDataAtom);
-  console.log('BalanceCard loadingInitialData:', loadingInitialData);
-
   return (
     <div className="p-4 h-44 border rounded-xl border-neutral-4 flex flex-col items-center relative">
       <div className="text-center mb-4">
         <p className="text-base text-neutral-1 ">{title}</p>
-        {loadingInitialData ? (
-          <>
-            <Loader />
-            <p>Loading data...</p>
-          </>
-        ) : (
-          <h1 className="text-h2 text-white font-bold line-clamp-1">{primaryText}</h1>
-        )}
+        <h1 className="text-h2 text-white font-bold line-clamp-1">{primaryText}</h1>
         <p className="text-sm text-neutral-1 line-clamp-1">
           {secondaryText ? `Balance: ${secondaryText}` : <span>&nbsp;</span>}
         </p>

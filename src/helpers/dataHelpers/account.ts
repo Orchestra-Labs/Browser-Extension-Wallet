@@ -1,6 +1,6 @@
 import { AccountRecord, WalletRecord } from '@/types';
 import { getLocalStorageItem, setLocalStorageItem } from './localStorage';
-import { savePasswordHash } from './password';
+import { getPasswordRecords, hashPassword, savePasswordHash } from './password';
 import { createWallet } from './wallet';
 import { saveSessionData } from './session';
 import { generateUUID } from '../uuid';
@@ -24,6 +24,16 @@ const saveAccounts = (accounts: AccountRecord[]): void => {
 export const getAccountByID = (id: string): AccountRecord | null => {
   const accounts = getAccounts();
   return accounts.find(acc => acc.id === id) || null;
+};
+
+export const getAccountIDByPassword = (inputPassword: string): string | null => {
+  console.log('Searching for password hash in records');
+  const passwords = getPasswordRecords();
+  const index = passwords.findIndex(
+    record => hashPassword(inputPassword, record.salt) === record.hash,
+  );
+  console.log('Password hash found at index:', index);
+  return index !== -1 ? passwords[index].id : null;
 };
 
 export const saveAccountByID = (updatedAccount: AccountRecord): boolean => {
@@ -101,6 +111,11 @@ export const createAccount = async (
   }
 
   return newAccount;
+};
+
+export const getWalletByID = (account: AccountRecord, walletID: string): WalletRecord | null => {
+  const walletRecord = account.wallets.find(wallet => wallet.id === walletID);
+  return walletRecord ? walletRecord : null;
 };
 
 export const addWalletToAccount = async (

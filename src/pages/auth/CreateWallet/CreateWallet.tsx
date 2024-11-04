@@ -106,8 +106,6 @@ export const CreateWallet = () => {
   // TODO: clear state of asset slide tray on close.  check for similar on validator tray
 
   // TODO: change onHover, click and active colors for selected tiles vs unselected tiles. model after buttons. currently look like the same action
-
-  // TODO: put Loader on loading screen, not "loading"
   /* ******************************************************************************************* */
 
   /* Current TODOs */
@@ -190,7 +188,7 @@ export const CreateWallet = () => {
       console.log('trying to create wallet');
       // Generate wallet from the mnemonic and create the token
       const mnemonic = getStringMnemonic();
-      const walletName = 'Default';
+      const walletName = 'Maestro';
       // TODO: make create/add depending on source of origin
       await createAccount(mnemonic, password, walletName);
       console.log('create wallet function ended');

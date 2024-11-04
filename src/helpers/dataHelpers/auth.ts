@@ -1,7 +1,7 @@
-import { getAccounts } from './account';
-import { decryptMnemonic, getStoredMnemonic } from './crypto';
+import { getAccountByID, getAccountIDByPassword, getAccounts, getWalletByID } from './account';
+import { decryptMnemonic } from './crypto';
 import { clearLocalStorage } from './localStorage';
-import { getPasswordHash, getPasswordRecords } from './password';
+import { getPasswordRecords } from './password';
 import { saveSessionData } from './session';
 import { getWallet } from './wallet';
 
@@ -33,37 +33,31 @@ export const tryAuthorizeAccess = async (
 ): Promise<'success' | 'no_wallet' | 'error'> => {
   console.log('Attempting to authorize access...');
 
-  const encryptedMnemonic = getStoredMnemonic();
-  if (!encryptedMnemonic) {
-    console.log('No wallet found in local storage.');
-    return 'no_wallet';
-  }
-  console.log('Encrypted mnemonic found:', encryptedMnemonic);
+  const loginEnabled = userCanLogIn();
+  if (!loginEnabled) return 'no_wallet';
 
-  const passwordHash = getPasswordHash(password);
-  console.log('Password hash found:', passwordHash);
-
-  if (!passwordHash) {
-    console.log('Password hash does not match. Authorization failed.');
+  const accountID = getAccountIDByPassword(password);
+  if (!accountID) {
+    console.log('No matching account found in local storage.');
     return 'error';
   }
+  console.log('Account found:', accountID);
 
   try {
-    console.log('Decrypting mnemonic...');
-    const mnemonic = decryptMnemonic(encryptedMnemonic, password);
-    console.log('Decrypted mnemonic:', mnemonic);
+    console.log('Retrieving wallet');
+    const account = getAccountByID(accountID);
+    if (!account) return 'error';
 
-    if (!mnemonic) {
-      console.log('Decryption failed. Incorrect password or corrupted mnemonic.');
-      return 'error';
-    }
+    const walletID = account?.settings.activeWalletID;
+    const wallet = getWalletByID(account, walletID);
+    if (!wallet) return 'error';
 
-    console.log('Retrieving wallet using decrypted mnemonic...');
-    const wallet = await getWallet(mnemonic);
-    console.log('Wallet retrieved:', wallet);
+    const mnemonic = decryptMnemonic(wallet.mnemonic, password);
+    const decryptedWallet = await getWallet(mnemonic);
+    console.log('Wallet retrieved:', decryptedWallet);
 
     console.log('Saving session data...');
-    await saveSessionData(wallet, passwordHash, persist);
+    await saveSessionData(decryptedWallet, accountID, persist);
 
     console.log('Authorization successful');
     return 'success';

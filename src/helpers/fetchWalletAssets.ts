@@ -7,12 +7,6 @@ import {
 import { Asset } from '@/types';
 import { queryRestNode } from './queryNodes';
 
-// Define the shape of WalletState
-interface WalletState {
-  address: string;
-  assets: Asset[];
-}
-
 // Adjust the amount by shifting the decimal point
 const adjustAmountByExponent = (amount: string, exponent: number): string => {
   const divisor = Math.pow(10, exponent);
@@ -75,9 +69,7 @@ const getBalances = async (walletAddress: string): Promise<Asset[]> => {
 };
 
 // Fetch wallet assets
-export async function fetchWalletAssets(walletState: WalletState): Promise<Asset[]> {
-  const { address: walletAddress } = walletState;
-
+export async function fetchWalletAssets(walletAddress: string): Promise<Asset[]> {
   if (!walletAddress) {
     console.error('No wallet address available in walletState!');
     return [];
