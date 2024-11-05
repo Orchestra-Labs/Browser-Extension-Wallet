@@ -76,6 +76,8 @@ export const TileScroller: React.FC<TileScrollerProps> = ({
       last,
       velocity,
     }) => {
+      event.stopPropagation();
+
       if (!isMouseDown || !event.target || (event.target as HTMLElement).closest('.slide-tray')) {
         return memo;
       }
@@ -155,7 +157,7 @@ export const TileScroller: React.FC<TileScrollerProps> = ({
 
   return (
     <ScrollArea
-      className="flex-grow w-full overflow-y-auto border border-neutral-3 rounded-md"
+      className="flex-grow w-full overflow-y-auto border border-neutral-3 rounded-md select-none"
       type="always"
       scrollbarProps={{}}
       viewportRef={viewportRef}
@@ -163,14 +165,14 @@ export const TileScroller: React.FC<TileScrollerProps> = ({
       onMouseUp={handleMouseUp}
     >
       <animated.div
-        className="relative pr-3"
+        className="relative pr-3 select-none"
         style={{
           transform: y.to(v => `translateY(${v}px)`),
         }}
         {...bind()}
       >
         <animated.div
-          className="absolute top-[-52px] left-0 right-0 flex justify-center items-center h-12"
+          className="absolute top-[-52px] left-0 right-0 flex justify-center items-center h-12 select-none"
           style={{
             opacity: loaderOpacity,
             transform: y.to(v => `translateY(${Math.max(v - 52, -52)}px)`),

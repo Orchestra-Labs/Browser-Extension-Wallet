@@ -35,15 +35,17 @@ export const ScrollTile = ({
 
   return (
     <div className={tileClasses} onClick={onClick}>
-      <div className="rounded-full h-9 w-9 bg-neutral-2 p-1 flex items-center justify-center">
+      <div className="rounded-full h-9 w-9 bg-neutral-2 p-1 flex items-center justify-center select-none">
         {icon || <LogoIcon />}
       </div>
-      <div className="flex flex-col ml-3">
-        <h6 className={`text-base ${textColor} text-left line-clamp-1`}>{formattedTitle}</h6>
-        <p className="text-xs text-neutral-1 text-left line-clamp-1">{subtitle}</p>
+      <div className="flex flex-col ml-3 select-none">
+        <h6 className={`text-base ${textColor} text-left line-clamp-1 select-none`}>
+          {formattedTitle}
+        </h6>
+        <p className="text-xs text-neutral-1 text-left line-clamp-1 select-none">{subtitle}</p>
       </div>
       <div className="flex-1" />
-      <div className="text-white text-h6 line-clamp-1">{value}</div>
+      <div className="text-white text-h6 line-clamp-1 select-none">{value}</div>
     </div>
   );
 };
