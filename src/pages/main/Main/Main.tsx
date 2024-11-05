@@ -16,15 +16,15 @@ import { convertToGreaterUnit, formatBalanceDisplay } from '@/helpers';
 import { DEFAULT_ASSET, GREATER_EXPONENT_DEFAULT, LOCAL_ASSET_REGISTRY } from '@/constants';
 
 export const Main = () => {
+  const swiperRef = useRef<SwiperClass | null>(null);
+  const totalSlides = 2;
+
   const [walletAssets] = useAtom(walletAssetsAtom);
   const [activeIndex, setActiveIndex] = useAtom(swiperIndexState);
   const [validatorData] = useAtom(validatorDataAtom);
   const [showCurrentValidators, setShowCurrentValidators] = useAtom(showCurrentValidatorsAtom);
   const [showAllAssets, setShowAllAssets] = useAtom(showAllAssetsAtom);
   const setSearchTerm = useSetAtom(searchTermAtom);
-
-  const swiperRef = useRef<SwiperClass | null>(null);
-  const totalSlides = 2;
 
   // Sync swiper visual state
   useEffect(() => {
