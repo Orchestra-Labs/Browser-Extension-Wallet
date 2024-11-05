@@ -43,6 +43,7 @@ export default {
         DEFAULT: '#61CBF4',
         darker: '#43ADD6',
         dark: '#2F99C2',
+        light: '#4AB8D9',
         pressed: '#117BA4',
         hover: 'rgba(10, 103, 144, 0.42)',
         'pressed-secondary': 'rgba(0, 103, 144, 0.18)',

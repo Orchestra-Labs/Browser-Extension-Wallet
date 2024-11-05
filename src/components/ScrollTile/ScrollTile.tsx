@@ -20,20 +20,21 @@ export const ScrollTile = ({
   selected = false,
   onClick,
 }: ScrollTileProps) => {
-  const textColor = selectTextColorByStatus(status);
-  const borderClass = selected ? 'border-blue bg-blue-hover-secondary' : 'border-neutral-4';
-  const activityBorderClass =
-    'hover:bg-blue-hover-secondary hover:text-blue-dark hover:border-blue-darker active:bg-blue-pressed-secondary active:text-blue active:border-blue';
-
   const formattedTitle = truncateString(title, 10);
+  const textColor = selectTextColorByStatus(status);
+
+  const baseClasses = 'p-2 min-h-[52px] rounded-md flex items-center cursor-pointer border';
+  const selectedClasses = `border-blue bg-blue-hover text-blue-dark
+    active:bg-blue-hover-secondary active:text-blue-dark active:border-blue 
+    hover:bg-blue-pressed-secondary hover:text-blue hover:border-blue-darker`;
+  const unselectedClasses = `border-neutral-4 text-neutral-1
+    hover:bg-neutral-4 hover:text-neutral-1 hover:border-grey
+    active:bg-neutral-2 active:text-neutral-1 active:border-grey`;
+
+  const tileClasses = cn(baseClasses, selected ? selectedClasses : unselectedClasses);
 
   return (
-    <div
-      className={cn(
-        `p-2 min-h-[52px] rounded-md flex items-center cursor-pointer border ${borderClass} ${activityBorderClass}`,
-      )}
-      onClick={onClick}
-    >
+    <div className={tileClasses} onClick={onClick}>
       <div className="rounded-full h-9 w-9 bg-neutral-2 p-1 flex items-center justify-center">
         {icon || <LogoIcon />}
       </div>
