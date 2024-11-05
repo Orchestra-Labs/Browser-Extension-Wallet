@@ -127,21 +127,22 @@ export const claimAndRestake = async (
         delegatorAddress,
         validatorAddresses.map(addr => ({ validator_address: addr })),
       ));
+    
     const hasRewards = validatorRewards.some(
       reward => parseFloat(reward.rewards[0]?.amount || '0') > 0,
     );
-
-    if (!hasRewards) {
+  
+    if (!hasRewards) { 
       return { success: false, message: 'No rewards to claim', data: { code: 1 } };
     }
 
-    const claimResponse = await claimRewards(delegatorAddress, validatorAddresses, simulateOnly);
-    if (!claimResponse.success || claimResponse.data?.code !== 0) {
-      return claimResponse;
-    }
-
-    let totalGasWanted = parseFloat(claimResponse.data?.gasWanted || '0');
-
+    // Create messages for simulation or execution
+    const claimMessages = buildClaimMessage({
+      endpoint: CHAIN_ENDPOINTS.claimRewards,
+      delegatorAddress,
+      validatorAddress: validatorAddresses,
+    });
+    // Create delegate messages
     const delegateMessages = validatorRewards.flatMap(reward =>
       buildClaimMessage({
         endpoint: delegateEndpoint,
@@ -151,42 +152,42 @@ export const claimAndRestake = async (
         denom: reward.rewards[0].denom,
       }),
     );
+  // Combine messages in correct order
+    const batchedMessages = [...claimMessages, ...delegateMessages];
 
-    if (delegateMessages.length > 0) {
-      const delegateResponse = await queryRpcNode({
-        endpoint: delegateEndpoint,
-        messages: delegateMessages.flat(),
-        simulateOnly,
-      });
+    // Always use simulateOnly mode for queryRpcNode when simulating
+    const response = await queryRpcNode({
+      endpoint: delegateEndpoint,
+      messages: batchedMessages,
+      simulateOnly: simulateOnly
+    });
 
-      if (!delegateResponse) {
-        return {
-          success: false,
-          message: 'No response received from delegation',
-          data: { code: 1 },
-        };
-      }
-
-      // If simulation, sum the gas from claim and delegate, and return
-      if (simulateOnly) {
-        totalGasWanted += parseFloat(delegateResponse.gasWanted || '0');
-
-        return {
-          success: true,
-          message: 'Simulation successful',
-          data: {
-            ...claimResponse.data,
-            gasWanted: totalGasWanted.toFixed(GREATER_EXPONENT_DEFAULT),
-          },
-        };
-      }
-
-      return { success: true, message: 'Transaction successful', data: delegateResponse };
+    if (!response) {
+      return {
+        success: false,
+        message: 'No response received from transaction',
+        data: { code: 1 },
+      };
     }
 
-    return { success: false, message: 'No rewards to delegate', data: { code: 1 } };
+    if (simulateOnly) {
+      return {
+        success: true,
+        message: 'Simulation successful',
+        data: {
+          ...response,
+          gasWanted: (parseFloat(response.gasWanted || '0')).toString()
+        }
+      };
+    }
+
+    return {
+      success: true,
+      message: 'Transaction successful',
+      data: response
+    };
   } catch (error) {
-    console.error('Error during claim and restake process:', error);
+    console.error('Error during batch claim and restake process:', error);
     return {
       success: false,
       message: error instanceof Error ? error.message : 'Unknown error occurred',

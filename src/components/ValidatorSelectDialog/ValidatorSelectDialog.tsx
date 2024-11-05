@@ -279,8 +279,8 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
   };
 
   useEffect(() => {
-    if (slideTrayIsOpen) updateFee();
-  }, [slideTrayIsOpen, selectedValidators, isClaimDialog]);
+    if (slideTrayIsOpen && !isLoading) updateFee();
+  }, [slideTrayIsOpen, selectedValidators, isClaimDialog, isLoading]);
 
   useEffect(() => {
     if (shouldRefreshData && transactionSuccess.success) {
