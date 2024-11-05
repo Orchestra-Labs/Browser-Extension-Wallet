@@ -155,6 +155,7 @@ export const TileScroller: React.FC<TileScrollerProps> = ({
     };
   }, [api, isRefreshTriggered]);
 
+  const allowOnClick = !(dragStarted || isRefreshTriggered);
   return (
     <ScrollArea
       className="flex-grow w-full overflow-y-auto border border-neutral-3 rounded-md select-none"
@@ -184,14 +185,14 @@ export const TileScroller: React.FC<TileScrollerProps> = ({
         {activeIndex === 0 ? (
           <AssetTiles
             isSelectable={isSelectable}
-            onClick={onSelectAsset}
+            onClick={allowOnClick ? onSelectAsset : () => {}}
             isDialog={isDialog}
             isReceiveDialog={isReceiveDialog}
           />
         ) : (
           <ValidatorTiles
             isSelectable={isSelectable}
-            onClick={onSelectValidator}
+            onClick={allowOnClick ? onSelectValidator : () => {}}
             isDialog={isDialog}
           />
         )}
