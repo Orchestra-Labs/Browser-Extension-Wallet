@@ -127,12 +127,12 @@ export const claimAndRestake = async (
         delegatorAddress,
         validatorAddresses.map(addr => ({ validator_address: addr })),
       ));
-    
+
     const hasRewards = validatorRewards.some(
       reward => parseFloat(reward.rewards[0]?.amount || '0') > 0,
     );
-  
-    if (!hasRewards) { 
+
+    if (!hasRewards) {
       return { success: false, message: 'No rewards to claim', data: { code: 1 } };
     }
 
@@ -152,14 +152,15 @@ export const claimAndRestake = async (
         denom: reward.rewards[0].denom,
       }),
     );
-  // Combine messages in correct order
+
+    // Combine messages in correct order
     const batchedMessages = [...claimMessages, ...delegateMessages];
 
     // Always use simulateOnly mode for queryRpcNode when simulating
     const response = await queryRpcNode({
       endpoint: delegateEndpoint,
       messages: batchedMessages,
-      simulateOnly: simulateOnly
+      simulateOnly: simulateOnly,
     });
 
     if (!response) {
@@ -176,15 +177,15 @@ export const claimAndRestake = async (
         message: 'Simulation successful',
         data: {
           ...response,
-          gasWanted: (parseFloat(response.gasWanted || '0')).toString()
-        }
+          gasWanted: parseFloat(response.gasWanted || '0').toString(),
+        },
       };
     }
 
     return {
       success: true,
       message: 'Transaction successful',
-      data: response
+      data: response,
     };
   } catch (error) {
     console.error('Error during batch claim and restake process:', error);
