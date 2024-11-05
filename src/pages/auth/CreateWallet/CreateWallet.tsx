@@ -123,6 +123,17 @@ export const CreateWallet = () => {
   // TODO: enable search function to validator list by chain (on top of current functionality)
   // TODO: add show/hide function to validator list (by chain)
 
+  /* Revenue TODOs */
+  // TODO: list these in user info:
+  // TODO: in-app exchange fee (find lowest rates for user, but add small commission)
+  // TODO: on-ramp fees (add small commission)
+  // TODO: staking fees add small percent commission
+  // TODO: affiliate revenue from integrated services
+  // NOTE: metamask - primary from swap and on-ramp
+  // NOTE: trust - primary from on-ramps, swaps, and staking
+  // NOTE: coinbase - primary from on-ramps, coinbase, and affiliate
+  // NOTE: exodus - primary from staking, affiliate, and on-ramp
+
   /* Nice to have TODOs */
   // TODO: creation of wallet with old password should add additional wallet on same account
   // TODO: fix issue with gas on 'all' button for validator selections (bundle transactions)
