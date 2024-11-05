@@ -108,6 +108,7 @@ export const CreateWallet = () => {
   /* ******************************************************************************************* */
 
   /* Current TODOs */
+  // TODO: fix error with excessive calls to refresh
   // TODO: use loader in amount place for first load on balance card
   // TODO: fix claim and restake error.  make consistent
   // TODO: ensure fees are added properly (gasUsed = gasWanted) for claim-to-wallet and claim-to-restake for both single claim messages and multiple claim messages
