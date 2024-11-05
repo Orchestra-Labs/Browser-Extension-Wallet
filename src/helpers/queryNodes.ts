@@ -67,36 +67,41 @@ export const performRpcQuery = async (
   messages: any[],
   feeDenom: string,
   simulateOnly = false,
+  fee?: {
+    amount: { denom: string; amount: string }[];
+    gas: string;
+  },
 ): Promise<RPCResponse> => {
   try {
     // TODO: modify to support multi-send
-    // Set a default fee for simulation
-    const defaultGasPrice = GasPrice.fromString(`0.025${feeDenom}`);
+    let calculatedFee = fee;
 
-    // TODO: add simulation parameter to functions to be able to update user on estimates in real time before real query
-    // Simulate transaction to estimate gas
-    let gasEstimation = await client.simulate(walletAddress, messages, '');
-    // Apply a 10% buffer for safety
-    gasEstimation = Math.ceil(gasEstimation * 1.1);
+    if (!fee || !calculatedFee) {
+      const defaultGasPrice = GasPrice.fromString(`0.025${feeDenom}`);
+      let gasEstimation = await client.simulate(walletAddress, messages, '');
+      gasEstimation = Math.ceil(gasEstimation * 1.1);
 
-    // Calculate the fee based on the gas estimation
-    const fee = {
-      amount: [
-        {
-          denom: feeDenom,
-          amount: (gasEstimation * defaultGasPrice.amount.toFloatApproximation()).toFixed(0),
-        },
-      ],
-      gas: gasEstimation.toString(),
-    };
-
-    // If simulation-only, estimate the gas and return without broadcasting
-    if (simulateOnly) {
-      return { code: 0, message: 'Simulation success', fee, gasWanted: gasEstimation.toString() };
+      calculatedFee = {
+        amount: [
+          {
+            denom: feeDenom,
+            amount: (gasEstimation * defaultGasPrice.amount.toFloatApproximation()).toFixed(0),
+          },
+        ],
+        gas: gasEstimation.toString(),
+      };
     }
 
-    // Otherwise, proceed with full transaction
-    const result = await client.signAndBroadcast(walletAddress, messages, fee);
+    if (simulateOnly) {
+      return {
+        code: 0,
+        message: 'Simulation success',
+        fee: calculatedFee,
+        gasWanted: calculatedFee.gas,
+      };
+    }
+
+    const result = await client.signAndBroadcast(walletAddress, messages, calculatedFee);
 
     if (result.code === 0) {
       return {
@@ -119,13 +124,10 @@ export const performRpcQuery = async (
         txHash: error.txHash || 'unknown',
       };
     }
-
-    // Re-throw all other errors
     throw error;
   }
 };
 
-// Function to query the node with retries and delay
 const queryWithRetry = async ({
   endpoint,
   useRPC = false,
@@ -133,6 +135,7 @@ const queryWithRetry = async ({
   messages = [],
   feeDenom,
   simulateOnly = false,
+  fee,
 }: {
   endpoint: string;
   useRPC?: boolean;
@@ -140,6 +143,10 @@ const queryWithRetry = async ({
   messages?: any[];
   feeDenom: string;
   simulateOnly?: boolean;
+  fee?: {
+    amount: { denom: string; amount: string }[];
+    gas: string;
+  };
 }): Promise<RPCResponse> => {
   const providers = selectNodeProviders();
   let numberAttempts = 0;
@@ -153,19 +160,21 @@ const queryWithRetry = async ({
         if (useRPC) {
           const sessionToken = getSessionToken();
           if (!sessionToken) {
-            throw new Error('Session token doesnt exist');
+            throw new Error("Session token doesn't exist");
           }
           const mnemonic = sessionToken.mnemonic;
           const address = await getAddress(mnemonic);
-          if (!mnemonic) {
-            throw new Error('Wallet is locked or unavailable');
-          }
-
           const offlineSigner = await createOfflineSignerFromMnemonic(mnemonic);
           const client = await SigningStargateClient.connectWithSigner(queryMethod, offlineSigner);
 
-          // Pass `simulateOnly` to determine if we are simulating or fully querying
-          const result = await performRpcQuery(client, address, messages, feeDenom, simulateOnly);
+          const result = await performRpcQuery(
+            client,
+            address,
+            messages,
+            feeDenom,
+            simulateOnly,
+            fee,
+          );
           return result;
         } else {
           const result = await performRestQuery(endpoint, queryMethod, queryType);
@@ -175,7 +184,6 @@ const queryWithRetry = async ({
         lastError = error;
         console.error('Error querying node:', error);
 
-        // Don't increment error count for indexer issues
         if (!isIndexerError(error)) {
           incrementErrorCount(provider.rpc);
         }
@@ -187,7 +195,6 @@ const queryWithRetry = async ({
     }
   }
 
-  // If we got here and the last error was an indexer error
   if (isIndexerError(lastError)) {
     return {
       code: 0,
@@ -201,7 +208,6 @@ const queryWithRetry = async ({
   );
 };
 
-// REST query function
 export const queryRestNode = async ({
   endpoint,
   queryType = 'GET',
@@ -218,17 +224,21 @@ export const queryRestNode = async ({
     feeDenom,
   });
 
-// RPC query function
 export const queryRpcNode = async ({
   endpoint,
   messages,
   feeDenom = LOCAL_ASSET_REGISTRY.note.denom,
   simulateOnly = false,
+  fee,
 }: {
   endpoint: string;
   messages?: any[];
   feeDenom?: string;
   simulateOnly?: boolean;
+  fee?: {
+    amount: { denom: string; amount: string }[];
+    gas: string;
+  };
 }) =>
   queryWithRetry({
     endpoint,
@@ -236,4 +246,5 @@ export const queryRpcNode = async ({
     messages,
     feeDenom,
     simulateOnly,
+    fee,
   });

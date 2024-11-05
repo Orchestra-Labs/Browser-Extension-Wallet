@@ -1,4 +1,9 @@
-import { CHAIN_ENDPOINTS, GREATER_EXPONENT_DEFAULT, LOCAL_ASSET_REGISTRY } from '@/constants';
+import {
+  CHAIN_ENDPOINTS,
+  DEFAULT_ASSET,
+  GREATER_EXPONENT_DEFAULT,
+  LOCAL_ASSET_REGISTRY,
+} from '@/constants';
 import { queryRpcNode } from './queryNodes';
 import { DelegationResponse, TransactionResult } from '@/types';
 import { fetchRewards } from './fetchStakingInfo';
@@ -109,7 +114,6 @@ export const claimRewards = async (
   }
 };
 
-// TODO: fails occasionally on restake.  find out why and fix.  needs timeout?
 export const claimAndRestake = async (
   delegations: DelegationResponse | DelegationResponse[],
   rewards?: { validator: string; rewards: { denom: string; amount: string }[] }[],
@@ -121,6 +125,7 @@ export const claimAndRestake = async (
   const validatorAddresses = delegationsArray.map(d => d.delegation.validator_address);
 
   try {
+    // Fetch rewards if not provided
     const validatorRewards =
       rewards ||
       (await fetchRewards(
@@ -136,13 +141,14 @@ export const claimAndRestake = async (
       return { success: false, message: 'No rewards to claim', data: { code: 1 } };
     }
 
-    // Create messages for simulation or execution
+    // Use buildClaimMessage to create claim messages
     const claimMessages = buildClaimMessage({
       endpoint: CHAIN_ENDPOINTS.claimRewards,
       delegatorAddress,
       validatorAddress: validatorAddresses,
     });
-    // Create delegate messages
+
+    // Use buildClaimMessage for delegate messages as well
     const delegateMessages = validatorRewards.flatMap(reward =>
       buildClaimMessage({
         endpoint: delegateEndpoint,
@@ -153,42 +159,61 @@ export const claimAndRestake = async (
       }),
     );
 
-    // Combine messages in correct order
+    // Combine messages for a single transaction
     const batchedMessages = [...claimMessages, ...delegateMessages];
 
-    // Always use simulateOnly mode for queryRpcNode when simulating
-    const response = await queryRpcNode({
+    // First simulate to get the gas estimation
+    const simulationResult = await queryRpcNode({
       endpoint: delegateEndpoint,
       messages: batchedMessages,
-      simulateOnly: simulateOnly,
+      simulateOnly: true,
     });
 
-    if (!response) {
+    if (!simulationResult || simulationResult.code !== 0) {
       return {
         success: false,
-        message: 'No response received from transaction',
-        data: { code: 1 },
+        message: 'Simulation failed or insufficient gas estimation',
+        data: simulationResult,
       };
     }
+
+    const estimatedGas = parseFloat(simulationResult.gasWanted || '0') * 1.1;
+    const feeAmount = Math.ceil(estimatedGas * 0.025);
 
     if (simulateOnly) {
       return {
         success: true,
         message: 'Simulation successful',
-        data: {
-          ...response,
-          gasWanted: parseFloat(response.gasWanted || '0').toString(),
-        },
+        data: simulationResult,
+      };
+    }
+
+    // Execute the transaction with estimated gas and fee from simulation
+    const executionResult = await queryRpcNode({
+      endpoint: delegateEndpoint,
+      messages: batchedMessages,
+      simulateOnly: false,
+      fee: {
+        amount: [{ denom: DEFAULT_ASSET.denom, amount: feeAmount.toFixed(0) }],
+        gas: estimatedGas.toFixed(0),
+      },
+    });
+
+    if (!executionResult || executionResult.code !== 0) {
+      return {
+        success: false,
+        message: 'Transaction failed',
+        data: executionResult,
       };
     }
 
     return {
       success: true,
       message: 'Transaction successful',
-      data: response,
+      data: executionResult,
     };
   } catch (error) {
-    console.error('Error during batch claim and restake process:', error);
+    console.error('Error during claim and restake:', error);
     return {
       success: false,
       message: error instanceof Error ? error.message : 'Unknown error occurred',
