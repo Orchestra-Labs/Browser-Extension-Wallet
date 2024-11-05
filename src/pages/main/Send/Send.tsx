@@ -19,6 +19,8 @@ import { AssetInput, WalletSuccessScreen } from '@/components';
 import {
   // cn,
   formatBalanceDisplay,
+  isValidSwap,
+  isValidTransaction,
   removeTrailingZeroes,
   sendTransaction,
   swapTransaction,
@@ -222,14 +224,11 @@ export const Send = () => {
       return;
     }
 
-    const exponent = sendAsset.exponent ?? GREATER_EXPONENT_DEFAULT;
-    const roundedSendAmount = parseFloat(newSendAmount.toFixed(exponent));
-
     // Update the sendState with the new rounded amount
     setSendState(prevState => {
       return {
         ...prevState,
-        amount: roundedSendAmount,
+        amount: newSendAmount,
       };
     });
 
@@ -251,17 +250,18 @@ export const Send = () => {
 
   const updateReceiveAmount = (newReceiveAmount: number, propagateChanges: boolean = false) => {
     const receiveAsset = receiveState.asset;
-    if (!receiveAsset) return;
-
-    const exponent = receiveAsset.exponent ?? GREATER_EXPONENT_DEFAULT;
-    const roundedReceiveAmount = parseFloat(newReceiveAmount.toFixed(exponent));
+    if (!receiveAsset) {
+      console.log('No receive asset found');
+      return;
+    }
 
     setReceiveState(prevState => ({
       ...prevState,
-      amount: roundedReceiveAmount,
+      amount: newReceiveAmount,
     }));
 
     if (propagateChanges) {
+      console.log('Propagating changes for receive amount');
       setChangeMap(prevMap => ({
         ...prevMap,
         receiveAmount: true,
@@ -276,30 +276,45 @@ export const Send = () => {
   };
 
   const updateFee = async () => {
-    const simulationResponse = await handleTransaction({ simulateTransaction: true });
-    console.log('simulationResponse', simulationResponse, simulationResponse?.data);
+    console.log(
+      'Updating fee with current sendState and transactionType:',
+      sendState,
+      transactionType,
+    );
 
-    if (simulationResponse && simulationResponse.data) {
-      const gasWanted = parseInt(simulationResponse.data.gasWanted || '0', 10);
-      console.log('gas wanted', simulationResponse.data.gasWanted, gasWanted);
+    if (sendState.amount > 0 && transactionType.isValid) {
+      const simulationResponse = await handleTransaction({ simulateTransaction: true });
+      console.log('Simulation response:', simulationResponse, simulationResponse?.data);
 
-      // TODO; get default gas price from chain registry
-      const defaultGasPrice = 0.025;
-      const exponent = sendState.asset?.exponent || GREATER_EXPONENT_DEFAULT;
-      const symbol = sendState.asset.symbol || DEFAULT_ASSET.symbol || 'MLD';
-      const feeAmount = gasWanted * defaultGasPrice;
-      const feeInGreaterUnit = feeAmount / Math.pow(10, exponent);
+      if (simulationResponse && simulationResponse.data) {
+        const gasWanted = parseInt(simulationResponse.data.gasWanted || '0', 10);
+        console.log('Gas wanted:', simulationResponse.data.gasWanted, gasWanted);
 
-      const feePercentage = feeInGreaterUnit ? (feeInGreaterUnit / sendState.amount) * 100 : 0;
+        // TODO: get default gas price from chain registry
+        const defaultGasPrice = 0.025;
+        const exponent = sendState.asset?.exponent || GREATER_EXPONENT_DEFAULT;
+        const symbol = sendState.asset.symbol || DEFAULT_ASSET.symbol || 'MLD';
+        const feeAmount = gasWanted * defaultGasPrice;
+        const feeInGreaterUnit = feeAmount / Math.pow(10, exponent);
 
-      setSimulatedFee({
-        fee: formatBalanceDisplay(feeInGreaterUnit.toFixed(exponent), symbol),
-        textClass:
-          feePercentage > 1 ? 'text-error' : feePercentage > 0.75 ? 'text-warn' : 'text-blue',
-      });
+        const feePercentage = feeInGreaterUnit ? (feeInGreaterUnit / sendState.amount) * 100 : 0;
+
+        console.log('Calculated fee:', feeInGreaterUnit, 'Fee percentage:', feePercentage);
+
+        setSimulatedFee({
+          fee: formatBalanceDisplay(feeInGreaterUnit.toFixed(exponent), symbol),
+          textClass:
+            feePercentage > 1 ? 'text-error' : feePercentage > 0.75 ? 'text-warn' : 'text-blue',
+        });
+      } else {
+        console.log('Simulation did not return gas details');
+      }
     } else {
-      // TODO: handle error on fee return
-      console.log('Simulation did not return gas details');
+      console.log('No valid send amount or invalid transaction type');
+      setSimulatedFee({
+        fee: '0 MLD',
+        textClass: 'text-blue',
+      });
     }
   };
 
@@ -307,27 +322,17 @@ export const Send = () => {
     const sendAsset = sendState.asset;
     const receiveAsset = receiveState.asset;
 
-    if (!sendAsset || !receiveAsset) return;
+    if (!sendAsset || !receiveAsset) {
+      console.log('Missing assets for transaction type update');
+      return;
+    }
 
-    let newTransactionType = {
-      isSwap: false,
-      isValid: true,
+    const newTransactionType = {
+      isSwap: isValidSwap({ sendAsset, receiveAsset }),
+      isValid: isValidTransaction({ sendAsset, receiveAsset }),
     };
 
-    if (sendAsset.denom === receiveAsset.denom) {
-      newTransactionType.isSwap = false;
-      // setTransactionMessage(`Sending ${sendAsset.symbol} through Symphony.`);
-    } else if (!sendAsset.isIbc && !receiveAsset.isIbc && sendAsset.denom !== receiveAsset.denom) {
-      newTransactionType.isSwap = true;
-      // setTransactionMessage(
-      //   newTransactionType.isValid
-      //     ? `Sending ${sendAsset.symbol} into ${receiveAsset.symbol} on Symphony.`
-      //     : `No exchange on current pair`,
-      // );
-    } else {
-      newTransactionType.isValid = false;
-      // setTransactionMessage('Not yet supported');
-    }
+    console.log('Updated transaction type:', newTransactionType);
 
     setTransactionType(newTransactionType);
 
@@ -335,6 +340,12 @@ export const Send = () => {
     const maxSendable = calculateMaxAvailable(sendAsset);
     const applicableExchangeRate = sendAsset.denom === receiveAsset.denom ? 1 : exchangeRate || 1;
     const maxReceivable = maxSendable * applicableExchangeRate;
+
+    console.log('Transaction type update details:', {
+      maxSendable,
+      applicableExchangeRate,
+      maxReceivable,
+    });
 
     setSendPlaceholder(`Max: ${formatBalanceDisplay(`${maxSendable}`, sendAsset.symbol || 'MLD')}`);
     setReceivePlaceholder(
@@ -349,21 +360,36 @@ export const Send = () => {
     setMap = setChangeMap,
     isExchangeRateUpdate = false,
   ) => {
+    console.log('Propagating changes:', {
+      map,
+      isExchangeRateUpdate,
+      exchangeRate,
+    });
+
     if (map.sendAsset) {
       const sendAsset = sendState.asset;
       const sendAmount = sendState.amount;
-      if (!sendAsset) return;
+      if (!sendAsset) {
+        console.log('No send asset found');
+        return;
+      }
 
       const maxAvailable = calculateMaxAvailable(sendAsset);
+      console.log('Calculated max available for send asset:', maxAvailable);
 
       if (sendAmount > maxAvailable) {
         const newSendAmount = maxAvailable;
         const newReceiveAmount = newSendAmount * (exchangeRate || 1);
+        console.log('Adjusting send and receive amounts due to max constraint:', {
+          newSendAmount,
+          newReceiveAmount,
+        });
 
         updateSendAmount(newSendAmount);
         updateReceiveAmount(newReceiveAmount);
       } else {
         const newReceiveAmount = sendAmount * (exchangeRate || 1);
+        console.log('Calculated new receive amount:', newReceiveAmount);
         updateReceiveAmount(newReceiveAmount);
       }
 
@@ -375,6 +401,7 @@ export const Send = () => {
     if (map.receiveAsset) {
       const sendAmount = sendState.amount;
       const newReceiveAmount = sendAmount * (exchangeRate || 1);
+      console.log('Updating receive amount based on send asset change:', newReceiveAmount);
 
       updateReceiveAmount(newReceiveAmount);
 
@@ -385,19 +412,29 @@ export const Send = () => {
 
     if (map.sendAmount) {
       const sendAsset = sendState.asset;
-      if (!sendAsset) return;
+      if (!sendAsset) {
+        console.log('No send asset found');
+        return;
+      }
 
       const sendAmount = sendState.amount;
       const maxAvailable = calculateMaxAvailable(sendAsset);
-      const verifiedSendAmount = Math.min(sendState.amount, maxAvailable);
+      const verifiedSendAmount = Math.min(sendAmount, maxAvailable);
 
-      if (verifiedSendAmount != sendAmount) {
+      if (verifiedSendAmount !== sendAmount) {
+        console.log('Adjusting send amount due to max constraint:', verifiedSendAmount);
         updateSendAmount(verifiedSendAmount);
       }
 
       const applicableExchangeRate =
         sendAsset.denom === receiveState.asset?.denom ? 1 : exchangeRate || 1;
       const newReceiveAmount = verifiedSendAmount * applicableExchangeRate;
+
+      console.log('Updating receive amount based on verified send amount and exchange rate:', {
+        verifiedSendAmount,
+        applicableExchangeRate,
+        newReceiveAmount,
+      });
 
       updateReceiveAmount(newReceiveAmount);
 
@@ -408,19 +445,31 @@ export const Send = () => {
 
     if (map.receiveAmount) {
       const sendAsset = sendState.asset;
-      if (!sendAsset) return;
+      if (!sendAsset) {
+        console.log('No send asset found');
+        return;
+      }
 
       const receiveAmount = receiveState.amount;
-
       const applicableExchangeRate =
         sendAsset.denom === receiveState.asset?.denom ? 1 : 1 / (exchangeRate || 1);
       let newSendAmount = receiveAmount * applicableExchangeRate;
-
       const maxAvailable = calculateMaxAvailable(sendAsset);
+
+      console.log('Calculating send amount based on receive amount:', {
+        receiveAmount,
+        applicableExchangeRate,
+        newSendAmount,
+        maxAvailable,
+      });
 
       if (newSendAmount > maxAvailable) {
         newSendAmount = maxAvailable;
         const adjustedReceiveAmount = newSendAmount * (exchangeRate || 1);
+        console.log('Adjusting send and receive amounts due to max constraint:', {
+          newSendAmount,
+          adjustedReceiveAmount,
+        });
 
         updateSendAmount(newSendAmount);
         updateReceiveAmount(adjustedReceiveAmount);
@@ -434,6 +483,7 @@ export const Send = () => {
     }
 
     // TODO: add fee update to changemap?
+    console.log('Updating fee and transaction type');
     updateFee();
     updateTransactionType();
   };

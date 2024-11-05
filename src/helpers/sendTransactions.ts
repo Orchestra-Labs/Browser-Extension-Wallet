@@ -1,7 +1,19 @@
 import { CHAIN_ENDPOINTS } from '@/constants';
 import { queryRpcNode } from './queryNodes';
-import { SendObject, TransactionResult, RPCResponse } from '@/types';
+import { SendObject, TransactionResult, RPCResponse, Asset } from '@/types';
 import { getValidFeeDenom } from './feeDenom';
+
+export const isValidSend = ({
+  sendAsset,
+  receiveAsset,
+}: {
+  sendAsset: Asset;
+  receiveAsset: Asset;
+}) => {
+  const result = sendAsset.denom === receiveAsset.denom;
+  console.log('Checking if valid send:', { sendAsset, receiveAsset, result });
+  return result;
+};
 
 export const sendTransaction = async (
   fromAddress: string,
@@ -104,7 +116,7 @@ export const multiSendTransaction = async (
   } catch (error: any) {
     console.error('Error during multi-send:', error);
 
-    //construct error response in RPCResponse type
+    // construct error response in RPCResponse type
     const errorResponse: RPCResponse = {
       code: error.code || 1,
       message: error.message,

@@ -42,6 +42,7 @@ export const AssetTiles: React.FC<AssetTilesProps> = ({
     }
   }, [availableAssets, isReceiveDialog]);
 
+  // TODO: center these or change to Loader or other icon
   if (isLoading && isReceiveDialog) {
     return <p className="text-base text-neutral-1">Loading available assets...</p>;
   }
@@ -56,6 +57,7 @@ export const AssetTiles: React.FC<AssetTilesProps> = ({
           key={asset.denom}
           asset={asset}
           isSelectable={isSelectable}
+          isReceiveDialog={isReceiveDialog}
           onClick={onClick}
         />
       ))}

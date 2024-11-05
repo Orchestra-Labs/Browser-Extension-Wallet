@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { CombinedStakingInfo } from '@/types';
+import { CombinedStakingInfo, TransactionResult } from '@/types';
 import { SlideTray, Button } from '@/ui-kit';
 import { LogoIcon } from '@/assets/icons';
 import { ScrollTile } from '../ScrollTile';
@@ -48,6 +48,7 @@ export const ValidatorScrollTile = ({
 
   const [amount, setAmount] = useState(0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isClaimToRestake, setIsClaimToRestake] = useState<boolean>(true);
   const [selectedAction, setSelectedAction] = useState<'stake' | 'unstake' | 'claim' | null>(
     !combinedStakingInfo.delegation ? 'stake' : null,
   );
@@ -170,9 +171,8 @@ export const ValidatorScrollTile = ({
     }
   };
 
-  //   const handleTransaction = async ({ simulateTransaction = false } = {}) => {
-  const handleStake = async (amount: string) => {
-    setIsLoading(true);
+  const handleStake = async (amount: string, isSimulation: boolean = false) => {
+    if (!isSimulation) setIsLoading(true);
 
     try {
       const result = await stakeToValidator(
@@ -181,6 +181,8 @@ export const ValidatorScrollTile = ({
         walletState.address,
         validator.operator_address,
       );
+
+      if (isSimulation) return result;
 
       if (result.success && result.data?.code === 0) {
         const txType = TransactionType.STAKE;
@@ -194,15 +196,17 @@ export const ValidatorScrollTile = ({
     } catch (error) {
       console.error('Error during staking:', error);
     } finally {
-      setIsLoading(false);
+      if (!isSimulation) setIsLoading(false);
     }
   };
 
-  const handleUnstake = async (amount: string) => {
-    setIsLoading(true);
+  const handleUnstake = async (amount: string, isSimulation: boolean = false) => {
+    if (!isSimulation) setIsLoading(true);
 
     try {
       const result = await unstakeFromValidator({ amount, delegations: delegationResponse });
+
+      if (isSimulation) return result;
 
       if (result.success && result.data?.code === 0) {
         const txType = TransactionType.UNSTAKE;
@@ -216,15 +220,17 @@ export const ValidatorScrollTile = ({
     } catch (error) {
       console.error('Error during unstaking:', error);
     } finally {
-      setIsLoading(false);
+      if (!isSimulation) setIsLoading(false);
     }
   };
 
-  const handleClaimToWallet = async () => {
-    setIsLoading(true);
+  const handleClaimToWallet = async (isSimulation: boolean = false) => {
+    if (!isSimulation) setIsLoading(true);
 
     try {
       const result = await claimRewards(walletState.address, validator.operator_address);
+
+      if (isSimulation) return result;
 
       if (result.success && result.data?.code === 0) {
         const txType = TransactionType.CLAIM_TO_WALLET;
@@ -238,20 +244,26 @@ export const ValidatorScrollTile = ({
     } catch (error) {
       console.error('Error claiming rewards:', error);
     } finally {
-      setIsLoading(false);
+      if (!isSimulation) setIsLoading(false);
     }
   };
 
-  const handleClaimAndRestake = async () => {
-    setIsLoading(true);
+  const handleClaimAndRestake = async (isSimulation: boolean = true) => {
+    if (!isSimulation) setIsLoading(true);
 
     try {
-      const result = await claimAndRestake(delegationResponse, [
-        {
-          validator: validator.operator_address,
-          rewards: rewards,
-        },
-      ]);
+      const result = await claimAndRestake(
+        delegationResponse,
+        [
+          {
+            validator: validator.operator_address,
+            rewards: rewards,
+          },
+        ],
+        isSimulation,
+      );
+
+      if (isSimulation) return result;
 
       if (result.success && result.data?.code === 0) {
         const txType = TransactionType.CLAIM_TO_RESTAKE;
@@ -264,7 +276,7 @@ export const ValidatorScrollTile = ({
     } catch (error) {
       console.error('Error claiming and restaking:', error);
     } finally {
-      setIsLoading(false);
+      if (!isSimulation) setIsLoading(false);
     }
   };
 
@@ -291,42 +303,33 @@ export const ValidatorScrollTile = ({
     });
   };
 
+  // TODO: these are calling claimRewards directly.  move most of that into the actual functions
   const updateFee = async () => {
-    if (amount === 0 || isNaN(amount)) {
+    if (selectedAction !== 'claim' && (amount === 0 || isNaN(amount))) {
       formatFee(0);
     } else {
+      let result = { success: false, message: '', data: { gasWanted: '' } } as TransactionResult;
       try {
-        // TODO: handle claim and restake scenario
         if (selectedAction === 'claim') {
-          const result = await claimRewards(walletState.address, validator.operator_address, true);
-
-          formatFee(parseFloat(result.data?.gasWanted || '0'));
+          result = (
+            isClaimToRestake ? await handleClaimAndRestake(true) : await handleClaimToWallet(true)
+          ) as TransactionResult;
         } else if (selectedAction === 'stake') {
-          const result = await unstakeFromValidator({
-            amount: amount.toString(),
-            delegations: delegationResponse,
-            simulateOnly: true,
-          });
-
-          formatFee(parseFloat(result.data?.gasWanted || '0'));
+          result = (await handleStake(amount.toString(), true)) as TransactionResult;
         } else if (selectedAction === 'unstake') {
-          const result = await unstakeFromValidator({
-            amount: amount.toString(),
-            delegations: delegationResponse,
-            simulateOnly: true,
-          });
-
-          formatFee(parseFloat(result.data?.gasWanted || '0'));
+          result = (await handleUnstake(amount.toString(), true)) as TransactionResult;
         }
       } catch (error) {
         console.error('Simulation error:', error);
       }
+
+      formatFee(parseFloat(result.data?.gasWanted || '0'));
     }
   };
 
   useEffect(() => {
     if (slideTrayIsOpen) updateFee();
-  }, [slideTrayIsOpen, selectedAction, amount]);
+  }, [slideTrayIsOpen, selectedAction, amount, isClaimToRestake]);
 
   useEffect(() => {
     if (transactionSuccess.success) {
@@ -334,9 +337,9 @@ export const ValidatorScrollTile = ({
     }
   }, [transactionSuccess.success]);
 
+  // TODO: clear state on close of slidetray
   return (
     <>
-      {/* UI Rendering as per original code */}
       {isSelectable ? (
         <ScrollTile
           title={title}
@@ -440,16 +443,20 @@ export const ValidatorScrollTile = ({
               </div>
             )}
 
-            <div className="flex flex-grow flex-col items-center justify-center px-[1.5rem]">
+            <div
+              className={`flex flex-grow flex-col items-center justify-center ${selectedAction === 'claim' ? '' : 'px-[1.5rem]'}`}
+            >
               {transactionSuccess.success && (
-                <WalletSuccessTile
-                  size="sm"
-                  txHash={truncateWalletAddress('', transactionSuccess.txHash as string)}
-                />
+                <div className="flex-grow">
+                  <WalletSuccessTile
+                    size="sm"
+                    txHash={truncateWalletAddress('', transactionSuccess.txHash as string)}
+                  />
+                </div>
               )}
 
               {isLoading && (
-                <div className="flex items-center px-4">
+                <div className="flex flex-grow items-center px-4">
                   <Loader showBackground={false} />
                 </div>
               )}
@@ -504,30 +511,50 @@ export const ValidatorScrollTile = ({
               )}
 
               {!isLoading && selectedAction === 'claim' && (
-                <div className="flex justify-between w-full px-4 mb-2">
-                  <Button
-                    size="medium"
-                    variant="secondary"
-                    className="w-full"
-                    disabled={isLoading}
-                    onClick={handleClaimToWallet}
-                  >
-                    Claim to Wallet
-                  </Button>
-                  <Button
-                    size="medium"
-                    className="w-full ml-2"
-                    disabled={isLoading}
-                    onClick={handleClaimAndRestake}
-                  >
-                    Claim to Restake
-                  </Button>
-                </div>
+                <>
+                  <div className="flex justify-between items-center text-sm font-bold w-full">
+                    <p className="text-sm pr-1">Claim:</p>
+                    <div className="flex items-center">
+                      <Button
+                        variant={!isClaimToRestake ? 'selected' : 'unselected'}
+                        size="xsmall"
+                        className="px-1 rounded-md text-xs"
+                        onClick={() => setIsClaimToRestake(false)}
+                        disabled={isLoading}
+                      >
+                        To Wallet
+                      </Button>
+                      <p className="text-sm px-1">/</p>
+                      <Button
+                        variant={isClaimToRestake ? 'selected' : 'unselected'}
+                        size="xsmall"
+                        className="px-1 rounded-md text-xs"
+                        onClick={() => setIsClaimToRestake(true)}
+                        disabled={isLoading}
+                      >
+                        To Restake
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center flex-grow justify-center w-[50%] px-4">
+                    <Button
+                      size="small"
+                      variant="secondary"
+                      className="w-full"
+                      disabled={isLoading}
+                      onClick={() =>
+                        isClaimToRestake ? handleClaimAndRestake(false) : handleClaimToWallet(false)
+                      }
+                    >
+                      {`Claim ${isClaimToRestake ? 'to Restake' : 'to Wallet'}`}
+                    </Button>
+                  </div>
+                </>
               )}
             </div>
 
             {/* Fee Section */}
-            <div className="flex flex-grow" />
             <div className="flex justify-between items-center text-blue text-sm font-bold w-full">
               <p>Fee</p>
               <p className={simulatedFee?.textClass}>

@@ -16,12 +16,12 @@ import {
 import { SearchBar } from '../SearchBar';
 
 interface AssetSelectDialogProps {
-  isSendDialog?: boolean;
+  isReceiveDialog?: boolean;
   onClick: (asset: Asset) => void;
 }
 
 export const AssetSelectDialog: React.FC<AssetSelectDialogProps> = ({
-  isSendDialog = false,
+  isReceiveDialog = false,
   onClick,
 }) => {
   const slideTrayRef = useRef<{ closeWithAnimation: () => void }>(null);
@@ -29,7 +29,7 @@ export const AssetSelectDialog: React.FC<AssetSelectDialogProps> = ({
   const setSearchTerm = useSetAtom(dialogSearchTermAtom);
   const setSortOrder = useSetAtom(assetDialogSortOrderAtom);
   const setSortType = useSetAtom(assetDialogSortTypeAtom);
-  const currentState = useAtomValue(isSendDialog ? sendStateAtom : receiveStateAtom);
+  const currentState = useAtomValue(isReceiveDialog ? receiveStateAtom : sendStateAtom);
 
   const [dialogSelectedAsset, setDialogSelectedAsset] = useState(currentState.asset);
 
@@ -67,7 +67,7 @@ export const AssetSelectDialog: React.FC<AssetSelectDialogProps> = ({
           )}
         </div>
       }
-      title={isSendDialog ? 'Send' : 'Receive'}
+      title={isReceiveDialog ? 'Receive' : 'Send'}
       onClose={resetDefaults}
       showBottomBorder
     >
@@ -87,7 +87,7 @@ export const AssetSelectDialog: React.FC<AssetSelectDialogProps> = ({
           isSelectable={true}
           onSelectAsset={handleAssetSelection}
           isDialog={true}
-          isReceiveDialog={!isSendDialog}
+          isReceiveDialog={isReceiveDialog}
         />
 
         <SearchBar isDialog />

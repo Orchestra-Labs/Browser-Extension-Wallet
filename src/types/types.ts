@@ -31,6 +31,7 @@ export interface PasswordRecord {
 export interface Asset {
   denom: string;
   amount: string;
+  exchangeRate?: string;
   isIbc: boolean;
   logo?: string;
   symbol?: string;
