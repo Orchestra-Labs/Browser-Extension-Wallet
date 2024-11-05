@@ -14,6 +14,18 @@ export const userCanLogIn = () => {
   const accounts = getAccounts();
   console.log('Stored accounts:', accounts);
 
+  // Check if passwordRecords is an array
+  if (!Array.isArray(passwordRecords)) {
+    console.log('Password records is not an array');
+    return false;
+  }
+
+  // Check if accounts is an array
+  if (!Array.isArray(accounts)) {
+    console.log('Accounts is not an array');
+    return false;
+  }
+
   const canLogIn = passwordRecords.some(passwordRecord =>
     accounts.some(account => account.id === passwordRecord.id),
   );
