@@ -129,6 +129,7 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
     setSortOrder('Desc');
     setSortType('name');
     setSelectedValidators([]);
+    setIsClaimToRestake(true);
   };
 
   const handleSelectAll = () => {
