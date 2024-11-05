@@ -96,9 +96,7 @@ export const CreateWallet = () => {
 
   /* ******************************************************************************************* */
   /* Chris current TODO */
-  // TODO: show errors to user (user displayable values)
-  // TODO: provide updates to user as staking, claim, and unstaking information changes (errors)
-  // TODO: provide updates to user as send information updates (errors)
+  // TODO: provide error updates to user as send, staking, claim, and unstaking information changes (errors)
   /* ******************************************************************************************* */
 
   /* ******************************************************************************************* */
