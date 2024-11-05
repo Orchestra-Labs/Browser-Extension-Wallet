@@ -103,7 +103,6 @@ export const CreateWallet = () => {
 
   /* ******************************************************************************************* */
   /* David Current TODOs */
-  // TODO: prevent scroll of tilescroller selecting validators
   // TODO: fix claim and restake error.  make consistent
   // TODO: ensure fees are added properly (gasUsed = gasWanted) for claim-to-wallet and claim-to-restake for both single claim messages and multiple claim messages
   /* ******************************************************************************************* */
