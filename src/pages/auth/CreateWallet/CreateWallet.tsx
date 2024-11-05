@@ -103,16 +103,16 @@ export const CreateWallet = () => {
 
   /* ******************************************************************************************* */
   /* David Current TODOs */
-  // TODO: allow validation against more than just Symphony addresses.  all addresses?  just set green when it's verifiable?
-  // TODO: prevent scroll and overscroll of tilescroller on slidetray from pulling slidetray
+  // TODO: fix claim and restake error.  make consistent
+  // TODO: ensure fees are added properly (gasUsed = gasWanted) for claim-to-wallet and claim-to-restake for both single claim messages and multiple claim messages
   /* ******************************************************************************************* */
 
   /* Current TODOs */
+  // TODO: enable transaction fees for wallet transactions (bundle a transaction for revenue. based on transaction fees (0.5x basic transaction fee)?)
+  // TODO: allow validation against more than just Symphony addresses.  all addresses?  just set green when it's verifiable?
+  // TODO: prevent scroll and overscroll of tilescroller on slidetray from pulling slidetray
   // TODO: fix error with excessive calls to refresh
   // TODO: use loader in amount place for first load on balance card
-  // TODO: fix claim and restake error.  make consistent
-  // TODO: ensure fees are added properly (gasUsed = gasWanted) for claim-to-wallet and claim-to-restake for both single claim messages and multiple claim messages
-  // TODO: enable transaction fees for wallet transactions (bundle a transaction for revenue. based on transaction fees (0.5x basic transaction fee)?)
   // TODO: versioning: minimum, recommended, and current versions.  recommended update for versions lower than recommended, link to update, no login for versions below minimum
 
   /* Interchain-compatibility TODOs (mobile version before this) */
