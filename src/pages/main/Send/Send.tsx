@@ -523,7 +523,7 @@ export const Send = () => {
 
   useEffect(() => {
     if (transactionState.isSuccess) {
-      refreshData({ wallet: true });
+      refreshData({ validator: false });
     }
   }, [transactionState.isSuccess]);
 

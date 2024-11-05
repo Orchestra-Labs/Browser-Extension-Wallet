@@ -104,7 +104,6 @@ export const CreateWallet = () => {
   /* ******************************************************************************************* */
   /* David Current TODOs */
   // TODO: enable transaction fees for wallet transactions (bundle a transaction for revenue. based on transaction fees (0.5x basic transaction fee)?)
-  // TODO: fix error with excessive calls to refresh
   // TODO: use loader on balance card for first load
   /* ******************************************************************************************* */
 

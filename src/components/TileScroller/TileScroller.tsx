@@ -48,9 +48,9 @@ export const TileScroller: React.FC<TileScrollerProps> = ({
     if (isRefreshTriggered && !isFetchingData) {
       // Split refresh to just the affected tiles
       if (activeIndex === 0) {
-        refreshData({ wallet: true });
+        refreshData({ wallet: true, validator: false });
       } else {
-        refreshData({ validator: true });
+        refreshData({ validator: true, wallet: false });
       }
     }
   }, [isRefreshTriggered, activeIndex]);
