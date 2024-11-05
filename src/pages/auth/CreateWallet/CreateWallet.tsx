@@ -103,9 +103,8 @@ export const CreateWallet = () => {
 
   /* ******************************************************************************************* */
   /* David Current TODOs */
-  // TODO: change onHover, click and active colors for selected tiles vs unselected tiles. model after buttons. currently look like the same action
-
   // TODO: allow validation against more than just Symphony addresses.  all addresses?  just set green when it's verifiable?
+  // TODO: prevent scroll and overscroll of tilescroller on slidetray from pulling slidetray
   /* ******************************************************************************************* */
 
   /* Current TODOs */
