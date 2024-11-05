@@ -44,7 +44,6 @@ export const Send = () => {
   const addressVerified = useAtomValue(addressVerifiedAtom);
   const [selectedAsset, setSelectedAsset] = useAtom(selectedAssetAtom);
 
-  // TODO: only query for exchange rate on transaction type swap
   const { exchangeRate } = useExchangeRate();
 
   // TODO: handle bridge types such as IBC
