@@ -122,7 +122,7 @@ export const CreateWallet = () => {
   // TODO: enable search function to validator list by chain (on top of current functionality)
   // TODO: add show/hide function to validator list (by chain)
 
-  /* Revenue TODOs */
+  /* Revenue TODOs (ensure no added fees from us adds total fees over 1% on transaction */
   // TODO: list these in user info:
   // TODO: in-app exchange fee (find lowest rates for user, but add small commission)
   // TODO: on-ramp fees (add small commission)
