@@ -25,26 +25,22 @@ import {
   sendTransaction,
   swapTransaction,
 } from '@/helpers';
-import { loadingAtom } from '@/atoms/loadingAtom';
 import { useExchangeRate, useRefreshData } from '@/hooks/';
 import { AddressInput } from './AddressInput';
 
 export const Send = () => {
   const { refreshData } = useRefreshData();
-
-  const walletState = useAtomValue(walletStateAtom);
-  const walletAssets = walletState?.assets || [];
+  const { exchangeRate } = useExchangeRate();
 
   const [sendState, setSendState] = useAtom(sendStateAtom);
   const [receiveState, setReceiveState] = useAtom(receiveStateAtom);
   const [changeMap, setChangeMap] = useAtom(changeMapAtom);
   const [callbackChangeMap, setCallbackChangeMap] = useAtom(callbackChangeMapAtom);
-  const [isLoading, setLoading] = useAtom(loadingAtom);
   const [recipientAddress, setRecipientAddress] = useAtom(recipientAddressAtom);
   const addressVerified = useAtomValue(addressVerifiedAtom);
   const [selectedAsset, setSelectedAsset] = useAtom(selectedAssetAtom);
-
-  const { exchangeRate } = useExchangeRate();
+  const walletState = useAtomValue(walletStateAtom);
+  const walletAssets = walletState?.assets || [];
 
   // TODO: handle bridge types such as IBC
   const [transactionType, setTransactionType] = useState({
@@ -61,6 +57,7 @@ export const Send = () => {
   const [transactionState, setTransactionState] = useState<TransactionSuccess>({
     isSuccess: false,
   });
+  const [isLoading, setLoading] = useState(false);
 
   const handleTransaction = async ({ simulateTransaction = false } = {}) => {
     console.log('Starting handleTransaction');
