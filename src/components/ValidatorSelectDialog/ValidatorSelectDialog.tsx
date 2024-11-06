@@ -21,7 +21,7 @@ import {
 import { CombinedStakingInfo } from '@/types';
 import { useRefreshData, useToast } from '@/hooks';
 import { DEFAULT_ASSET, GREATER_EXPONENT_DEFAULT, TransactionType } from '@/constants';
-import { WalletSuccessTile } from '../WalletSuccessTile';
+import { TransactionResultsTile } from '../TransactionResultsTile';
 import { Loader } from '../Loader';
 
 interface ValidatorSelectDialogProps {
@@ -388,14 +388,14 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
             )}
 
             {transactionSuccess.success && (
-              <WalletSuccessTile
+              <TransactionResultsTile
                 isSuccess
                 txHash={truncateWalletAddress('', transactionSuccess.txHash as string)}
                 size="md"
               />
             )}
 
-            {error && <WalletSuccessTile isSuccess={false} size="md" message={error} />}
+            {error && <TransactionResultsTile isSuccess={false} size="md" message={error} />}
           </div>
         ) : (
           <TileScroller

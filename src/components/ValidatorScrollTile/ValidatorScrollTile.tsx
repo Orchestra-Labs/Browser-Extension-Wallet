@@ -26,7 +26,7 @@ import { selectedValidatorsAtom, walletStateAtom } from '@/atoms';
 import { AssetInput } from '../AssetInput';
 import { Loader } from '../Loader';
 import { useRefreshData, useToast } from '@/hooks';
-import { WalletSuccessTile } from '../WalletSuccessTile';
+import { TransactionResultsTile } from '../TransactionResultsTile';
 
 interface ValidatorScrollTileProps {
   combinedStakingInfo: CombinedStakingInfo;
@@ -476,7 +476,7 @@ export const ValidatorScrollTile = ({
             >
               {transactionSuccess.success && (
                 <div className="flex-grow">
-                  <WalletSuccessTile
+                  <TransactionResultsTile
                     isSuccess
                     size="sm"
                     txHash={truncateWalletAddress('', transactionSuccess.txHash as string)}
@@ -484,7 +484,7 @@ export const ValidatorScrollTile = ({
                 </div>
               )}
 
-              {error && <WalletSuccessTile isSuccess={false} size="sm" message={error} />}
+              {error && <TransactionResultsTile isSuccess={false} size="sm" message={error} />}
 
               {isLoading && (
                 <div className="flex flex-grow items-center px-4">

@@ -15,7 +15,7 @@ import {
   addressVerifiedAtom,
 } from '@/atoms';
 import { Asset, TransactionResult, TransactionSuccess } from '@/types';
-import { AssetInput, WalletSuccessScreen, WalletSuccessTile } from '@/components';
+import { AssetInput, WalletSuccessScreen, TransactionResultsTile } from '@/components';
 import {
   formatBalanceDisplay,
   isValidSwap,
@@ -612,7 +612,7 @@ export const Send = () => {
         {/* Fee Section */}
         <div className="flex flex-grow items-center justify-center mx-2 my-4 border rounded-md border-neutral-4">
           {isLoading && <Spinner className="h-16 w-16 animate-spin fill-blue" />}
-          {error && <WalletSuccessTile isSuccess={false} size="sm" message={error} />}
+          {error && <TransactionResultsTile isSuccess={false} size="sm" message={error} />}
         </div>
         <div className="flex justify-between items-center text-blue text-sm font-bold mx-2">
           <p>Fee</p>

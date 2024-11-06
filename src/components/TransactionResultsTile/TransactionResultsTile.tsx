@@ -1,16 +1,16 @@
 import React from 'react';
-import { Failure, VerifySuccess } from '@/assets/icons';
+import { VerifyFailure, VerifySuccess } from '@/assets/icons';
 import { CopyTextField } from '@/ui-kit';
 import { cn, truncateWalletAddress } from '@/helpers';
 
-interface WalletSuccessTileProps {
+interface TransactionResultsTileProps {
   isSuccess: boolean;
   message?: string;
   txHash?: string;
   size?: string;
 }
 
-export const WalletSuccessTile: React.FC<WalletSuccessTileProps> = ({
+export const TransactionResultsTile: React.FC<TransactionResultsTileProps> = ({
   isSuccess,
   message,
   txHash,
@@ -31,7 +31,7 @@ export const WalletSuccessTile: React.FC<WalletSuccessTileProps> = ({
           className="text-blue animate-scale-up"
         />
       ) : (
-        <Failure
+        <VerifyFailure
           style={{ width: iconSize, height: iconSize }}
           className="text-error animate-scale-up"
         />
