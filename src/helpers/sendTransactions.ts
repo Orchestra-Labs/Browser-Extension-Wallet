@@ -11,7 +11,6 @@ export const isValidSend = ({
   receiveAsset: Asset;
 }) => {
   const result = sendAsset.denom === receiveAsset.denom;
-  console.log('Checking if valid send:', { sendAsset, receiveAsset, result });
   return result;
 };
 

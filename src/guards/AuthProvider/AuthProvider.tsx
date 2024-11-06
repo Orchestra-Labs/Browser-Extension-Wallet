@@ -28,20 +28,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const setWalletAddress = useSetAtom(walletAddressAtom);
 
   const initializeWallet = async () => {
-    console.log('initializeWallet called');
     const sessionToken = getSessionToken();
     if (!sessionToken?.mnemonic) {
-      console.log('No mnemonic found in session token');
       return;
     }
 
     try {
       const address = await getAddress(sessionToken.mnemonic);
-      console.log('Wallet address set:', address);
-
       setWalletAddress(address);
-
-      console.log('Calling refreshData with address', address);
       refreshData({ address });
     } catch (error) {
       console.error('Error initializing wallet address:', error);
@@ -49,10 +43,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   useEffect(() => {
-    console.log('AuthProvider useEffect triggered. isLoggedIn:', isLoggedIn);
-
     if (isLoggedIn) {
-      console.log('isLoggedIn is true, calling initializeWallet...');
       initializeWallet();
     }
   }, [isLoggedIn]);

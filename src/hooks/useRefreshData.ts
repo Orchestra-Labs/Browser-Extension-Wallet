@@ -13,16 +13,12 @@ export function useRefreshData() {
     validator = true,
     address,
   }: { wallet?: boolean; validator?: boolean; address?: string } = {}) => {
-    console.log('refreshData called with wallet:', wallet, 'validator:', validator);
     const targetAddress = address || walletAddress;
-    console.log('target Address set to:', targetAddress);
 
     if (wallet) {
-      console.log('Triggering wallet data refresh with address', targetAddress);
       triggerWalletDataRefresh(targetAddress);
     }
     if (validator) {
-      console.log('Triggering validator data refresh with address', targetAddress);
       triggerValidatorDataRefresh(targetAddress);
     }
   };
