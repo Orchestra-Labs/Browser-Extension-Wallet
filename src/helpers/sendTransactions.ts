@@ -77,7 +77,7 @@ export const sendTransaction = async (
 export const multiSendTransaction = async (
   fromAddress: string,
   sendObjects: SendObject[],
-  simulateOnly: boolean = false, // New parameter for simulation
+  simulateOnly: boolean = false,
 ): Promise<TransactionResult> => {
   const endpoint = CHAIN_ENDPOINTS.sendMessage;
 

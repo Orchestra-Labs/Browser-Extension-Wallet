@@ -12,7 +12,6 @@ interface AddressInputProps {
   updateSendAsset: (asset: Asset, propagateChanges: boolean) => void;
 }
 
-// TODO: set placeholder as user's address.
 // TODO: return validity
 export const AddressInput: React.FC<AddressInputProps> = ({
   addBottomMargin = true,
@@ -27,7 +26,7 @@ export const AddressInput: React.FC<AddressInputProps> = ({
 
   const validAddressLength = 47;
 
-  // TODO: allow validation against more than just Symphony addresses.  all addresses?  just set green when it's verifiable?
+  // TODO: allow validation against more than just Symphony addresses.  any address in registry.  provide warning and return error if not sendable?
   const validateAddress = () => {
     if (address === '') {
       setAddressStatus(null);

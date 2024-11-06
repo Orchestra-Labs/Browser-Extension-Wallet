@@ -65,7 +65,7 @@ export const removeAccountByID = (id: string): boolean => {
   return true;
 };
 
-// TODO: check password for ifExists. If not exists, create account
+// TODO: check password for ifExists. If exists, add wallet.  if not exists, create account
 export const createAccount = async (
   mnemonic: string,
   password: string,

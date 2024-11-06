@@ -17,6 +17,9 @@ interface AuthProviderProps {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// TODO: check if token is expired
+// TODO: expire after given timeframe inactivity
+// TODO: expire after given timeframe away from wallet (unless remember me is enabled)
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const canLogIn = userCanLogIn();
   const { refreshData } = useRefreshData();

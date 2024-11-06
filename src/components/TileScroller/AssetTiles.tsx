@@ -32,7 +32,6 @@ export const AssetTiles: React.FC<AssetTilesProps> = ({
       : filteredAssetsAtom,
   );
 
-  // TODO: call this earlier, not in asset tiles.  currently causing visible reload state.  on send page with timeout?
   const { availableAssets, isLoading } = useExchangeAssets();
   const setExchangeAssets = useSetAtom(exchangeAssetsAtom);
 

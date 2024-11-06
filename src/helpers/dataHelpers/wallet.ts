@@ -66,5 +66,3 @@ export const getAddress = async (mnemonic: string): Promise<string> => {
   console.log('Address retrieved:', account.address);
   return account.address;
 };
-
-// TODO: make function to add wallet to account
