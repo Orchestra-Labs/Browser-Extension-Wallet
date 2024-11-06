@@ -1,14 +1,21 @@
 import React from 'react';
-import { VerifySuccess } from '@/assets/icons';
+import { Failure, VerifySuccess } from '@/assets/icons';
 import { CopyTextField } from '@/ui-kit';
 import { cn, truncateWalletAddress } from '@/helpers';
 
 interface WalletSuccessTileProps {
-  txHash: string;
+  isSuccess: boolean;
+  message?: string;
+  txHash?: string;
   size?: string;
 }
 
-export const WalletSuccessTile: React.FC<WalletSuccessTileProps> = ({ txHash, size = 'sm' }) => {
+export const WalletSuccessTile: React.FC<WalletSuccessTileProps> = ({
+  isSuccess,
+  message,
+  txHash,
+  size = 'sm',
+}) => {
   const displayTxHash = truncateWalletAddress('', txHash as string);
 
   const headerTextSize = size === 'sm' ? 'text-sm' : 'text-lg';
@@ -18,15 +25,26 @@ export const WalletSuccessTile: React.FC<WalletSuccessTileProps> = ({ txHash, si
 
   return (
     <div className={cn(`flex items-center justify-center ${padding} space-x-4`)}>
-      <VerifySuccess
-        style={{ width: iconSize, height: iconSize }}
-        className="text-blue animate-scale-up"
-      />
+      {isSuccess ? (
+        <VerifySuccess
+          style={{ width: iconSize, height: iconSize }}
+          className="text-blue animate-scale-up"
+        />
+      ) : (
+        <Failure
+          style={{ width: iconSize, height: iconSize }}
+          className="text-error animate-scale-up"
+        />
+      )}
       <div className="flex flex-col items-center justify-center space-x-2">
-        <div className={cn(`text-white font-semibold ${headerTextSize}`)}>Success!</div>
+        <div className={cn(`text-white font-semibold ${headerTextSize}`)}>
+          {isSuccess ? 'Success!' : 'Failure!'}
+        </div>
         <div className="flex items-center mt-2 space-x-2">
-          <span className={cn(`text-neutral-1 ${subHeaderTextSize}`)}>Tx Hash:</span>
-          <CopyTextField displayText={displayTxHash} includeMargin={false} />
+          <span className={cn(`text-neutral-1 ${subHeaderTextSize}`)}>
+            {message ? message : 'Tx Hash:'}
+          </span>
+          {isSuccess && <CopyTextField displayText={displayTxHash} includeMargin={false} />}
         </div>
       </div>
     </div>

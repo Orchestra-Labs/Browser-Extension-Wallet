@@ -96,11 +96,11 @@ export const CreateWallet = () => {
 
   /* ******************************************************************************************* */
   /* Chris current TODO */
-  // TODO: provide error updates to user as send, staking, claim, and unstaking information changes (errors)
   /* ******************************************************************************************* */
 
   /* ******************************************************************************************* */
   /* David Current TODOs */
+  // TODO: show toast for send page if user navigates away
   // TODO: enable transaction fees for wallet transactions (bundle a transaction for revenue. based on transaction fees (0.5x basic transaction fee)?)
   /* ******************************************************************************************* */
 

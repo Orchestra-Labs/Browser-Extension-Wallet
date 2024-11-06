@@ -9,12 +9,14 @@ import { Asset } from '@/types';
 
 interface AddressInputProps {
   addBottomMargin?: boolean;
+  labelWidth?: string;
   updateSendAsset: (asset: Asset, propagateChanges: boolean) => void;
 }
 
 // TODO: return validity
 export const AddressInput: React.FC<AddressInputProps> = ({
   addBottomMargin = true,
+  labelWidth,
   updateSendAsset,
 }) => {
   const [address, setAddress] = useAtom(recipientAddressAtom);
@@ -90,7 +92,9 @@ export const AddressInput: React.FC<AddressInputProps> = ({
 
   return (
     <div className={cn(`flex items-baseline ${addBottomMargin ? 'mb-4' : ''} space-x-2`)}>
-      <label className="text-sm text-neutral-1 whitespace-nowrap">Send to:</label>
+      <label className={cn(`text-sm text-neutral-1 whitespace-nowrap ${labelWidth}`)}>
+        Send to:
+      </label>
       <div className="flex-grow">
         <Input
           variant="primary"

@@ -15,9 +15,8 @@ import {
   addressVerifiedAtom,
 } from '@/atoms';
 import { Asset, TransactionResult, TransactionSuccess } from '@/types';
-import { AssetInput, WalletSuccessScreen } from '@/components';
+import { AssetInput, WalletSuccessScreen, WalletSuccessTile } from '@/components';
 import {
-  // cn,
   formatBalanceDisplay,
   isValidSwap,
   isValidTransaction,
@@ -28,6 +27,7 @@ import {
 import { useExchangeRate, useRefreshData } from '@/hooks/';
 import { AddressInput } from './AddressInput';
 
+// TODO: show error printout in same place as loader
 export const Send = () => {
   const { refreshData } = useRefreshData();
   const { exchangeRate } = useExchangeRate();
@@ -53,11 +53,20 @@ export const Send = () => {
   } | null>({ fee: '0 MLD', textClass: 'text-blue' });
   const [sendPlaceholder, setSendPlaceholder] = useState<string>('');
   const [receivePlaceholder, setReceivePlaceholder] = useState<string>('');
-  // const [transactionMessage, setTransactionMessage] = useState<string>('');
   const [transactionState, setTransactionState] = useState<TransactionSuccess>({
     isSuccess: false,
   });
   const [isLoading, setLoading] = useState(false);
+  const [error, setError] = useState<string>('');
+
+  const handleTransactionError = (errorMessage: string) => {
+    setError(errorMessage);
+
+    setTimeout(() => {
+      setError('');
+    }, 3000);
+    // TODO: test for and handle case of not being on send page to send toast
+  };
 
   const handleTransaction = async ({ simulateTransaction = false } = {}) => {
     console.log('Starting handleTransaction');
@@ -122,7 +131,9 @@ export const Send = () => {
         result = await swapTransaction(walletState.address, swapObject, simulateTransaction);
         console.log('swapTransaction result:', result);
       } else {
-        throw new Error('Invalid transaction type');
+        handleTransactionError('Invalid transaction type');
+        setLoading(false);
+        return;
       }
 
       console.log('Result data:', simulateTransaction, result?.data?.code);
@@ -139,10 +150,12 @@ export const Send = () => {
         // });
         setTransactionState({ isSuccess: true, txHash: result.data.txHash });
       } else {
-        console.error('Transaction failed:', result.data);
+        const errorMessage = `Transaction failed: ${result.data}`;
+        handleTransactionError(errorMessage);
       }
     } catch (error) {
-      console.error('Error in transaction handling:', error);
+      const errorMessage = `Transaction failed: ${error}`;
+      handleTransactionError(errorMessage);
     } finally {
       if (!simulateTransaction) {
         console.log('Resetting loading state');
@@ -151,9 +164,6 @@ export const Send = () => {
     }
 
     console.log('Ending handleTransaction function');
-    // TODO: also put refetch after the stake and unstake functions
-    // TODO: re-apply refetch if helpers are changed into hooks
-    // refetch();
     return null;
   };
 
@@ -220,7 +230,6 @@ export const Send = () => {
       return;
     }
 
-    // Update the sendState with the new rounded amount
     setSendState(prevState => {
       return {
         ...prevState,
@@ -349,6 +358,18 @@ export const Send = () => {
         ? 'No exchange on current pair'
         : `Max: ${removeTrailingZeroes(maxReceivable)}${receiveAsset.symbol}`,
     );
+  };
+
+  const switchFields = () => {
+    const sendAsset = sendState.asset as Asset;
+    const receiveAsset = receiveState.asset as Asset;
+    const receiveAmount = receiveState.amount;
+
+    if (sendAsset.denom !== receiveAsset.denom) {
+      updateReceiveAsset(sendAsset);
+      updateSendAmount(receiveAmount);
+      updateSendAsset(receiveAsset, true);
+    }
   };
 
   const propagateChanges = (
@@ -484,18 +505,6 @@ export const Send = () => {
     updateTransactionType();
   };
 
-  const switchFields = () => {
-    const sendAsset = sendState.asset as Asset;
-    const receiveAsset = receiveState.asset as Asset;
-    const receiveAmount = receiveState.amount;
-
-    if (sendAsset.denom !== receiveAsset.denom) {
-      updateReceiveAsset(sendAsset);
-      updateSendAmount(receiveAmount);
-      updateSendAsset(receiveAsset, true);
-    }
-  };
-
   const resetStates = () => {
     setSendState({
       asset: DEFAULT_ASSET,
@@ -551,10 +560,6 @@ export const Send = () => {
         </NavLink>
         <div>
           <h1 className="text-h5 text-white font-bold">Send</h1>
-          {/* TODO: remove if remains unused.  potential spot for info and error messages */}
-          {/* <div className={cn(`${transactionType.isValid ? 'text-neutral-1' : 'text-error'}`)}>
-            {transactionMessage}
-          </div> */}
         </div>
         <div className="max-w-5 w-full max-h-5" />
       </div>
@@ -563,7 +568,11 @@ export const Send = () => {
       <div className="flex flex-col justify-between flex-grow p-4 border border-neutral-2 rounded-lg overflow-y-auto">
         <>
           {/* Address Input */}
-          <AddressInput addBottomMargin={false} updateSendAsset={updateSendAsset} />
+          <AddressInput
+            addBottomMargin={false}
+            updateSendAsset={updateSendAsset}
+            labelWidth="w-14"
+          />
 
           {/* Separator */}
           <Separator variant="top" />
@@ -576,6 +585,8 @@ export const Send = () => {
             amountState={sendState.amount}
             updateAsset={updateSendAsset}
             updateAmount={updateSendAmount}
+            includeBottomMargin={false}
+            labelWidth="w-14"
           />
 
           {/* Separator with reverse icon */}
@@ -593,12 +604,17 @@ export const Send = () => {
             amountState={receiveState.amount}
             updateAsset={updateReceiveAsset}
             updateAmount={updateReceiveAmount}
+            includeBottomMargin={false}
+            labelWidth="w-14"
           />
         </>
 
         {/* Fee Section */}
-        <div className="flex flex-grow" />
-        <div className="flex justify-between items-center text-blue text-sm font-bold">
+        <div className="flex flex-grow items-center justify-center mx-2 my-4 border rounded-md border-neutral-4">
+          {isLoading && <Spinner className="h-16 w-16 animate-spin fill-blue" />}
+          {error && <WalletSuccessTile isSuccess={false} size="sm" message={error} />}
+        </div>
+        <div className="flex justify-between items-center text-blue text-sm font-bold mx-2">
           <p>Fee</p>
           <p className={simulatedFee?.textClass}>
             {simulatedFee && sendState.amount !== 0 ? simulatedFee?.fee : '-'}
@@ -615,7 +631,7 @@ export const Send = () => {
             onClick={() => handleTransaction()}
             disabled={isLoading || sendState.amount === 0}
           >
-            {isLoading ? <Spinner className="h-8 w-8 animate-spin fill-blue" /> : 'Send'}
+            Send
           </Button>
         </div>
       </div>

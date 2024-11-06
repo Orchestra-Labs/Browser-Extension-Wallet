@@ -7,6 +7,7 @@ export * from './DotsVertical';
 export * from './Expand';
 export * from './EyeClose';
 export * from './EyeOpen';
+export * from './Failure';
 export * from './FullArrowRight';
 export * from './History';
 export * from './Link';
