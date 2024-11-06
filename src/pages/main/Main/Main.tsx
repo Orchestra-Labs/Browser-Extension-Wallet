@@ -8,9 +8,12 @@ import {
   showAllAssetsAtom,
   searchTermAtom,
   walletAssetsAtom,
+  isFetchingWalletDataAtom,
+  isFetchingValidatorDataAtom,
+  isInitialDataLoadAtom,
 } from '@/atoms';
 import { useEffect, useRef } from 'react';
-import { useAtom, useSetAtom } from 'jotai';
+import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { Button } from '@/ui-kit';
 import { convertToGreaterUnit, formatBalanceDisplay } from '@/helpers';
 import { DEFAULT_ASSET, GREATER_EXPONENT_DEFAULT, LOCAL_ASSET_REGISTRY } from '@/constants';
@@ -25,18 +28,10 @@ export const Main = () => {
   const [showCurrentValidators, setShowCurrentValidators] = useAtom(showCurrentValidatorsAtom);
   const [showAllAssets, setShowAllAssets] = useAtom(showAllAssetsAtom);
   const setSearchTerm = useSetAtom(searchTermAtom);
-
-  // Sync swiper visual state
-  useEffect(() => {
-    if (swiperRef.current) {
-      swiperRef.current.slideTo(activeIndex);
-    }
-  }, [activeIndex]);
-
-  // Reset search term on active index change
-  useEffect(() => {
-    setSearchTerm('');
-  }, [activeIndex]);
+  const [isInitialDataLoad, setIsInitialDataLoad] = useAtom(isInitialDataLoadAtom);
+  const isFetchingWalletData = useAtomValue(isFetchingWalletDataAtom);
+  const validatorState = useAtomValue(validatorDataAtom);
+  const isFetchingValidatorData = useAtomValue(isFetchingValidatorDataAtom);
 
   // Toggle between "Non-Zero" and "All" holdings
   const assetViewToggleChange = (shouldShowAllAssets: boolean) => {
@@ -78,6 +73,38 @@ export const Main = () => {
     convertToGreaterUnit(totalStakedRewards, 6).toFixed(6),
     symbol,
   );
+
+  // Sync swiper visual state
+  useEffect(() => {
+    if (swiperRef.current) {
+      swiperRef.current.slideTo(activeIndex);
+    }
+  }, [activeIndex]);
+
+  // Reset search term on active index change
+  useEffect(() => {
+    setSearchTerm('');
+  }, [activeIndex]);
+
+  useEffect(() => {
+    if (isInitialDataLoad) {
+      const initialLoadHasCompleted =
+        !isFetchingWalletData &&
+        !isFetchingValidatorData &&
+        (walletAssets.length > 0 || validatorState.length > 0);
+
+      if (initialLoadHasCompleted) {
+        setIsInitialDataLoad(false);
+        console.log('Initial data load completed');
+      }
+    }
+  }, [
+    isInitialDataLoad,
+    isFetchingWalletData,
+    isFetchingValidatorData,
+    walletAssets,
+    validatorState,
+  ]);
 
   return (
     <div className="h-full flex flex-col overflow-hidden">

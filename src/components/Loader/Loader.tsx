@@ -4,12 +4,17 @@ import { cn } from '@/helpers';
 interface LoaderProps {
   isSpinning?: boolean;
   showBackground?: boolean;
+  scaledHeight?: boolean;
 }
 
-export const Loader = ({ isSpinning = true, showBackground = true }: LoaderProps) => (
+export const Loader = ({
+  isSpinning = true,
+  showBackground = true,
+  scaledHeight = false,
+}: LoaderProps) => (
   <div
     className={cn(
-      `${showBackground ? 'bg-background-dark-grey' : ''} w-full h-full flex items-center justify-center`,
+      `${showBackground ? 'bg-background-dark-grey' : ''} ${scaledHeight ? 'mt-2' : ''} w-full h-full flex items-center justify-center`,
     )}
   >
     <Spinner className={cn(`w-12 h-12 fill-blue ${isSpinning ? `animate-spin` : ''}`)} />
