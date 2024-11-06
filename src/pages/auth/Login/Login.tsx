@@ -3,10 +3,14 @@ import { useNavigate, NavLink } from 'react-router-dom';
 import { EyeOpen, EyeClose } from '@/assets/icons';
 import { ROUTES } from '@/constants';
 import { Button, Input } from '@/ui-kit';
-import { resetNodeErrorCounts, tryAuthorizeWalletAccess } from '@/helpers';
+import { resetNodeErrorCounts, tryAuthorizeAccess } from '@/helpers';
+import { useSetAtom } from 'jotai';
+import { isLoggedInAtom } from '@/atoms';
 
 export const Login: React.FC = () => {
   const navigate = useNavigate();
+
+  const setIsLoggedIn = useSetAtom(isLoggedInAtom);
 
   const [password, setPassword] = useState('');
   const [passwordVisible, setPasswordVisible] = useState(false);
@@ -38,10 +42,11 @@ export const Login: React.FC = () => {
   };
 
   const handleUnlock = async () => {
-    const authStatus = await tryAuthorizeWalletAccess(password);
+    const authStatus = await tryAuthorizeAccess(password);
 
     if (authStatus === 'success') {
       resetNodeErrorCounts();
+      setIsLoggedIn(true);
       navigate(ROUTES.APP.ROOT);
     } else if (authStatus === 'no_wallet') {
       setPasswordStatus('error');

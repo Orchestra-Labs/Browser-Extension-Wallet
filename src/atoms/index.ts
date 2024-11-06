@@ -2,6 +2,8 @@ export * from './addressAtom';
 export * from './assetsAtom';
 export * from './changeMapAtom';
 export * from './paginationAtom';
+export * from './isLoggedInAtom';
+export * from './loadingAtom';
 export * from './mnemonicAtom';
 export * from './passwordAtom';
 export * from './processCompletedAtom';

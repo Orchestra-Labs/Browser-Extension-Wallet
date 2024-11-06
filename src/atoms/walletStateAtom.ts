@@ -1,5 +1,5 @@
 import { atom } from 'jotai';
-import { WalletAssets } from '@/types';
+import { Asset } from '@/types';
 import {
   searchTermAtom,
   assetSortOrderAtom,
@@ -11,10 +11,13 @@ import {
 } from '@/atoms';
 import { filterAndSortAssets } from '@/helpers';
 
-export const walletStateAtom = atom<WalletAssets>({
-  address: '',
-  assets: [],
-});
+export const walletAddressAtom = atom<string>('');
+export const walletAssetsAtom = atom<Array<Asset>>([]);
+// Read only
+export const walletStateAtom = atom(get => ({
+  address: get(walletAddressAtom),
+  assets: get(walletAssetsAtom),
+}));
 
 export const filteredAssetsAtom = atom(get => {
   const walletState = get(walletStateAtom);

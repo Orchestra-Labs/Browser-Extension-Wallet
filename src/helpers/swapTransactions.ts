@@ -2,11 +2,11 @@ import { osmosis } from '@orchestra-labs/symphonyjs';
 import { incrementErrorCount, performRpcQuery, selectNodeProviders } from './queryNodes';
 import { SwapObject, TransactionResult, RPCResponse, Asset } from '@/types';
 import { CHAIN_ENDPOINTS, DELAY_BETWEEN_NODE_ATTEMPTS, MAX_NODES_PER_QUERY } from '@/constants';
-import { createOfflineSignerFromMnemonic } from './wallet';
+import { createOfflineSignerFromMnemonic } from './dataHelpers/wallet';
 import { getSigningOsmosisClient } from '@orchestra-labs/symphonyjs';
 import { delay } from './timer';
-import { getSessionToken } from './localStorage';
 import { getValidFeeDenom } from './feeDenom';
+import { getSessionToken } from './dataHelpers';
 
 const { swapSend } = osmosis.market.v1beta1.MessageComposer.withTypeUrl;
 

@@ -1,8 +1,31 @@
 export interface SessionToken {
   mnemonic: string;
-  address: string;
-  network: string;
-  expiresIn: number;
+  accountID: string;
+  rememberMe: boolean;
+  timestamp: string;
+}
+
+export interface AccountRecord {
+  id: string; // password and account share ID
+  settings: {
+    activeNetworkID: string;
+    visibleNetworks: string[];
+    activeWalletID: string;
+  };
+  wallets: WalletRecord[];
+}
+
+export interface WalletRecord {
+  id: string;
+  name: string;
+  mnemonic: string;
+  settings: {};
+}
+
+export interface PasswordRecord {
+  id: string; // password and account share ID
+  hash: string;
+  salt: string;
 }
 
 export interface Asset {

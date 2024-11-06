@@ -4,7 +4,6 @@ import { Secp256k1HdWallet } from '@cosmjs/amino';
 import { CreatePasswordForm, RecoveryPhraseGrid, WalletSuccessScreen } from '@/components';
 import { ROUTES } from '@/constants';
 import { Button, Stepper } from '@/ui-kit';
-import { createWallet, generateToken } from '@/helpers/wallet';
 import { useAtom, useSetAtom } from 'jotai';
 import {
   confirmPasswordAtom,
@@ -15,6 +14,7 @@ import {
   passwordsVerifiedAtom,
   use24WordsState,
 } from '@/atoms';
+import { createAccount } from '@/helpers/dataHelpers/account';
 
 const STEPS_LABELS = ['Create password', 'Recovery phrase', 'Verify phrase'];
 
@@ -96,47 +96,19 @@ export const CreateWallet = () => {
 
   /* ******************************************************************************************* */
   /* Chris current TODO */
-  // TODO: fix issue with gas on 'all' button for validator selections (bundle transactions)
-  // TODO: show errors to user (user displayable values)
-  // TODO: provide updates to user as staking, claim, and unstaking information changes (errors)
-  // TODO: provide updates to user as send information updates (errors)
+  // TODO: provide error updates to user as send, staking, claim, and unstaking information changes (errors)
   /* ******************************************************************************************* */
 
   /* ******************************************************************************************* */
   /* David Current TODOs */
-  // TODO: modify auth to accounts & wallets structure to make this scalable for later upgrades
-  // TODO: modify accounts/wallets management for scalability (password per account, multiple wallets per account, multiple accounts in storage, search by password+decryption)
-  // TODO: ensure new encrypted mnemonic overwrites old in case of same password and name (but let user know first)
-  // TODO: handle error printout for create/import wallet (in place of subtitle on verify screen?)
-
-  // TODO: change onHover, click and active colors for selected tiles vs unselected tiles. model after buttons. currently look like the same action
-  // TODO: put Loader on loading screen, not "loading"
-
-  // TODO: allow validation against more than just Symphony addresses.  all addresses?  just set green when it's verifiable?
+  // TODO: enable transaction fees for wallet transactions (bundle a transaction for revenue. based on transaction fees (0.5x basic transaction fee)?)
   /* ******************************************************************************************* */
 
   /* Current TODOs */
-  // TODO: fix claim and restake error.  make consistent
-  // TODO: ensure fees are added properly (gasUsed = gasWanted) for claim-to-wallet and claim-to-restake for both single claim messages and multiple claim messages
   // TODO: versioning: minimum, recommended, and current versions.  recommended update for versions lower than recommended, link to update, no login for versions below minimum
-  // TODO: enable transaction fees for wallet transactions (revenue)
-
-  /* Nice to have TODOs */
-  // TODO: abstract wallet prefix and mnemonic decryption
-  // TODO: make toasts copy-on-click
-  // TODO: fix copytextfield issue of enlarged border on click
-  // TODO: clean up helper functions and hooks
-  // TODO: make "clear" and "max" button send screen inputs.  make placement and appearance for these uniform (send and unstake sections)
-  // TODO: add search icon to search field, add onclick
-  // TODO: keep track of current page for case of re-open before timeout
-  // TODO: prevent re-building auth every time wallet updates
-  // TODO: ensure new encrypted mnemonic overwrites old in case of same password and name (but let user know first)
-  // TODO: make data text in asset and validator tiles scrollable
-  // TODO: add feeLoading state to update fees between
-  // TODO: ensure logout after blur + timeout (blur is click outside application to close).  to remove sensitive data after time period
-  // TODO: speed up resolution on rpc queries (send, stake, unstake, claim)
 
   /* Interchain-compatibility TODOs (mobile version before this) */
+  // TODO: abstract wallet prefix and mnemonic decryption
   // TODO: add button to "add chain" at bottom of Holdings list
   // TODO: add link to github repo for registry
   // TODO: abstract IBC needs
@@ -147,8 +119,35 @@ export const CreateWallet = () => {
   // TODO: enable search function to validator list by chain (on top of current functionality)
   // TODO: add show/hide function to validator list (by chain)
 
+  /* Revenue TODOs (ensure no added fees from us adds total fees over 1% on transaction */
+  // TODO: list these in user info:
+  // TODO: in-app exchange fee (find lowest rates for user, but add small commission)
+  // TODO: on-ramp fees (add small commission)
+  // TODO: staking fees add small percent commission
+  // TODO: affiliate revenue from integrated services
+  // NOTE: metamask - primary from swap and on-ramp
+  // NOTE: trust - primary from on-ramps, swaps, and staking
+  // NOTE: coinbase - primary from on-ramps, coinbase, and affiliate
+  // NOTE: exodus - primary from staking, affiliate, and on-ramp
+
+  /* Nice to have TODOs */
+  // TODO: creation of wallet with old password should add additional wallet on same account
+  // TODO: fix issue with gas on 'all' button for validator selections (bundle transactions)
+  // TODO: make toasts copy-on-click
+  // TODO: fix copytextfield issue of enlarged border on click
+  // TODO: clean up helper functions and hooks
+  // TODO: make "clear" and "max" button send screen inputs.  make placement and appearance for these uniform (send and unstake sections)
+  // TODO: add search icon to search field, add onclick
+  // TODO: keep track of current page for case of re-open before timeout
+  // TODO: prevent re-building auth every time wallet updates
+  // TODO: make data text in asset and validator tiles scrollable
+  // TODO: add feeLoading state so user knows fees are updating
+  // TODO: ensure logout after blur + timeout (blur is click outside application to close).  to remove sensitive data after time period
+  // TODO: speed up resolution on rpc queries (send, stake, unstake, claim)
+  // TODO: add change password functionality
+
   /* Wallet UI TODOs */
-  // TODO: create add wallet screen to allow management of multiple accounts
+  // TODO: create add/edit/remove wallet screen to allow management of multiple accounts
   // TODO: add save wallet screen for saving preferred received assets per wallet and wallet name/identifier (for those user sends to)
   // TODO: add show/hide function to wallet asset list (select which assets to show.  add searchability to this)
   // TODO: security tab enables/disables need to confirm transactions/re-entry of password on transactions (3 levels of security)
@@ -188,10 +187,15 @@ export const CreateWallet = () => {
 
   // Check everything is completed properly and pass to confirmation screen
   const handleCreateWallet = async () => {
+    // TODO: fix.  currently not setting data to localstorage.
     try {
+      console.log('trying to create wallet');
       // Generate wallet from the mnemonic and create the token
-      const { walletAddress } = await createWallet(getStringMnemonic(), password);
-      generateToken(walletAddress);
+      const mnemonic = getStringMnemonic();
+      const walletName = 'Maestro';
+      // TODO: make create/add depending on source of origin
+      await createAccount(mnemonic, password, walletName);
+      console.log('create wallet function ended');
 
       // Clear state and navigate to confirmation page after wallet creation
       clearState();

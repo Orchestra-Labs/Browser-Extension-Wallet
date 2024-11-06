@@ -1,11 +1,10 @@
 import './App.css';
-
 import { Suspense } from 'react';
 import { MemoryRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-
 import { AppRouter } from '@/app/Router';
 import { Loader, Toaster } from '@/components';
+import { AuthProvider } from '@/guards';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -19,12 +18,14 @@ const queryClient = new QueryClient({
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter>
-        <Suspense fallback={<Loader />}>
-          <AppRouter />
-          <Toaster />
-        </Suspense>
-      </MemoryRouter>
+      <AuthProvider>
+        <MemoryRouter>
+          <Suspense fallback={<Loader />}>
+            <AppRouter />
+            <Toaster />
+          </Suspense>
+        </MemoryRouter>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

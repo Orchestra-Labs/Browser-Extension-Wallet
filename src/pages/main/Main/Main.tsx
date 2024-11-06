@@ -2,56 +2,36 @@ import { Swiper, SwiperClass, SwiperSlide } from 'swiper/react';
 import 'swiper/swiper-bundle.css';
 import { BalanceCard, SearchBar, SortDialog, TileScroller } from '@/components';
 import {
-  walletStateAtom,
   swiperIndexState,
   validatorDataAtom,
   showCurrentValidatorsAtom,
   showAllAssetsAtom,
   searchTermAtom,
+  walletAssetsAtom,
+  isFetchingWalletDataAtom,
+  isFetchingValidatorDataAtom,
+  isInitialDataLoadAtom,
 } from '@/atoms';
 import { useEffect, useRef } from 'react';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { Button } from '@/ui-kit';
-import { convertToGreaterUnit, fetchValidatorData, formatBalanceDisplay } from '@/helpers';
+import { convertToGreaterUnit, formatBalanceDisplay } from '@/helpers';
 import { DEFAULT_ASSET, GREATER_EXPONENT_DEFAULT, LOCAL_ASSET_REGISTRY } from '@/constants';
 
 export const Main = () => {
-  const walletState = useAtomValue(walletStateAtom);
-  const [activeIndex, setActiveIndex] = useAtom(swiperIndexState);
-  const [validatorData, setValidatorData] = useAtom(validatorDataAtom);
-  const [showCurrentValidators, setShowCurrentValidators] = useAtom(showCurrentValidatorsAtom);
-  const [showAllAssets, setShowAllAssets] = useAtom(showAllAssetsAtom);
-  const setSearchTerm = useSetAtom(searchTermAtom);
-
   const swiperRef = useRef<SwiperClass | null>(null);
   const totalSlides = 2;
 
-  useEffect(() => {
-    // Sync the swiper visual state
-    if (swiperRef.current) {
-      swiperRef.current.slideTo(activeIndex);
-    }
-  }, [activeIndex, walletState.address]);
-
-  useEffect(() => {
-    setSearchTerm('');
-  }, [activeIndex]);
-
-  // Fetch all validator data (delegations, validators, rewards) in one go
-  useEffect(() => {
-    if (walletState.address) {
-      // setIsLoading(true);
-      fetchValidatorData(walletState.address)
-        .then(data => {
-          setValidatorData(data);
-          // setIsLoading(false);
-        })
-        .catch(error => {
-          console.error('Error fetching staking data:', error);
-          // setIsLoading(false);
-        });
-    }
-  }, [walletState.address]);
+  const [walletAssets] = useAtom(walletAssetsAtom);
+  const [activeIndex, setActiveIndex] = useAtom(swiperIndexState);
+  const [validatorData] = useAtom(validatorDataAtom);
+  const [showCurrentValidators, setShowCurrentValidators] = useAtom(showCurrentValidatorsAtom);
+  const [showAllAssets, setShowAllAssets] = useAtom(showAllAssetsAtom);
+  const setSearchTerm = useSetAtom(searchTermAtom);
+  const [isInitialDataLoad, setIsInitialDataLoad] = useAtom(isInitialDataLoadAtom);
+  const isFetchingWalletData = useAtomValue(isFetchingWalletDataAtom);
+  const validatorState = useAtomValue(validatorDataAtom);
+  const isFetchingValidatorData = useAtomValue(isFetchingValidatorDataAtom);
 
   // Toggle between "Non-Zero" and "All" holdings
   const assetViewToggleChange = (shouldShowAllAssets: boolean) => {
@@ -66,9 +46,9 @@ export const Main = () => {
   // Calculate total available MLD balance
   const symbol = LOCAL_ASSET_REGISTRY.note.symbol || DEFAULT_ASSET.symbol || 'MLD';
   const currentExponent = LOCAL_ASSET_REGISTRY.note.exponent || GREATER_EXPONENT_DEFAULT;
-  const totalAvailableMLD = walletState.assets
+  const totalAvailableMLD = walletAssets
     .filter(asset => asset.denom === LOCAL_ASSET_REGISTRY.note.denom)
-    .reduce((sum, delegation) => sum + parseFloat(delegation.amount), 0)
+    .reduce((sum, asset) => sum + parseFloat(asset.amount), 0)
     .toFixed(currentExponent);
   const formattedTotalAvailableMLD = formatBalanceDisplay(totalAvailableMLD, symbol);
 
@@ -94,14 +74,37 @@ export const Main = () => {
     symbol,
   );
 
-  // TODO: replace with individual displays on balance card and tilescroller
-  // if (isLoading) {
-  //   return (
-  //     <div className="h-full flex items-center justify-center">
-  //       <div className="text-white">Loading validator data...</div>
-  //     </div>
-  //   );
-  // }
+  // Sync swiper visual state
+  useEffect(() => {
+    if (swiperRef.current) {
+      swiperRef.current.slideTo(activeIndex);
+    }
+  }, [activeIndex]);
+
+  // Reset search term on active index change
+  useEffect(() => {
+    setSearchTerm('');
+  }, [activeIndex]);
+
+  useEffect(() => {
+    if (isInitialDataLoad) {
+      const initialLoadHasCompleted =
+        !isFetchingWalletData &&
+        !isFetchingValidatorData &&
+        (walletAssets.length > 0 || validatorState.length > 0);
+
+      if (initialLoadHasCompleted) {
+        setIsInitialDataLoad(false);
+        console.log('Initial data load completed');
+      }
+    }
+  }, [
+    isInitialDataLoad,
+    isFetchingWalletData,
+    isFetchingValidatorData,
+    walletAssets,
+    validatorState,
+  ]);
 
   return (
     <div className="h-full flex flex-col overflow-hidden">

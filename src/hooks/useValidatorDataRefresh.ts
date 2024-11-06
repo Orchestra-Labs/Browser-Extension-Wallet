@@ -1,28 +1,41 @@
+import { isFetchingValidatorDataAtom, validatorDataAtom, walletAddressAtom } from '@/atoms';
 import { fetchValidatorData } from '@/helpers';
-import { validatorDataAtom, shouldRefreshDataAtom, walletStateAtom } from '@/atoms';
-import { useAtom, useAtomValue, useSetAtom } from 'jotai';
+import { useAtom, useSetAtom } from 'jotai';
 
 export function useValidatorDataRefresh() {
-  const walletState = useAtomValue(walletStateAtom);
+  const [walletAddress] = useAtom(walletAddressAtom);
   const setValidatorState = useSetAtom(validatorDataAtom);
-  const [shouldRefreshData, setShouldRefreshData] = useAtom(shouldRefreshDataAtom);
+  const setIsFetchingData = useSetAtom(isFetchingValidatorDataAtom);
 
-  const refreshValidatorData = async () => {
-    // Control refresh
-    if (shouldRefreshData) {
-      console.log('refreshing validator data');
-      const delegatorAddress = walletState.address;
+  const refreshValidatorData = async (address?: string) => {
+    const targetAddress = address || walletAddress;
+    console.log('Triggered refreshValidatorData with targetAddress:', targetAddress);
+
+    if (targetAddress) {
+      setIsFetchingData(true);
+      console.log('Fetching new validator data for address:', targetAddress);
 
       try {
-        const newValidatorData = await fetchValidatorData(delegatorAddress);
+        const newValidatorData = await fetchValidatorData(targetAddress);
+        console.log('Fetched validator data:', newValidatorData);
         setValidatorState(newValidatorData);
       } catch (error) {
         console.error('Error refreshing validator data:', error);
       } finally {
-        setShouldRefreshData(false);
+        console.log('Setting shouldRefreshData to false');
+        setIsFetchingData(false);
       }
+    } else {
+      console.log(
+        'Skipped refreshing validator data. Either shouldRefreshData is false or walletAddress is missing.',
+      );
     }
   };
 
-  return { refreshValidatorData };
+  const triggerValidatorDataRefresh = (address?: string) => {
+    console.log('triggerValidatorDataRefresh called with address:', address);
+    refreshValidatorData(address);
+  };
+
+  return { triggerValidatorDataRefresh };
 }
