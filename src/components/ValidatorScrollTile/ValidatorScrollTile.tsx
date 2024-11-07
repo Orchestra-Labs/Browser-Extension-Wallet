@@ -227,7 +227,11 @@ export const ValidatorScrollTile = ({
 
     const txType = TransactionType.UNSTAKE;
     try {
-      const result = await unstakeFromValidator({ amount, delegations: delegationResponse });
+      const result = await unstakeFromValidator({
+        amount,
+        delegations: delegationResponse,
+        simulateOnly: isSimulation,
+      });
 
       if (isSimulation) return result;
 
@@ -252,7 +256,11 @@ export const ValidatorScrollTile = ({
 
     const txType = TransactionType.CLAIM_TO_WALLET;
     try {
-      const result = await claimRewards(walletState.address, validator.operator_address);
+      const result = await claimRewards(
+        walletState.address,
+        validator.operator_address,
+        isSimulation,
+      );
 
       if (isSimulation) return result;
 
