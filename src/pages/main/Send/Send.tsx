@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import { ArrowLeft, Spinner, Swap } from '@/assets/icons';
 import { DEFAULT_ASSET, GREATER_EXPONENT_DEFAULT, ROUTES } from '@/constants';
 import { Button, Separator } from '@/ui-kit';
@@ -23,14 +23,16 @@ import {
   removeTrailingZeroes,
   sendTransaction,
   swapTransaction,
+  truncateWalletAddress,
 } from '@/helpers';
-import { useExchangeRate, useRefreshData } from '@/hooks/';
+import { useExchangeRate, useRefreshData, useToast } from '@/hooks/';
 import { AddressInput } from './AddressInput';
 
-// TODO: show error printout in same place as loader
 export const Send = () => {
   const { refreshData } = useRefreshData();
   const { exchangeRate } = useExchangeRate();
+  const { toast } = useToast();
+  const location = useLocation();
 
   const [sendState, setSendState] = useAtom(sendStateAtom);
   const [receiveState, setReceiveState] = useAtom(receiveStateAtom);
@@ -62,10 +64,30 @@ export const Send = () => {
   const handleTransactionError = (errorMessage: string) => {
     setError(errorMessage);
 
-    setTimeout(() => {
-      setError('');
-    }, 3000);
-    // TODO: test for and handle case of not being on send page to send toast
+    if (location.pathname !== ROUTES.APP.SEND) {
+      toast({
+        title: 'Transaction failed!',
+        description: errorMessage,
+      });
+    } else {
+      setTimeout(() => {
+        setError('');
+      }, 3000);
+    }
+  };
+
+  // TODO: test for and handle case of not being on send page to send toast
+  const handleTransactionSuccess = (txHash: string) => {
+    if (location.pathname !== ROUTES.APP.SEND) {
+      // TODO: fix.  toast not currently functional (every attempt sees /send as the route)
+      const displayTransactionHash = truncateWalletAddress('', txHash);
+      toast({
+        title: `${transactionType.isSwap ? 'Swap' : 'Send'} success!`,
+        description: `Transaction hash: ${displayTransactionHash}`,
+      });
+    } else {
+      setTransactionState({ isSuccess: true, txHash });
+    }
   };
 
   const handleTransaction = async ({ simulateTransaction = false } = {}) => {
@@ -143,12 +165,8 @@ export const Send = () => {
         console.log('Simulation successful');
         return result;
       } else if (result.success && result.data?.code === 0) {
-        // TODO: much like on validator actions, set to toast if not on page.  useLocation?
-        // toast({
-        //   title: `${transactionType} success!`,
-        //   description: `Transaction hash ${displayTransactionHash} has been copied.`,
-        // });
-        setTransactionState({ isSuccess: true, txHash: result.data.txHash });
+        const txHash = result.data.txHash || 'Hash not provided';
+        handleTransactionSuccess(txHash);
       } else {
         const errorMessage = `Transaction failed: ${result.data}`;
         handleTransactionError(errorMessage);

@@ -23,6 +23,7 @@ const buttonVariants = cva<ButtonConfig>(
           'active:bg-blue-pressed active:text-black',
           'disabled:bg-neutral-3 disabled:text-neutral-1',
         ],
+        blank: '',
         transparent: ['bg-transparent text-blue min-h-12', 'hover:text-blue-dark'],
         transparentNeutral: ['bg-transparent text-neutral-1 min-h-12', 'hover:text-grey-dark'],
         secondary: [
@@ -57,6 +58,7 @@ const buttonVariants = cva<ButtonConfig>(
         small: 'h-6 p-0 min-h-6',
         'rounded-default': 'max-w-8 max-h-8 w-8 h-8',
         xsmall: 'h-[18px] p-0',
+        blank: '',
       },
     },
     defaultVariants: {

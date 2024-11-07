@@ -163,7 +163,7 @@ export const ValidatorScrollTile = ({
 
       toast({
         title: `${transactionType} success!`,
-        description: `Transaction hash ${displayTransactionHash} has been copied.`,
+        description: `Transaction hash: ${displayTransactionHash}`,
       });
 
       setTransactionSuccess(prev => ({
