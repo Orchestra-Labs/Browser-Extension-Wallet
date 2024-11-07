@@ -201,6 +201,7 @@ export const ValidatorScrollTile = ({
         LOCAL_ASSET_REGISTRY.note.denom,
         walletState.address,
         validator.operator_address,
+        isSimulation,
       );
 
       if (isSimulation) return result;
