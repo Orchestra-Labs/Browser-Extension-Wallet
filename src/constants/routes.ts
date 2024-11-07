@@ -7,7 +7,7 @@ export const ROUTES = {
     TRANSACTIONS_HISTORY: `/history`,
     TRANSACTION: `/history/:id`,
     SEND: '/send',
-    RECEIVE: '/send',
+    RECEIVE: '/receive',
     ADD_NETWORK: '/add-network',
   },
   AUTH: {

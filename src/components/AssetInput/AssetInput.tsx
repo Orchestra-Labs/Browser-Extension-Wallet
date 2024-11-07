@@ -13,6 +13,8 @@ interface AssetInputProps {
   assetState: Asset | null;
   amountState: number;
   reducedHeight?: boolean;
+  includeBottomMargin?: boolean;
+  labelWidth?: string;
   updateAsset?: (newAsset: Asset, propagateChanges?: boolean) => void;
   updateAmount: (newAmount: number, propagateChanges?: boolean) => void;
 }
@@ -24,6 +26,8 @@ export const AssetInput: React.FC<AssetInputProps> = ({
   assetState,
   amountState,
   reducedHeight = false,
+  includeBottomMargin = true,
+  labelWidth,
   updateAsset,
   updateAmount,
 }) => {
@@ -131,9 +135,15 @@ export const AssetInput: React.FC<AssetInputProps> = ({
   };
 
   return (
-    <div className={cn(variant === 'stake' ? '' : 'flex items-center mb-4 space-x-2')}>
+    <div
+      className={cn(
+        variant === 'stake'
+          ? ''
+          : `flex items-center ${includeBottomMargin ? 'mb-4' : ''} space-x-2`,
+      )}
+    >
       {variant !== 'stake' && (
-        <label className="text-sm text-neutral-1 whitespace-nowrap">
+        <label className={cn(`text-sm text-neutral-1 whitespace-nowrap ${labelWidth}`)}>
           {variant === 'receive' ? 'Receiving:' : 'Sending:'}
         </label>
       )}

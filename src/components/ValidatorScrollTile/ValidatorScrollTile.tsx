@@ -26,7 +26,7 @@ import { selectedValidatorsAtom, walletStateAtom } from '@/atoms';
 import { AssetInput } from '../AssetInput';
 import { Loader } from '../Loader';
 import { useRefreshData, useToast } from '@/hooks';
-import { WalletSuccessTile } from '../WalletSuccessTile';
+import { TransactionResultsTile } from '../TransactionResultsTile';
 
 interface ValidatorScrollTileProps {
   combinedStakingInfo: CombinedStakingInfo;
@@ -34,6 +34,7 @@ interface ValidatorScrollTileProps {
   onClick?: (validator: CombinedStakingInfo) => void;
 }
 
+// TODO: show error printout in same place as loader
 export const ValidatorScrollTile = ({
   combinedStakingInfo,
   isSelectable = false,
@@ -48,6 +49,7 @@ export const ValidatorScrollTile = ({
 
   const [amount, setAmount] = useState(0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
   const [isClaimToRestake, setIsClaimToRestake] = useState<boolean>(true);
   const [selectedAction, setSelectedAction] = useState<'stake' | 'unstake' | 'claim' | null>(
     !combinedStakingInfo.delegation ? 'stake' : null,
@@ -161,7 +163,7 @@ export const ValidatorScrollTile = ({
 
       toast({
         title: `${transactionType} success!`,
-        description: `Transaction hash ${displayTransactionHash} has been copied.`,
+        description: `Transaction hash: ${displayTransactionHash}`,
       });
 
       setTransactionSuccess(prev => ({
@@ -171,30 +173,50 @@ export const ValidatorScrollTile = ({
     }
   };
 
+  const handleTransactionError = (transactionType: TransactionType, errorMessage: string) => {
+    const slideTrayIsOpen = slideTrayRef.current && slideTrayRef.current.isOpen();
+
+    if (slideTrayIsOpen) {
+      setError(errorMessage);
+
+      setTimeout(() => {
+        setError('');
+      }, 3000);
+    } else {
+      toast({
+        title: `${transactionType} failed!`,
+        description: errorMessage,
+      });
+      setError('');
+    }
+  };
+
   const handleStake = async (amount: string, isSimulation: boolean = false) => {
     if (!isSimulation) setIsLoading(true);
 
+    const txType = TransactionType.STAKE;
     try {
       const result = await stakeToValidator(
         amount,
         LOCAL_ASSET_REGISTRY.note.denom,
         walletState.address,
         validator.operator_address,
+        isSimulation,
       );
 
       if (isSimulation) return result;
 
       if (result.success && result.data?.code === 0) {
-        const txType = TransactionType.STAKE;
         const txHash = result.data.txHash as string;
 
         handleTransactionSuccess(txType, txHash);
       } else {
-        console.warn('Stake transaction failed with code:', result.data?.code);
-        console.warn('Error message:', result.message || 'No error message provided');
+        const errorMessage = `Stake failed: ${result.message || 'No error message provided'}`;
+        handleTransactionError(txType, errorMessage);
       }
     } catch (error) {
-      console.error('Error during staking:', error);
+      const errorMessage = `Stake failed: ${error || 'No error message provided'}`;
+      handleTransactionError(txType, errorMessage);
     } finally {
       if (!isSimulation) setIsLoading(false);
     }
@@ -203,22 +225,27 @@ export const ValidatorScrollTile = ({
   const handleUnstake = async (amount: string, isSimulation: boolean = false) => {
     if (!isSimulation) setIsLoading(true);
 
+    const txType = TransactionType.UNSTAKE;
     try {
-      const result = await unstakeFromValidator({ amount, delegations: delegationResponse });
+      const result = await unstakeFromValidator({
+        amount,
+        delegations: delegationResponse,
+        simulateOnly: isSimulation,
+      });
 
       if (isSimulation) return result;
 
       if (result.success && result.data?.code === 0) {
-        const txType = TransactionType.UNSTAKE;
         const txHash = result.data.txHash as string;
 
         handleTransactionSuccess(txType, txHash);
       } else {
-        console.warn('Unstake transaction failed with code:', result.data?.code);
-        console.warn('Error message:', result.message || 'No error message provided');
+        const errorMessage = `Unstake failed: ${result.message || 'No error message provided'}`;
+        handleTransactionError(txType, errorMessage);
       }
     } catch (error) {
-      console.error('Error during unstaking:', error);
+      const errorMessage = `Unstake failed: ${error || 'No error message provided'}`;
+      handleTransactionError(txType, errorMessage);
     } finally {
       if (!isSimulation) setIsLoading(false);
     }
@@ -227,22 +254,27 @@ export const ValidatorScrollTile = ({
   const handleClaimToWallet = async (isSimulation: boolean = false) => {
     if (!isSimulation) setIsLoading(true);
 
+    const txType = TransactionType.CLAIM_TO_WALLET;
     try {
-      const result = await claimRewards(walletState.address, validator.operator_address);
+      const result = await claimRewards(
+        walletState.address,
+        validator.operator_address,
+        isSimulation,
+      );
 
       if (isSimulation) return result;
 
       if (result.success && result.data?.code === 0) {
-        const txType = TransactionType.CLAIM_TO_WALLET;
         const txHash = result.data.txHash as string;
 
         handleTransactionSuccess(txType, txHash);
       } else {
-        console.warn('Claim to wallet failed with code:', result.data?.code);
-        console.warn('Error message:', result.message || 'No error message provided');
+        const errorMessage = `Claim failed: ${result.message || 'No error message provided'}`;
+        handleTransactionError(txType, errorMessage);
       }
     } catch (error) {
-      console.error('Error claiming rewards:', error);
+      const errorMessage = `Claim failed: ${error || 'No error message provided'}`;
+      handleTransactionError(txType, errorMessage);
     } finally {
       if (!isSimulation) setIsLoading(false);
     }
@@ -251,6 +283,7 @@ export const ValidatorScrollTile = ({
   const handleClaimAndRestake = async (isSimulation: boolean = true) => {
     if (!isSimulation) setIsLoading(true);
 
+    const txType = TransactionType.CLAIM_TO_RESTAKE;
     try {
       const result = await claimAndRestake(
         delegationResponse,
@@ -266,15 +299,15 @@ export const ValidatorScrollTile = ({
       if (isSimulation) return result;
 
       if (result.success && result.data?.code === 0) {
-        const txType = TransactionType.CLAIM_TO_RESTAKE;
         const txHash = result.data.txHash as string;
         handleTransactionSuccess(txType, txHash);
       } else {
-        console.warn('Claim and restake failed with code:', result.data?.code);
-        console.warn('Error message:', result.message || 'No error message provided');
+        const errorMessage = `Claim failed: ${result.message || 'No error message provided'}`;
+        handleTransactionError(txType, errorMessage);
       }
     } catch (error) {
-      console.error('Error claiming and restaking:', error);
+      const errorMessage = `Claim and restake failed: ${error || 'No error message provided'}`;
+      handleTransactionError(txType, errorMessage);
     } finally {
       if (!isSimulation) setIsLoading(false);
     }
@@ -303,24 +336,20 @@ export const ValidatorScrollTile = ({
     });
   };
 
-  // TODO: these are calling claimRewards directly.  move most of that into the actual functions
   const updateFee = async () => {
     if (selectedAction !== 'claim' && (amount === 0 || isNaN(amount))) {
       formatFee(0);
     } else {
       let result = { success: false, message: '', data: { gasWanted: '' } } as TransactionResult;
-      try {
-        if (selectedAction === 'claim') {
-          result = (
-            isClaimToRestake ? await handleClaimAndRestake(true) : await handleClaimToWallet(true)
-          ) as TransactionResult;
-        } else if (selectedAction === 'stake') {
-          result = (await handleStake(amount.toString(), true)) as TransactionResult;
-        } else if (selectedAction === 'unstake') {
-          result = (await handleUnstake(amount.toString(), true)) as TransactionResult;
-        }
-      } catch (error) {
-        console.error('Simulation error:', error);
+
+      if (selectedAction === 'claim') {
+        result = (
+          isClaimToRestake ? await handleClaimAndRestake(true) : await handleClaimToWallet(true)
+        ) as TransactionResult;
+      } else if (selectedAction === 'stake') {
+        result = (await handleStake(amount.toString(), true)) as TransactionResult;
+      } else if (selectedAction === 'unstake') {
+        result = (await handleUnstake(amount.toString(), true)) as TransactionResult;
       }
 
       formatFee(parseFloat(result.data?.gasWanted || '0'));
@@ -336,6 +365,13 @@ export const ValidatorScrollTile = ({
       refreshData();
     }
   }, [transactionSuccess.success]);
+
+  const resetDefaults = () => {
+    setAmount(0);
+    setSimulatedFee({ fee: '0 MLD', textClass: 'text-blue' });
+    setIsClaimToRestake(false);
+    setSelectedAction(null);
+  };
 
   // TODO: clear state on close of slidetray
   return (
@@ -365,6 +401,7 @@ export const ValidatorScrollTile = ({
             </div>
           }
           title={title}
+          onClose={resetDefaults}
           showBottomBorder
           status={statusColor}
         >
@@ -448,12 +485,15 @@ export const ValidatorScrollTile = ({
             >
               {transactionSuccess.success && (
                 <div className="flex-grow">
-                  <WalletSuccessTile
+                  <TransactionResultsTile
+                    isSuccess
                     size="sm"
                     txHash={truncateWalletAddress('', transactionSuccess.txHash as string)}
                   />
                 </div>
               )}
+
+              {error && <TransactionResultsTile isSuccess={false} size="sm" message={error} />}
 
               {isLoading && (
                 <div className="flex flex-grow items-center px-4">

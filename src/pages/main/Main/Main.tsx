@@ -95,7 +95,6 @@ export const Main = () => {
 
       if (initialLoadHasCompleted) {
         setIsInitialDataLoad(false);
-        console.log('Initial data load completed');
       }
     }
   }, [

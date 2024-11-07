@@ -21,7 +21,7 @@ import {
 import { CombinedStakingInfo } from '@/types';
 import { useRefreshData, useToast } from '@/hooks';
 import { DEFAULT_ASSET, GREATER_EXPONENT_DEFAULT, TransactionType } from '@/constants';
-import { WalletSuccessTile } from '../WalletSuccessTile';
+import { TransactionResultsTile } from '../TransactionResultsTile';
 import { Loader } from '../Loader';
 
 interface ValidatorSelectDialogProps {
@@ -30,6 +30,7 @@ interface ValidatorSelectDialogProps {
   isClaimDialog?: boolean;
 }
 
+// TODO: show error printout in same place as loader
 export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
   buttonText,
   buttonVariant,
@@ -46,8 +47,8 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
   const filteredValidators = useAtomValue(filteredDialogValidatorsAtom);
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
   const [isClaimToRestake, setIsClaimToRestake] = useState<boolean>(true);
-  const [isSlideTrayOpen, setIsSlideTrayOpen] = useState(false);
   const [transactionSuccess, setTransactionSuccess] = useState<{
     transactionType?: TransactionType;
     success: boolean;
@@ -55,7 +56,6 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
   }>({
     success: false,
   });
-
   const [simulatedFee, setSimulatedFee] = useState<{
     fee: string;
     textClass: 'text-error' | 'text-warn' | 'text-blue';
@@ -97,7 +97,7 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
   };
 
   const handleTransactionSuccess = (txHash: string) => {
-    if (isSlideTrayOpen) {
+    if (slideTrayIsOpen) {
       setTransactionSuccess(prev => ({
         ...prev,
         success: true,
@@ -115,12 +115,28 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
 
       toast({
         title: `${transactionSuccess.transactionType} success!`,
-        description: `Transaction hash ${displayTransactionHash} has been copied.`,
+        description: `Transaction hash: ${displayTransactionHash}`,
       });
       setTransactionSuccess(prev => ({
         ...prev,
         success: false,
       }));
+    }
+  };
+
+  const handleTransactionError = (errorMessage: string) => {
+    if (slideTrayIsOpen) {
+      setError(errorMessage);
+
+      setTimeout(() => {
+        setError('');
+      }, 3000);
+    } else {
+      toast({
+        title: `${transactionSuccess.transactionType} failed!`,
+        description: errorMessage,
+      });
+      setError('');
     }
   };
 
@@ -165,11 +181,12 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
       if (result.success && result.data?.code === 0) {
         handleTransactionSuccess(result.data.txHash as string);
       } else {
-        console.warn('Claim to wallet failed with code:', result.data?.code);
-        console.warn('Error message:', result.message || 'No error message provided');
+        const errorMessage = `Claim failed: ${result.message || 'No error message provided'}`;
+        handleTransactionError(errorMessage);
       }
     } catch (error) {
-      console.error('Error claiming rewards:', error);
+      const errorMessage = `Claim failed: ${error || 'No error message provided'}`;
+      handleTransactionError(errorMessage);
     } finally {
       if (!isSimulation) setIsLoading(false);
     }
@@ -198,11 +215,12 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
       if (claimResult.success && claimResult.data?.code === 0) {
         handleTransactionSuccess(claimResult.data.txHash as string);
       } else {
-        console.warn('Claim and restake failed with code:', claimResult.data?.code);
-        console.warn('Error message:', claimResult.message || 'No error message provided');
+        const errorMessage = `Claim to restake failed: ${claimResult.message || 'No error message provided'}`;
+        handleTransactionError(errorMessage);
       }
     } catch (error) {
-      console.error('Error claiming and restaking:', error);
+      const errorMessage = `Claim to restake failed: ${error || 'No error message provided'}`;
+      handleTransactionError(errorMessage);
     } finally {
       if (!isSimulation) setIsLoading(false);
     }
@@ -227,11 +245,12 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
       if (result.success && result.data?.code === 0) {
         handleTransactionSuccess(result.data.txHash as string);
       } else {
-        console.warn('Unstake failed with code:', result.data?.code);
-        console.warn('Error message:', result.message || 'No error message provided');
+        const errorMessage = `Unstake failed: ${result.message || 'No error message provided'}`;
+        handleTransactionError(errorMessage);
       }
     } catch (error) {
-      console.error('Error during unstaking:', error);
+      const errorMessage = `Unstake failed: ${error || 'No error message provided'}`;
+      handleTransactionError(errorMessage);
     } finally {
       if (!simulateOnly) setIsLoading(false);
     }
@@ -288,7 +307,7 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
     <SlideTray
       ref={slideTrayRef}
       triggerComponent={
-        <Button variant={buttonVariant} className="w-full" onClick={() => setIsSlideTrayOpen(true)}>
+        <Button variant={buttonVariant} className="w-full">
           {buttonText}
         </Button>
       }
@@ -362,16 +381,21 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
 
         {transactionSuccess.success || isLoading ? (
           <div className="flex flex-col flex-grow w-full border border-neutral-3 rounded-md items-center justify-center px-[1.5rem]">
-            {isLoading ? (
+            {isLoading && (
               <div className="flex flex-grow items-center px-4">
                 <Loader showBackground={false} />
               </div>
-            ) : (
-              <WalletSuccessTile
+            )}
+
+            {transactionSuccess.success && (
+              <TransactionResultsTile
+                isSuccess
                 txHash={truncateWalletAddress('', transactionSuccess.txHash as string)}
                 size="md"
               />
             )}
+
+            {error && <TransactionResultsTile isSuccess={false} size="md" message={error} />}
           </div>
         ) : (
           <TileScroller

@@ -11,7 +11,6 @@ export const isValidSend = ({
   receiveAsset: Asset;
 }) => {
   const result = sendAsset.denom === receiveAsset.denom;
-  console.log('Checking if valid send:', { sendAsset, receiveAsset, result });
   return result;
 };
 
@@ -77,7 +76,7 @@ export const sendTransaction = async (
 export const multiSendTransaction = async (
   fromAddress: string,
   sendObjects: SendObject[],
-  simulateOnly: boolean = false, // New parameter for simulation
+  simulateOnly: boolean = false,
 ): Promise<TransactionResult> => {
   const endpoint = CHAIN_ENDPOINTS.sendMessage;
 
