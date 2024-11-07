@@ -101,10 +101,8 @@ export const CreateWallet = () => {
   /* ******************************************************************************************* */
   /* David Current TODOs */
   // TODO: enable transaction fees for wallet transactions (bundle a transaction for revenue. based on transaction fees (0.5x basic transaction fee)?)
-  /* ******************************************************************************************* */
-
-  /* Remaining Release TODOs */
   // TODO: versioning: minimum, recommended, and current versions.  recommended update for versions lower than recommended, link to update, no login for versions below minimum
+  /* ******************************************************************************************* */
 
   /* Current TODOs */
   // TODO: abstract wallet prefix and mnemonic decryption
