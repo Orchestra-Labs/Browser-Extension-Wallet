@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { ArrowLeft, Spinner, Swap } from '@/assets/icons';
 import { DEFAULT_ASSET, GREATER_EXPONENT_DEFAULT, ROUTES } from '@/constants';
@@ -29,6 +29,7 @@ import { useExchangeRate, useRefreshData, useToast } from '@/hooks/';
 import { AddressInput } from './AddressInput';
 
 export const Send = () => {
+  const isComponentMounted = useRef(true);
   const { refreshData } = useRefreshData();
   const { exchangeRate } = useExchangeRate();
   const { toast } = useToast();
@@ -62,34 +63,39 @@ export const Send = () => {
   const [error, setError] = useState<string>('');
 
   const handleTransactionError = (errorMessage: string) => {
-    setError(errorMessage);
-
-    if (location.pathname !== ROUTES.APP.SEND) {
-      toast({
-        title: 'Transaction failed!',
-        description: errorMessage,
-      });
-    } else {
+    if (location.pathname === ROUTES.APP.SEND) {
+      setError(errorMessage);
       setTimeout(() => {
         setError('');
       }, 3000);
     }
-  };
-
-  // TODO: test for and handle case of not being on send page to send toast
-  const handleTransactionSuccess = (txHash: string) => {
-    if (location.pathname !== ROUTES.APP.SEND) {
-      // TODO: fix.  toast not currently functional (every attempt sees /send as the route)
-      const displayTransactionHash = truncateWalletAddress('', txHash);
+    
+    // Only show toast when component is unmounted
+    if (!isComponentMounted.current) {
       toast({
-        title: `${transactionType.isSwap ? 'Swap' : 'Send'} success!`,
-        description: `Transaction hash: ${displayTransactionHash}`,
+        title: 'Transaction failed!',
+        description: errorMessage,
+        duration: 5000,
       });
-    } else {
-      setTransactionState({ isSuccess: true, txHash });
     }
   };
 
+  const handleTransactionSuccess = (txHash: string) => {
+    const displayTransactionHash = truncateWalletAddress('', txHash);
+    if (location.pathname === ROUTES.APP.SEND) {
+      setTransactionState({ isSuccess: true, txHash });
+    }
+    
+    // Only show toast when component is unmounted
+    if (!isComponentMounted.current) {
+      toast({
+        title: `${transactionType.isSwap ? 'Swap' : 'Send'} success!`,
+        description: `Transaction hash: ${displayTransactionHash}`,
+        duration: 5000,
+      });
+    }
+    refreshData({ validator: false });
+  };
   const handleTransaction = async ({ simulateTransaction = false } = {}) => {
     console.log('Starting handleTransaction');
     console.log('transactionType.isValid:', transactionType.isValid);
@@ -540,16 +546,18 @@ export const Send = () => {
     propagateChanges();
   }, [changeMap]);
 
+  useEffect(() => {
+    // Set mounted flag to false when component unmounts
+    return () => {
+      isComponentMounted.current = false;
+    };
+  }, []);
+
   // Update on late exchangeRate returns
   useEffect(() => {
     propagateChanges(callbackChangeMap, setCallbackChangeMap, true);
   }, [exchangeRate]);
 
-  useEffect(() => {
-    if (transactionState.isSuccess) {
-      refreshData({ validator: false });
-    }
-  }, [transactionState.isSuccess]);
 
   useEffect(() => {
     updateSendAsset(selectedAsset);
@@ -562,7 +570,7 @@ export const Send = () => {
     };
   }, []);
 
-  if (transactionState.isSuccess) {
+  if (location.pathname === ROUTES.APP.SEND && transactionState.isSuccess) {
     return <WalletSuccessScreen caption="Transaction success!" txHash={transactionState.txHash} />;
   }
 
