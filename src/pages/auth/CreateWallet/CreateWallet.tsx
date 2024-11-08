@@ -105,6 +105,8 @@ export const CreateWallet = () => {
   /* ******************************************************************************************* */
 
   /* Current TODOs */
+  // TODO: add ledger support
+  // TODO: add auth support for dApps
   // TODO: abstract wallet prefix and mnemonic decryption
   // TODO: abstract IBC needs
   // TODO: add button to "add chain" at bottom of Holdings list
@@ -132,6 +134,13 @@ export const CreateWallet = () => {
   // TODO: enable search function to validator list by chain (on top of current functionality)
   // TODO: add show/hide function to validator list (by chain)
 
+  /* dApp TODOs */
+  // TODO: add page
+  // TODO: add search
+  // TODO: add categorization for filtering and sorting
+  // TODO: add in-app auth
+  // TODO: save to "add-page" for fast-access
+
   /* Nice to have TODOs */
   // TODO: creation of wallet with old password should add additional wallet on same account
   // TODO: fix issue with gas on 'all' button for validator selections (bundle transactions)
@@ -158,7 +167,6 @@ export const CreateWallet = () => {
   // TODO: Add on-ramp / off-ramp page
   // TODO: If at least one on-ramp connection exists, include fiat in send options
   // TODO: If at least one off-ramp connection exists, include fiat in receive options
-  // TODO: Add dApp page
   // TODO: Add NFT page
   // TODO: Add page view selection in options
   // TODO: handle stake to all (add total, it distributes that total amongst all selected). david sees as beneficial.  do others?
