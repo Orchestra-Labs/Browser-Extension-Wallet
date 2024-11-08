@@ -1,11 +1,11 @@
 {
-  "name": "Symphony Wallet",
-  "description": "Symphony Wallet Extension",
+  "name": "Aria",
+  "description": "Crypto wallet focused on unifying chains with an intuitive, yet customizable experience.",
   "version": "1.0.0",
   "manifest_version": 3,
   "action": {
     "default_popup": "index.html",
-    "default_title": "Symphony Wallet"
+    "default_title": "Aria"
   },
   "icons": {
     "16": "icon.png",
