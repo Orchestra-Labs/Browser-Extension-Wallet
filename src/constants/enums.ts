@@ -18,3 +18,9 @@ export enum TransactionType {
   CLAIM_TO_WALLET = 'Claim to wallet',
   CLAIM_TO_RESTAKE = 'Claim to restake',
 }
+
+export enum TextFieldStatus {
+  ERROR = 'error',
+  WARN = 'warn',
+  GOOD = 'good',
+}

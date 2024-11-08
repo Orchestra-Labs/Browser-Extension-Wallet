@@ -183,8 +183,7 @@ export const CreateWallet = () => {
   // TODO: add password complexity bar on entry
   // TODO: add toggle option for single-click transactions and another for force accepting/declining transactions
   // TODO: add toggle option for ultra-secure mode, using password auth for on every transaction like with hardware wallets.  in that mode, no session storage is used.
-  // TODO: loader on tilescroller swipe-to-refresh coming in late and tries to catch up.  make more uniform.
-  // TODO: loader on tilescroller swipe-to-refresh should spin in line with its percent pulled
+  // TODO: loader on tilescroller swipe-to-refresh coming in late and tries to catch up.  make more uniform with percent pulled
   // TODO: add option screen filter for validator list (by status.  default to not showing jailed validators.  check fetchAllValidators function and validatorsAtom (currently filters here))
 
   /* Nice to have Interchain-compatibility TODOs */
@@ -197,7 +196,6 @@ export const CreateWallet = () => {
 
   // Check everything is completed properly and pass to confirmation screen
   const handleCreateWallet = async () => {
-    // TODO: fix.  currently not setting data to localstorage.
     try {
       console.log('trying to create wallet');
       // Generate wallet from the mnemonic and create the token

@@ -3,6 +3,7 @@ import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { isValidSwap } from './swapTransactions';
 import { isValidSend } from './sendTransactions';
+import { TextFieldStatus } from '@/constants';
 
 export const cn = (...inputs: ClassValue[]) => {
   return twMerge(clsx(inputs, { strict: false }));
@@ -12,11 +13,12 @@ export const convertToGreaterUnit = (amount: number, exponent: number): number =
   return amount / Math.pow(10, exponent);
 };
 
-export const selectTextColorByStatus = (status: string) => {
-  let textColor = 'text-white';
-  if (status === 'warn') {
+export const selectTextColorByStatus = (status: string, defaultColor: string = 'text-white') => {
+  let textColor = defaultColor;
+
+  if (status === TextFieldStatus.WARN) {
     textColor = 'text-warning';
-  } else if (status === 'error') {
+  } else if (status === TextFieldStatus.ERROR) {
     textColor = 'text-error';
   }
 

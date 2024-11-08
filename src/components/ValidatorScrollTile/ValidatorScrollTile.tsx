@@ -19,10 +19,11 @@ import {
   DEFAULT_ASSET,
   GREATER_EXPONENT_DEFAULT,
   LOCAL_ASSET_REGISTRY,
+  TextFieldStatus,
   TransactionType,
 } from '@/constants';
 import { useAtomValue } from 'jotai';
-import { selectedValidatorsAtom, walletStateAtom } from '@/atoms';
+import { selectedValidatorsAtom, showCurrentValidatorsAtom, walletStateAtom } from '@/atoms';
 import { AssetInput } from '../AssetInput';
 import { Loader } from '../Loader';
 import { useRefreshData, useToast } from '@/hooks';
@@ -34,7 +35,6 @@ interface ValidatorScrollTileProps {
   onClick?: (validator: CombinedStakingInfo) => void;
 }
 
-// TODO: show error printout in same place as loader
 export const ValidatorScrollTile = ({
   combinedStakingInfo,
   isSelectable = false,
@@ -46,6 +46,7 @@ export const ValidatorScrollTile = ({
 
   const selectedValidators = useAtomValue(selectedValidatorsAtom);
   const walletState = useAtomValue(walletStateAtom);
+  const showCurrentValidators = useAtomValue(showCurrentValidatorsAtom);
 
   const [amount, setAmount] = useState(0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -113,19 +114,19 @@ export const ValidatorScrollTile = ({
   const unbondingDays = `${combinedStakingInfo.stakingParams?.unbonding_time} days`;
 
   let statusLabel = '';
-  let statusColor: 'good' | 'warn' | 'error' = 'good';
+  let statusColor = TextFieldStatus.GOOD;
   if (validator.jailed) {
     statusLabel = 'Jailed';
-    statusColor = 'error';
+    statusColor = TextFieldStatus.ERROR;
   } else if (validator.status === BondStatus.UNBONDING) {
     statusLabel = 'Unbonding';
-    statusColor = 'warn';
+    statusColor = TextFieldStatus.WARN;
   } else if (validator.status === BondStatus.UNBONDED) {
     statusLabel = 'Inactive';
-    statusColor = 'warn';
+    statusColor = TextFieldStatus.WARN;
   } else {
     statusLabel = 'Active';
-    statusColor = 'good';
+    statusColor = TextFieldStatus.GOOD;
   }
 
   const textColor = selectTextColorByStatus(statusColor);
@@ -373,7 +374,32 @@ export const ValidatorScrollTile = ({
     setSelectedAction(null);
   };
 
-  // TODO: clear state on close of slidetray
+  let showingCurrentValidators = isSelectable || showCurrentValidators;
+  let value = formattedRewardAmount;
+  let secondarySubtitle = null;
+  let subtitleStatus = TextFieldStatus.GOOD;
+  let secondarySubtitleStatus = TextFieldStatus.GOOD;
+
+  if (showingCurrentValidators) {
+    const uptime = parseFloat(combinedStakingInfo.uptime || '0');
+    const votingPower = parseFloat(combinedStakingInfo.votingPower || '0');
+    subTitle = `${uptime}% uptime`;
+    value = `${combinedStakingInfo.estimatedReturn || 0}%`;
+    secondarySubtitle = `${votingPower || 0}%`;
+
+    if (uptime < 80) {
+      subtitleStatus = TextFieldStatus.ERROR;
+    } else if (uptime < 90) {
+      subtitleStatus = TextFieldStatus.WARN;
+    }
+
+    if (votingPower > 1.5) {
+      secondarySubtitleStatus = TextFieldStatus.ERROR;
+    } else if (votingPower > 1.25) {
+      secondarySubtitleStatus = TextFieldStatus.WARN;
+    }
+  }
+
   return (
     <>
       {isSelectable ? (
@@ -393,10 +419,13 @@ export const ValidatorScrollTile = ({
             <div>
               <ScrollTile
                 title={title}
-                subtitle={subTitle}
-                value={formattedRewardAmount}
-                icon={<LogoIcon />}
                 status={statusColor}
+                subtitle={subTitle}
+                subtitleStatus={subtitleStatus}
+                value={value}
+                icon={<LogoIcon />}
+                secondarySubtitle={secondarySubtitle}
+                secondarySubtitleStatus={secondarySubtitleStatus}
               />
             </div>
           }

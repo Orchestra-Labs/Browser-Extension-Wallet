@@ -1,27 +1,36 @@
 import { LogoIcon } from '@/assets/icons';
+import { TextFieldStatus } from '@/constants';
 import { cn, selectTextColorByStatus, truncateString } from '@/helpers';
 
 interface ScrollTileProps {
   title: string;
   subtitle: string;
+  secondarySubtitle?: string | null;
   value: string;
   icon?: React.ReactNode;
-  status?: 'error' | 'warn' | 'good';
+  status?: TextFieldStatus;
   selected?: boolean;
+  subtitleStatus?: TextFieldStatus;
+  secondarySubtitleStatus?: TextFieldStatus;
   onClick?: () => void;
 }
 
 export const ScrollTile = ({
   title,
   subtitle,
+  secondarySubtitle,
   value,
   icon,
-  status = 'good',
+  status = TextFieldStatus.GOOD,
   selected = false,
+  subtitleStatus = TextFieldStatus.GOOD,
+  secondarySubtitleStatus = TextFieldStatus.GOOD,
   onClick,
 }: ScrollTileProps) => {
   const formattedTitle = truncateString(title, 10);
   const textColor = selectTextColorByStatus(status);
+  const subtitleColor = selectTextColorByStatus(subtitleStatus, 'text-neutral-1');
+  const secondarySubtitleColor = selectTextColorByStatus(secondarySubtitleStatus, 'text-neutral-1');
 
   const baseClasses = 'p-2 min-h-[52px] rounded-md flex items-center cursor-pointer border';
   const selectedClasses = `border-blue bg-blue-hover text-blue-dark
@@ -42,10 +51,20 @@ export const ScrollTile = ({
         <h6 className={`text-base ${textColor} text-left line-clamp-1 select-none`}>
           {formattedTitle}
         </h6>
-        <p className="text-xs text-neutral-1 text-left line-clamp-1 select-none">{subtitle}</p>
+        <p className={`text-xs ${subtitleColor} text-left line-clamp-1 select-none`}>{subtitle}</p>
       </div>
       <div className="flex-1" />
-      <div className="text-white text-h6 line-clamp-1 select-none">{value}</div>
+      {!secondarySubtitle && (
+        <div className="text-white text-h6 line-clamp-1 select-none">{value}</div>
+      )}
+      {secondarySubtitle && (
+        <div className="flex flex-col ml-3 select-none">
+          <h6 className={`text-base ${textColor} text-right line-clamp-1 select-none`}>{value}</h6>
+          <div className={`text-xs ${secondarySubtitleColor} text-right line-clamp-1 select-none`}>
+            {secondarySubtitle}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
