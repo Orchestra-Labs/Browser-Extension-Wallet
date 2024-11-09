@@ -12,6 +12,7 @@ import {
   validatorDialogSortOrderAtom,
   validatorDialogSortTypeAtom,
 } from '@/atoms';
+import { ValidatorSortType } from '@/constants';
 
 interface SortDialogProps {
   isValidatorSort?: boolean;
@@ -35,9 +36,7 @@ export const SortDialog: React.FC<SortDialogProps> = ({
     isDialog ? validatorDialogSortTypeAtom : validatorSortTypeAtom,
   );
 
-  const sortOptions = isValidatorSort
-    ? ['name', 'delegation', 'rewards', 'apr', 'votingPower']
-    : ['name', 'amount'];
+  const sortOptions = isValidatorSort ? Object.values(ValidatorSortType) : ['name', 'amount'];
 
   const setSortOrder = (sortOrder: 'Asc' | 'Desc') => {
     isValidatorSort ? setValidatorSortOrder(sortOrder) : setAssetSortOrder(sortOrder);
@@ -49,7 +48,7 @@ export const SortDialog: React.FC<SortDialogProps> = ({
 
   const resetDefaults = () => {
     isValidatorSort ? setValidatorSortOrder('Desc') : setAssetSortOrder('Desc');
-    isValidatorSort ? setValidatorSortType('name') : setAssetSortType('name');
+    isValidatorSort ? setValidatorSortType(ValidatorSortType.NAME) : setAssetSortType('name');
   };
 
   const sortOrder = isValidatorSort ? validatorSortOrder : assetSortOrder;

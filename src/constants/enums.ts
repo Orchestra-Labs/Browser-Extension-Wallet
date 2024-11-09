@@ -24,3 +24,11 @@ export enum TextFieldStatus {
   WARN = 'warn',
   GOOD = 'good',
 }
+
+export enum ValidatorSortType {
+  NAME = 'name',
+  DELEGATION = 'delegation',
+  REWARDS = 'rewards',
+  APY = 'apy',
+  VOTING_POWER = 'votingPower',
+}

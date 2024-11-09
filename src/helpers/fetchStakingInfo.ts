@@ -276,10 +276,10 @@ export const fetchValidatorData = async (
         // uptime: uptime,
       };
 
-      console.log(`Validator info: ${combinedInfo}`);
-      console.log(`Validator: ${validator.description.moniker}`);
-      console.log(`Estimated Return: ${combinedInfo.estimatedReturn}%`);
-      console.log(`Voting Power: ${combinedInfo.votingPower}%`);
+      // console.log(`Validator info: ${combinedInfo}`);
+      // console.log(`Validator: ${validator.description.moniker}`);
+      // console.log(`Estimated Return: ${combinedInfo.estimatedReturn}%`);
+      // console.log(`Voting Power: ${combinedInfo.votingPower}%`);
       // console.log(`Uptime: ${combinedInfo.uptime}%`);
 
       return combinedInfo;
