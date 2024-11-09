@@ -1,4 +1,4 @@
-# Symphony Wallet Chrome Extension
+# Aria Wallet Chrome Extension
 
 ## Technologies:
 
@@ -8,19 +8,19 @@
 
 ## Prerequisites:
 
--   This project is using `npm` as a package manager
--   Node: v20.11.0
+- This project is using `yarn` as a package manager
+- Node: v20.11.0
 
 In the project directory, you can run:
 
-### `npm run dev`
+### `yarn dev`
 
 Runs the app in the development mode.
 
 The page will reload if you make edits.
 You will also see any lint errors in the console.
 
-### `npm run build`
+### `yarn build`
 
 Builds the app for production to the `build` folder.
 It correctly bundles React in production mode and optimizes the build for the best performance.
