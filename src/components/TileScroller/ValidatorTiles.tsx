@@ -10,8 +10,6 @@ interface ValidatorTilesProps {
   isDialog?: boolean;
 }
 
-// TODO: show some indicator of uptime (such as coloring symphony icon depending) (on all screen)
-// TODO: show some indicator of APY (on all screen)
 // TODO: check for registry symbol where symbol equals denom
 // const denom = validatorReward.rewards[0]?.denom || 'UNKNOWN';
 export const ValidatorTiles: React.FC<ValidatorTilesProps> = ({

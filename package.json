@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@cosmjs/amino": "^0.32.4",
+    "@cosmjs/encoding": "^0.32.4",
     "@cosmjs/stargate": "^0.32.4",
     "@orchestra-labs/symphonyjs": "^1.0.28",
     "@radix-ui/react-dialog": "~1.0.5",

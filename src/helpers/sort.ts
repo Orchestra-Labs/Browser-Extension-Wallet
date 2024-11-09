@@ -1,6 +1,6 @@
 import { Asset, CombinedStakingInfo } from '@/types';
 import { stripNonAlphanumerics } from './formatString';
-import { BondStatus, ValidatorStatusFilter } from '@/constants';
+import { BondStatus, ValidatorSortType, ValidatorStatusFilter } from '@/constants';
 
 export function filterAndSortAssets(
   assets: Asset[],
@@ -51,7 +51,7 @@ export function filterAndSortAssets(
 export function filterAndSortValidators(
   validators: CombinedStakingInfo[],
   searchTerm: string,
-  sortType: 'name' | 'delegation' | 'rewards' | 'apr' | 'votingPower',
+  sortType: ValidatorSortType,
   sortOrder: 'Asc' | 'Desc',
   showCurrentValidators: boolean,
   statusFilter: ValidatorStatusFilter,
@@ -85,22 +85,35 @@ export function filterAndSortValidators(
   return finalValidators.sort((a, b) => {
     let valueA, valueB;
 
-    if (sortType === 'name') {
-      valueA = stripNonAlphanumerics(a.validator.description.moniker.toLowerCase());
-      valueB = stripNonAlphanumerics(b.validator.description.moniker.toLowerCase());
+    switch (sortType) {
+      case ValidatorSortType.NAME:
+        valueA = stripNonAlphanumerics(a.validator.description.moniker.toLowerCase());
+        valueB = stripNonAlphanumerics(b.validator.description.moniker.toLowerCase());
+        return sortOrder === 'Asc'
+          ? valueA.localeCompare(valueB, undefined, { sensitivity: 'base' })
+          : valueB.localeCompare(valueA, undefined, { sensitivity: 'base' });
 
-      return sortOrder === 'Asc'
-        ? valueA.localeCompare(valueB, undefined, { sensitivity: 'base' })
-        : valueB.localeCompare(valueA, undefined, { sensitivity: 'base' });
-    } else if (sortType === 'delegation') {
-      valueA = parseFloat(a.delegation.shares);
-      valueB = parseFloat(b.delegation.shares);
-    } else if (sortType === 'rewards') {
-      valueA = a.rewards.reduce((sum, reward) => sum + parseFloat(reward.amount), 0);
-      valueB = b.rewards.reduce((sum, reward) => sum + parseFloat(reward.amount), 0);
+      case ValidatorSortType.DELEGATION:
+        valueA = parseFloat(a.delegation.shares);
+        valueB = parseFloat(b.delegation.shares);
+        break;
+
+      case ValidatorSortType.REWARDS:
+        valueA = a.rewards.reduce((sum, reward) => sum + parseFloat(reward.amount), 0);
+        valueB = b.rewards.reduce((sum, reward) => sum + parseFloat(reward.amount), 0);
+        break;
+
+      case ValidatorSortType.APY:
+        valueA = parseFloat(a.estimatedReturn ?? '0');
+        valueB = parseFloat(b.estimatedReturn ?? '0');
+        break;
+
+      case ValidatorSortType.VOTING_POWER:
+        valueA = parseFloat(a.votingPower ?? '0');
+        valueB = parseFloat(b.votingPower ?? '0');
+        break;
     }
 
-    const result = sortOrder === 'Asc' ? (valueA > valueB ? 1 : -1) : valueA < valueB ? 1 : -1;
-    return result;
+    return sortOrder === 'Asc' ? (valueA > valueB ? 1 : -1) : valueA < valueB ? 1 : -1;
   });
 }

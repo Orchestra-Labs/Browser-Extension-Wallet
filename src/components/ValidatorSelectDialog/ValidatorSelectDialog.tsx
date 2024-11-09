@@ -20,7 +20,12 @@ import {
 } from '@/helpers';
 import { CombinedStakingInfo } from '@/types';
 import { useRefreshData, useToast } from '@/hooks';
-import { DEFAULT_ASSET, GREATER_EXPONENT_DEFAULT, TransactionType } from '@/constants';
+import {
+  DEFAULT_ASSET,
+  GREATER_EXPONENT_DEFAULT,
+  TransactionType,
+  ValidatorSortType,
+} from '@/constants';
 import { TransactionResultsTile } from '../TransactionResultsTile';
 import { Loader } from '../Loader';
 
@@ -143,7 +148,7 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
   const resetDefaults = () => {
     setSearchTerm('');
     setSortOrder('Desc');
-    setSortType('name');
+    setSortType(ValidatorSortType.NAME);
     setSelectedValidators([]);
     setIsClaimToRestake(true);
   };

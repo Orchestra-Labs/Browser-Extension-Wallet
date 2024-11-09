@@ -115,6 +115,7 @@ export const CHAIN_ENDPOINTS = {
   swap: '/osmosis/market/v1beta1/swap?',
   exchangeRequirements: '/osmosis/market/v1beta1/exchange_requirements',
   getStakingParams: '/cosmos/staking/v1beta1/params',
+  getUptime: '/cosmos/slashing/v1beta1/signing_infos/',
 };
 
 export const LOCAL_CHAIN_REGISTRY = {
