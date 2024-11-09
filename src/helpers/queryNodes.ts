@@ -71,6 +71,7 @@ export const performRpcQuery = async (
     amount: { denom: string; amount: string }[];
     gas: string;
   },
+  memo: string = 'wallet',
 ): Promise<RPCResponse> => {
   try {
     // TODO: modify to support multi-send
@@ -101,7 +102,7 @@ export const performRpcQuery = async (
       };
     }
 
-    const result = await client.signAndBroadcast(walletAddress, messages, calculatedFee);
+    const result = await client.signAndBroadcast(walletAddress, messages, calculatedFee, memo);
 
     if (result.code === 0) {
       return {
