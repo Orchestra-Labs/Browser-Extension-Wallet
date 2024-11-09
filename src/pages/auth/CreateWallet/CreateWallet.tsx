@@ -105,6 +105,7 @@ export const CreateWallet = () => {
   /* ******************************************************************************************* */
 
   /* Current TODOs */
+  // TODO: add "wallet" to memo
   // TODO: add ledger support
   // TODO: add auth support for dApps
   // TODO: abstract wallet prefix and mnemonic decryption
@@ -142,6 +143,7 @@ export const CreateWallet = () => {
   // TODO: save to "add-page" for fast-access
 
   /* Nice to have TODOs */
+  // TODO: get google analytics going
   // TODO: creation of wallet with old password should add additional wallet on same account
   // TODO: fix issue with gas on 'all' button for validator selections (bundle transactions)
   // TODO: make toasts copy-on-click

@@ -381,17 +381,20 @@ export const ValidatorScrollTile = ({
   let secondarySubtitleStatus = TextFieldStatus.GOOD;
 
   if (showingCurrentValidators) {
-    const uptime = parseFloat(combinedStakingInfo.uptime || '0');
-    const votingPower = parseFloat(combinedStakingInfo.votingPower || '0');
-    subTitle = `${uptime}% uptime`;
+    // TODO: uncomment when uptime is fixed
+    // const uptime = parseFloat(combinedStakingInfo.uptime || '0');
+    // subTitle = `${uptime}% uptime`;
+
     value = `${combinedStakingInfo.estimatedReturn || 0}%`;
+
+    const votingPower = parseFloat(combinedStakingInfo.votingPower || '0');
     secondarySubtitle = `${votingPower || 0}%`;
 
-    if (uptime < 80) {
-      subtitleStatus = TextFieldStatus.ERROR;
-    } else if (uptime < 90) {
-      subtitleStatus = TextFieldStatus.WARN;
-    }
+    // if (uptime < 80) {
+    //   subtitleStatus = TextFieldStatus.ERROR;
+    // } else if (uptime < 90) {
+    //   subtitleStatus = TextFieldStatus.WARN;
+    // }
 
     if (votingPower > 1.5) {
       secondarySubtitleStatus = TextFieldStatus.ERROR;

@@ -1,7 +1,7 @@
 import { CombinedStakingInfo, DelegationResponse, StakingParams, ValidatorInfo } from '@/types';
 import { queryRestNode } from './queryNodes';
 import { BondStatus, CHAIN_ENDPOINTS } from '@/constants';
-import { fromBase64, toBech32 } from '@cosmjs/encoding';
+// import { fromBase64, toBech32 } from '@cosmjs/encoding';
 
 // Fetch delegations (staked assets) from either the REST or RPC endpoint
 export const fetchDelegations = async (
@@ -177,37 +177,37 @@ export const fetchStakingParams = async (): Promise<StakingParams | null> => {
   }
 };
 
-const fetchUptimeForValidator = async (validatorAddress: string): Promise<number> => {
-  try {
-    const endpoint = `${CHAIN_ENDPOINTS.getUptime}${validatorAddress}`;
-    console.log('querying for uptime from:', endpoint);
+// const fetchUptimeForValidator = async (validatorAddress: string): Promise<number> => {
+//   try {
+//     const endpoint = `${CHAIN_ENDPOINTS.getUptime}${validatorAddress}`;
+//     console.log('querying for uptime from:', endpoint);
 
-    const response = await queryRestNode({ endpoint });
+//     const response = await queryRestNode({ endpoint });
 
-    console.log('Uptime Response:', response);
+//     console.log('Uptime Response:', response);
 
-    const missedBlocks = parseInt(response.val_signing_info.missed_blocks_counter, 10);
-    const totalBlocks = parseInt(response.val_signing_info.index_offset, 10);
+//     const missedBlocks = parseInt(response.val_signing_info.missed_blocks_counter, 10);
+//     const totalBlocks = parseInt(response.val_signing_info.index_offset, 10);
 
-    if (isNaN(missedBlocks) || isNaN(totalBlocks) || totalBlocks === 0) {
-      console.error(`Invalid data for validator ${validatorAddress}. Setting uptime to 0%`);
-      return 0;
-    }
+//     if (isNaN(missedBlocks) || isNaN(totalBlocks) || totalBlocks === 0) {
+//       console.error(`Invalid data for validator ${validatorAddress}. Setting uptime to 0%`);
+//       return 0;
+//     }
 
-    const uptime = ((totalBlocks - missedBlocks) / totalBlocks) * 100;
-    return uptime;
-  } catch (error) {
-    console.error(`Error fetching uptime for validator ${validatorAddress}:`, error);
-    return 0;
-  }
-};
+//     const uptime = ((totalBlocks - missedBlocks) / totalBlocks) * 100;
+//     return uptime;
+//   } catch (error) {
+//     console.error(`Error fetching uptime for validator ${validatorAddress}:`, error);
+//     return 0;
+//   }
+// };
 
-// TODO: move to utils
-const convertPubKeyToValConsAddress = (pubKey: string, prefix: string = 'symphonyvalcons') => {
-  const decodedPubKey = fromBase64(pubKey);
-  const valConsAddress = toBech32(prefix, decodedPubKey);
-  return valConsAddress;
-};
+// // TODO: move to utils
+// const convertPubKeyToValConsAddress = (pubKey: string, prefix: string = 'symphonyvalcons') => {
+//   const decodedPubKey = fromBase64(pubKey);
+//   const valConsAddress = toBech32(prefix, decodedPubKey);
+//   return valConsAddress;
+// };
 
 export const fetchValidatorData = async (
   delegatorAddress: string,
@@ -224,21 +224,22 @@ export const fetchValidatorData = async (
     const delegations = delegationResponse.delegations;
     const totalTokens = validators.reduce((sum, v) => sum + parseFloat(v.tokens), 0);
 
-    const uptimePromises = validators.map(validator => {
-      const valConsAddress = convertPubKeyToValConsAddress(
-        validator.consensus_pubkey.key,
-        'symphonyvalcons',
-      );
-      console.log(`Validator: ${validator.description.moniker}`);
-      console.log(`Key: ${validator.consensus_pubkey.key}`);
-      console.log(`ValCons Address: ${valConsAddress}`);
-      return fetchUptimeForValidator(valConsAddress);
-    });
-    const uptimeResults = await Promise.all(uptimePromises);
-    const uptimeMap = validators.reduce<Record<string, string>>((acc, validator, index) => {
-      acc[validator.operator_address] = uptimeResults[index].toFixed(2);
-      return acc;
-    }, {});
+    // TODO: fix this.  currently not creating correct signer address
+    // const uptimePromises = [validators[0]].map(validator => {
+    //   const signingAddress = convertPubKeyToValConsAddress(
+    //     validator.consensus_pubkey.key,
+    //     'symphonyvalcons',
+    //   );
+    //   console.log(`Validator: ${validator.description.moniker}`);
+    //   console.log(`Key: ${validator.consensus_pubkey.key}`);
+    //   console.log(`Signing Address: ${signingAddress}`);
+    //   return validator.status === BondStatus.BONDED ? fetchUptimeForValidator(signingAddress) : 0;
+    // });
+    // const uptimeResults = await Promise.all(uptimePromises);
+    // const uptimeMap = validators.reduce<Record<string, string>>((acc, validator, index) => {
+    //   acc[validator.operator_address] = uptimeResults[index].toFixed(2);
+    //   return acc;
+    // }, {});
 
     const combinedData: CombinedStakingInfo[] = validators.map(validator => {
       const delegationInfo = delegations.find(
@@ -255,7 +256,7 @@ export const fetchValidatorData = async (
           ? ((validatorTokens / totalTokens) * 100).toFixed(2)
           : '0';
 
-      const uptime = uptimeMap[validator.operator_address] || '0.00';
+      // const uptime = uptimeMap[validator.operator_address] || '0.00';
 
       const combinedInfo: CombinedStakingInfo = {
         validator,
@@ -272,14 +273,14 @@ export const fetchValidatorData = async (
         stakingParams,
         estimatedReturn: estimatedReturn.toFixed(2),
         votingPower: votingPower,
-        uptime: uptime,
+        // uptime: uptime,
       };
 
       console.log(`Validator info: ${combinedInfo}`);
       console.log(`Validator: ${validator.description.moniker}`);
       console.log(`Estimated Return: ${combinedInfo.estimatedReturn}%`);
       console.log(`Voting Power: ${combinedInfo.votingPower}%`);
-      console.log(`Uptime: ${combinedInfo.uptime}%`);
+      // console.log(`Uptime: ${combinedInfo.uptime}%`);
 
       return combinedInfo;
     });
