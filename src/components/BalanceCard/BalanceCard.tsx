@@ -21,6 +21,7 @@ export const BalanceCard = ({
   currentStep,
   totalSteps,
 }: BalanceCardProps) => {
+  // TODO: combine isInitialLoad with validatorloading, walletloading, and swiperindex
   const isInitialDataLoad = useAtomValue(isInitialDataLoadAtom);
 
   return (

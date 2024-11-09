@@ -73,6 +73,10 @@ export interface Pagination {
 
 export interface ValidatorInfo {
   operator_address: string;
+  consensus_pubkey: {
+    '@type': string;
+    key: string;
+  };
   jailed: boolean;
   status: string; // Bonded, Unbonding, Unbonded
   tokens: string;
@@ -102,6 +106,9 @@ export interface CombinedStakingInfo {
   validator: ValidatorInfo;
   rewards: ValidatorReward['rewards'];
   stakingParams?: StakingParams | null;
+  estimatedReturn?: string;
+  votingPower?: string;
+  uptime?: string;
 }
 
 //Create base RPC response interface

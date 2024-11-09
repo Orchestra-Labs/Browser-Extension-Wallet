@@ -101,10 +101,12 @@ export const CreateWallet = () => {
   /* ******************************************************************************************* */
   /* David Current TODOs */
   // TODO: enable transaction fees for wallet transactions (bundle a transaction for revenue. based on transaction fees (0.5x basic transaction fee)?)
-  // TODO: versioning: minimum, recommended, and current versions.  recommended update for versions lower than recommended, link to update, no login for versions below minimum
   /* ******************************************************************************************* */
 
   /* Current TODOs */
+  // TODO: add "wallet" to memo
+  // TODO: add ledger support
+  // TODO: add auth support for dApps
   // TODO: abstract wallet prefix and mnemonic decryption
   // TODO: abstract IBC needs
   // TODO: add button to "add chain" at bottom of Holdings list
@@ -132,7 +134,15 @@ export const CreateWallet = () => {
   // TODO: enable search function to validator list by chain (on top of current functionality)
   // TODO: add show/hide function to validator list (by chain)
 
+  /* dApp TODOs */
+  // TODO: add page
+  // TODO: add search
+  // TODO: add categorization for filtering and sorting
+  // TODO: add in-app auth
+  // TODO: save to "add-page" for fast-access
+
   /* Nice to have TODOs */
+  // TODO: get google analytics going
   // TODO: creation of wallet with old password should add additional wallet on same account
   // TODO: fix issue with gas on 'all' button for validator selections (bundle transactions)
   // TODO: make toasts copy-on-click
@@ -158,7 +168,6 @@ export const CreateWallet = () => {
   // TODO: Add on-ramp / off-ramp page
   // TODO: If at least one on-ramp connection exists, include fiat in send options
   // TODO: If at least one off-ramp connection exists, include fiat in receive options
-  // TODO: Add dApp page
   // TODO: Add NFT page
   // TODO: Add page view selection in options
   // TODO: handle stake to all (add total, it distributes that total amongst all selected). david sees as beneficial.  do others?
@@ -175,8 +184,7 @@ export const CreateWallet = () => {
   // TODO: add password complexity bar on entry
   // TODO: add toggle option for single-click transactions and another for force accepting/declining transactions
   // TODO: add toggle option for ultra-secure mode, using password auth for on every transaction like with hardware wallets.  in that mode, no session storage is used.
-  // TODO: loader on tilescroller swipe-to-refresh coming in late and tries to catch up.  make more uniform.
-  // TODO: loader on tilescroller swipe-to-refresh should spin in line with its percent pulled
+  // TODO: loader on tilescroller swipe-to-refresh coming in late and tries to catch up.  make more uniform with percent pulled
   // TODO: add option screen filter for validator list (by status.  default to not showing jailed validators.  check fetchAllValidators function and validatorsAtom (currently filters here))
 
   /* Nice to have Interchain-compatibility TODOs */
@@ -189,7 +197,6 @@ export const CreateWallet = () => {
 
   // Check everything is completed properly and pass to confirmation screen
   const handleCreateWallet = async () => {
-    // TODO: fix.  currently not setting data to localstorage.
     try {
       console.log('trying to create wallet');
       // Generate wallet from the mnemonic and create the token
