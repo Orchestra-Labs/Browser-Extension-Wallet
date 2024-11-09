@@ -374,13 +374,14 @@ export const ValidatorScrollTile = ({
     setSelectedAction(null);
   };
 
-  let showingCurrentValidators = isSelectable || showCurrentValidators;
+  // let showingCurrentValidators = isSelectable && showCurrentValidators;
+  console.log('is selectable', isSelectable, 'show current validators', showCurrentValidators);
   let value = formattedRewardAmount;
   let secondarySubtitle = null;
   let subtitleStatus = TextFieldStatus.GOOD;
   let secondarySubtitleStatus = TextFieldStatus.GOOD;
 
-  if (showingCurrentValidators) {
+  if (!showCurrentValidators) {
     // TODO: uncomment when uptime is fixed
     // const uptime = parseFloat(combinedStakingInfo.uptime || '0');
     // subTitle = `${uptime}% uptime`;
