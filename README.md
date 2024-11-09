@@ -1,4 +1,4 @@
-# Symphony Wallet Chrome Extension
+# Aria Wallet Chrome Extension
 
 ## Technologies:
 
