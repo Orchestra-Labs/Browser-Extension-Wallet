@@ -1,5 +1,5 @@
-import { useEffect, useState, useRef } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { useEffect, useState} from 'react';
+import { NavLink, useLocation} from 'react-router-dom';
 import { ArrowLeft, Spinner, Swap } from '@/assets/icons';
 import { DEFAULT_ASSET, GREATER_EXPONENT_DEFAULT, ROUTES } from '@/constants';
 import { Button, Separator } from '@/ui-kit';
@@ -29,7 +29,9 @@ import { useExchangeRate, useRefreshData, useToast } from '@/hooks/';
 import { AddressInput } from './AddressInput';
 
 export const Send = () => {
-  const isComponentMounted = useRef(true);
+  const [isLeavingPage, setIsLeavingPage] = useState(() => {
+    return sessionStorage.getItem('isLeavingSendPage') === 'true'
+  });
   const { refreshData } = useRefreshData();
   const { exchangeRate } = useExchangeRate();
   const { toast } = useToast();
@@ -63,6 +65,7 @@ export const Send = () => {
   const [error, setError] = useState<string>('');
 
   const handleTransactionError = (errorMessage: string) => {
+    const isLeaving = sessionStorage.getItem('isLeavingSendPage') === 'true';
     if (location.pathname === ROUTES.APP.SEND) {
       setError(errorMessage);
       setTimeout(() => {
@@ -71,28 +74,31 @@ export const Send = () => {
     }
     
     // Only show toast when component is unmounted
-    if (!isComponentMounted.current) {
+    if (isLeaving) {
       toast({
         title: 'Transaction failed!',
         description: errorMessage,
         duration: 5000,
       });
+      sessionStorage.removeItem('isLeavingSendPage');
     }
   };
 
   const handleTransactionSuccess = (txHash: string) => {
     const displayTransactionHash = truncateWalletAddress('', txHash);
+    const isLeaving = sessionStorage.getItem('isLeavingSendPage') === 'true';
     if (location.pathname === ROUTES.APP.SEND) {
       setTransactionState({ isSuccess: true, txHash });
     }
     
     // Only show toast when component is unmounted
-    if (!isComponentMounted.current) {
+    if (isLeaving) { 
       toast({
         title: `${transactionType.isSwap ? 'Swap' : 'Send'} success!`,
         description: `Transaction hash: ${displayTransactionHash}`,
         duration: 5000,
       });
+      sessionStorage.removeItem('isLeavingSendPage');
     }
     refreshData({ validator: false });
   };
@@ -546,13 +552,6 @@ export const Send = () => {
     propagateChanges();
   }, [changeMap]);
 
-  useEffect(() => {
-    // Set mounted flag to false when component unmounts
-    return () => {
-      isComponentMounted.current = false;
-    };
-  }, []);
-
   // Update on late exchangeRate returns
   useEffect(() => {
     propagateChanges(callbackChangeMap, setCallbackChangeMap, true);
@@ -570,6 +569,11 @@ export const Send = () => {
     };
   }, []);
 
+  const handleBackClick = () => {
+    sessionStorage.setItem('isLeavingSendPage', 'true');
+    setIsLeavingPage(true);
+  };
+
   if (location.pathname === ROUTES.APP.SEND && transactionState.isSuccess) {
     return <WalletSuccessScreen caption="Transaction success!" txHash={transactionState.txHash} />;
   }
@@ -581,6 +585,7 @@ export const Send = () => {
         <NavLink
           to={ROUTES.APP.ROOT}
           className="flex items-center justify-center max-w-5 max-h-5 p-0.5"
+          onClick={handleBackClick}
         >
           <ArrowLeft className="w-full h-full text-white" />
         </NavLink>
