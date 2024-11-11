@@ -4,6 +4,7 @@ import { SlideTray, Button } from '@/ui-kit';
 import { LogoIcon } from '@/assets/icons';
 import { ScrollTile } from '../ScrollTile';
 import {
+  calculateRemainingTime,
   claimAndRestake,
   claimRewards,
   convertToGreaterUnit,
@@ -82,8 +83,7 @@ export const ValidatorScrollTile = ({
     parseFloat(rewardAmount),
     GREATER_EXPONENT_DEFAULT,
   ).toFixed(GREATER_EXPONENT_DEFAULT)}`;
-  const userIsUnbonding =
-    parseFloat(balance.amount) === 0 && parseFloat(unbondingBalance?.balance || '') > 0;
+  const userIsUnbonding = unbondingBalance && parseFloat(unbondingBalance?.balance || '') > 0;
   const formattedRewardAmount = formatBalanceDisplay(strippedRewardAmount, symbol);
 
   const delegatedAmount = convertToGreaterUnit(
@@ -119,6 +119,7 @@ export const ValidatorScrollTile = ({
   );
 
   const unbondingDays = `${combinedStakingInfo.stakingParams?.unbonding_time} days`;
+  const unstakingTime = `${calculateRemainingTime(combinedStakingInfo.unbondingBalance?.completion_time || '')}`;
 
   let statusLabel = '';
   let statusColor = TextFieldStatus.GOOD;
@@ -364,16 +365,6 @@ export const ValidatorScrollTile = ({
     }
   };
 
-  useEffect(() => {
-    if (slideTrayIsOpen) updateFee();
-  }, [slideTrayIsOpen, selectedAction, amount, isClaimToRestake]);
-
-  useEffect(() => {
-    if (transactionSuccess.success) {
-      refreshData();
-    }
-  }, [transactionSuccess.success]);
-
   const resetDefaults = () => {
     setAmount(0);
     setSimulatedFee({ fee: '0 MLD', textClass: 'text-blue' });
@@ -382,7 +373,6 @@ export const ValidatorScrollTile = ({
   };
 
   // let showingCurrentValidators = isSelectable && showCurrentValidators;
-  console.log('is selectable', isSelectable, 'show current validators', showCurrentValidators);
   let value = formattedRewardAmount;
   let secondarySubtitle = null;
   let subtitleStatus = TextFieldStatus.GOOD;
@@ -420,6 +410,16 @@ export const ValidatorScrollTile = ({
     }
   }
 
+  useEffect(() => {
+    if (slideTrayIsOpen) updateFee();
+  }, [slideTrayIsOpen, selectedAction, amount, isClaimToRestake]);
+
+  useEffect(() => {
+    if (transactionSuccess.success) {
+      refreshData();
+    }
+  }, [transactionSuccess.success]);
+
   return (
     <>
       {isSelectable ? (
@@ -433,6 +433,7 @@ export const ValidatorScrollTile = ({
           onClick={handleClick}
         />
       ) : (
+        // TODO: separate slidetray from component to reduce required build
         <SlideTray
           ref={slideTrayRef}
           triggerComponent={
@@ -461,24 +462,35 @@ export const ValidatorScrollTile = ({
                   Reward: <span className="text-blue">{formattedRewardAmount}</span>
                 </div>
                 <span className="text-grey-dark text-xs text-base">
-                  Unstaking period <span className="text-warning">{unbondingDays}</span>
+                  Unstaking period <span className="text-warning">{unstakingTime}</span>
                 </span>
               </div>
             )}
 
-            {/* TODO: make scrollable? collapse/expand on button press? if collapse, animate collapse to 1 line / re-expansion */}
+            {/* TODO: make scrollable, make into a component, and pass an array of text and color maps */}
             {/* Validator Information */}
             <div className="mb-4 min-h-[7.5rem] max-h-[7.5rem] overflow-hidden shadow-md bg-black p-2">
               <p>
-                <strong>Status: </strong>
-                <span className={textColor}>{statusLabel}</span>
+                <strong>Status:</strong> <span className={textColor}>{statusLabel}</span>
               </p>
               <p className="line-clamp-1">
+                {' '}
                 <strong>Amount Staked:</strong> <span className="text-blue">{dialogSubTitle}</span>
               </p>
-              <p>
-                <strong>Validator Commission:</strong> {commission}
-              </p>
+              {userIsUnbonding && (
+                <>
+                  <p className="line-clamp-1">
+                    <strong>Amount Unstaking:</strong> <span className="text-blue">{value}</span>
+                  </p>
+                  <p className="line-clamp-1">
+                    <strong>Remaining Time to Unstake:</strong>{' '}
+                    <span className="text-blue">{unbondingDays}</span>
+                  </p>
+                  <p>
+                    <strong>Validator Commission:</strong> <span>{commission}</span>
+                  </p>
+                </>
+              )}
               <p className="truncate">
                 <strong>Website:</strong>{' '}
                 {isWebsiteValid ? (
