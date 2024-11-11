@@ -462,7 +462,7 @@ export const ValidatorScrollTile = ({
                   Reward: <span className="text-blue">{formattedRewardAmount}</span>
                 </div>
                 <span className="text-grey-dark text-xs text-base">
-                  Unstaking period <span className="text-warning">{unstakingTime}</span>
+                  Unstaking period <span className="text-warning">{unbondingDays}</span>
                 </span>
               </div>
             )}
@@ -484,7 +484,7 @@ export const ValidatorScrollTile = ({
                   </p>
                   <p className="line-clamp-1">
                     <strong>Remaining Time to Unstake:</strong>{' '}
-                    <span className="text-blue">{unbondingDays}</span>
+                    <span className="text-blue">{unstakingTime}</span>
                   </p>
                   <p>
                     <strong>Validator Commission:</strong> <span>{commission}</span>
