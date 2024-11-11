@@ -334,20 +334,19 @@ export const fetchValidatorData = async (
         // uptime: uptime,
         unbondingBalance: unbondingInfo
           ? {
-              balance: unbondingInfo.entries[0]?.balance || '',
-              completion_time: unbondingInfo.entries[0]?.completion_time || '',
+              balance: unbondingInfo.entries
+                .reduce((total, entry) => total + parseFloat(entry.balance), 0)
+                .toString(),
+              completion_time: unbondingInfo.entries
+                .map(entry => new Date(entry.completion_time))
+                .reduce((latest, current) => (current > latest ? current : latest), new Date(0))
+                .toISOString(),
             }
           : {
               balance: '',
               completion_time: '',
             },
       };
-
-      // console.log(`Validator info: ${combinedInfo}`);
-      // console.log(`Validator: ${validator.description.moniker}`);
-      // console.log(`Estimated Return: ${combinedInfo.estimatedReturn}%`);
-      // console.log(`Voting Power: ${combinedInfo.votingPower}%`);
-      // console.log(`Uptime: ${combinedInfo.uptime}%`);
 
       return combinedInfo;
     });
