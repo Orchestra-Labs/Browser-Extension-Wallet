@@ -48,6 +48,25 @@ export function filterAndSortAssets(
   });
 }
 
+const statusMatch = (validator: CombinedStakingInfo, statusFilter: ValidatorStatusFilter) => {
+  if (statusFilter === ValidatorStatusFilter.STATUS_ACTIVE) {
+    return validator.validator.status === BondStatus.BONDED;
+  } else if (statusFilter === ValidatorStatusFilter.STATUS_NON_JAILED) {
+    return !validator.validator.jailed;
+  } else {
+    return true;
+  }
+};
+
+const hasUserActivity = (validator: CombinedStakingInfo) => {
+  const isDelegatedTo = parseFloat(validator.balance.amount) > 0;
+  const isUnbondingFrom =
+    validator.unbondingBalance && parseFloat(validator.unbondingBalance.balance) > 0;
+  const userEngaged = isDelegatedTo || isUnbondingFrom;
+
+  return userEngaged;
+};
+
 export function filterAndSortValidators(
   validators: CombinedStakingInfo[],
   searchTerm: string,
@@ -59,16 +78,10 @@ export function filterAndSortValidators(
   const lowercasedSearchTerm = searchTerm.toLowerCase();
 
   const filteredByStatus = validators.filter(validator => {
-    const isDelegatedTo = parseFloat(validator.balance.amount) > 0;
+    const shouldIncludeValidator =
+      statusMatch(validator, statusFilter) || hasUserActivity(validator);
 
-    const statusMatch =
-      statusFilter === ValidatorStatusFilter.STATUS_ACTIVE
-        ? validator.validator.status === BondStatus.BONDED || isDelegatedTo
-        : statusFilter === ValidatorStatusFilter.STATUS_NON_JAILED || isDelegatedTo
-          ? !validator.validator.jailed
-          : true;
-
-    return statusMatch;
+    return shouldIncludeValidator;
   });
 
   const filteredValidators = filteredByStatus.filter(validator => {
@@ -79,7 +92,7 @@ export function filterAndSortValidators(
   });
 
   const finalValidators = showCurrentValidators
-    ? filteredValidators.filter(item => parseFloat(item.balance.amount) > 0)
+    ? filteredValidators.filter(validator => hasUserActivity(validator))
     : filteredValidators;
 
   return finalValidators.sort((a, b) => {

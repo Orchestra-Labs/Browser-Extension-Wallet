@@ -100,6 +100,17 @@ export interface ValidatorReward {
   rewards: any[];
 }
 
+export interface UnbondingDelegationEntry {
+  balance: string;
+  completion_time: string;
+}
+
+export interface UnbondingDelegationResponse {
+  delegator_address: string;
+  validator_address: string;
+  entries: UnbondingDelegationEntry[];
+}
+
 export interface CombinedStakingInfo {
   delegation: DelegationResponse['delegation'];
   balance: DelegationResponse['balance'];
@@ -109,6 +120,7 @@ export interface CombinedStakingInfo {
   estimatedReturn?: string;
   votingPower?: string;
   uptime?: string;
+  unbondingBalance?: UnbondingDelegationEntry;
 }
 
 //Create base RPC response interface

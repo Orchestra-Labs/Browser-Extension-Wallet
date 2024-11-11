@@ -1,9 +1,62 @@
-import { CombinedStakingInfo, DelegationResponse, StakingParams, ValidatorInfo } from '@/types';
+import {
+  CombinedStakingInfo,
+  DelegationResponse,
+  StakingParams,
+  UnbondingDelegationResponse,
+  ValidatorInfo,
+} from '@/types';
 import { queryRestNode } from './queryNodes';
 import { BondStatus, CHAIN_ENDPOINTS } from '@/constants';
 // import { fromBase64, toBech32 } from '@cosmjs/encoding';
 
-// Fetch delegations (staked assets) from either the REST or RPC endpoint
+export const fetchUnbondingDelegations = async (
+  delegatorAddress: string,
+  validatorAddress?: string,
+  paginationKey?: string,
+): Promise<{ delegations: UnbondingDelegationResponse[]; pagination: any }> => {
+  try {
+    let endpoint = `${CHAIN_ENDPOINTS.getSpecificDelegations}${delegatorAddress}/unbonding_delegations`;
+    if (validatorAddress) {
+      endpoint += `/${validatorAddress}`;
+    }
+
+    if (paginationKey) {
+      endpoint += `?pagination.key=${encodeURIComponent(paginationKey)}`;
+    }
+
+    const response = await queryRestNode({ endpoint });
+
+    return {
+      delegations: (response.unbonding_responses ?? []).map((item: any) => {
+        return {
+          delegator_address: item.delegator_address,
+          validator_address: item.validator_address,
+          entries: item.entries.map((entry: any) => ({
+            balance: entry.balance,
+            completion_time: entry.completion_time,
+          })),
+        };
+      }),
+      pagination: response.pagination,
+    };
+  } catch (error: any) {
+    if (error.response && error.response.status === 501) {
+      console.error('Node query failed: Unbonding delegation endpoint returned a 501 error.');
+    } else {
+      console.error(
+        `Unexpected error fetching unbonding delegations for ${delegatorAddress}:`,
+        error,
+      );
+    }
+
+    // Return an empty structure on error
+    return {
+      delegations: [],
+      pagination: null,
+    };
+  }
+};
+
 export const fetchDelegations = async (
   delegatorAddress: string,
   validatorAddress?: string,
@@ -33,7 +86,6 @@ export const fetchDelegations = async (
   }
 };
 
-// Create default validator info matching interface
 const defaultValidatorInfo: ValidatorInfo = {
   operator_address: '',
   consensus_pubkey: { '@type': '', key: '' },
@@ -68,8 +120,6 @@ export const fetchAllValidators = async (bondStatus?: BondStatus): Promise<Valid
 
       const response = await queryRestNode({ endpoint });
 
-      console.log('validator info response:', JSON.stringify(response));
-
       allValidators = allValidators.concat(response.validators ?? []);
 
       nextKey = response.pagination?.next_key ?? null;
@@ -82,7 +132,6 @@ export const fetchAllValidators = async (bondStatus?: BondStatus): Promise<Valid
   return allValidators;
 };
 
-// Fetch validator details using either the REST or RPC endpoint
 export const fetchValidators = async (
   validatorAddress?: string,
   bondStatus?: BondStatus,
@@ -213,15 +262,18 @@ export const fetchValidatorData = async (
   delegatorAddress: string,
 ): Promise<CombinedStakingInfo[]> => {
   try {
-    const [validatorResponse, delegationResponse, rewards, stakingParams] = await Promise.all([
-      fetchValidators(),
-      fetchDelegations(delegatorAddress),
-      fetchRewards(delegatorAddress),
-      fetchStakingParams(),
-    ]);
+    const [validatorResponse, delegationResponse, rewards, stakingParams, unbondingResponse] =
+      await Promise.all([
+        fetchValidators(),
+        fetchDelegations(delegatorAddress),
+        fetchRewards(delegatorAddress),
+        fetchStakingParams(),
+        fetchUnbondingDelegations(delegatorAddress),
+      ]);
 
     const validators = validatorResponse.validators;
     const delegations = delegationResponse.delegations;
+    const unbondingDelegations = unbondingResponse.delegations;
     const totalTokens = validators.reduce((sum, v) => sum + parseFloat(v.tokens), 0);
 
     // TODO: fix this.  currently not creating correct signer address
@@ -246,6 +298,12 @@ export const fetchValidatorData = async (
         delegation => delegation.delegation.validator_address === validator.operator_address,
       );
       const rewardInfo = rewards.find(reward => reward.validator === validator.operator_address);
+
+      const unbondingInfo = unbondingDelegations.find(
+        unbonding =>
+          unbonding.delegator_address === delegatorAddress &&
+          unbonding.validator_address === validator.operator_address,
+      );
 
       const commissionRate = parseFloat(validator.commission.commission_rates.rate);
       const estimatedReturn = (1 - commissionRate) * 100;
@@ -274,6 +332,15 @@ export const fetchValidatorData = async (
         estimatedReturn: estimatedReturn.toFixed(2),
         votingPower: votingPower,
         // uptime: uptime,
+        unbondingBalance: unbondingInfo
+          ? {
+              balance: unbondingInfo.entries[0]?.balance || '',
+              completion_time: unbondingInfo.entries[0]?.completion_time || '',
+            }
+          : {
+              balance: '',
+              completion_time: '',
+            },
       };
 
       // console.log(`Validator info: ${combinedInfo}`);
@@ -285,6 +352,10 @@ export const fetchValidatorData = async (
       return combinedInfo;
     });
 
+    const filteredValidators = combinedData.filter(
+      item => item.unbondingBalance && parseFloat(item.unbondingBalance.balance) > 0,
+    );
+    console.log('validator data', filteredValidators);
     return combinedData;
   } catch (error) {
     console.error('Error fetching validator data:', error);

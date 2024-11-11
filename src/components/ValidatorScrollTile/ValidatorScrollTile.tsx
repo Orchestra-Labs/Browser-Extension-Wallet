@@ -23,12 +23,14 @@ import {
   TransactionType,
 } from '@/constants';
 import { useAtomValue } from 'jotai';
-import { selectedValidatorsAtom, showCurrentValidatorsAtom, walletStateAtom } from '@/atoms';
+import { filteredValidatorsAtom, showCurrentValidatorsAtom, walletStateAtom } from '@/atoms';
 import { AssetInput } from '../AssetInput';
 import { Loader } from '../Loader';
 import { useRefreshData, useToast } from '@/hooks';
 import { TransactionResultsTile } from '../TransactionResultsTile';
 
+// TODO: show all validators for user, including those where the user is unstaking.
+// TODO: for the case where the user is unstaking all and the filtered validators would not include this tray, if this causes graphical errors, swipe away the tray and show toast
 interface ValidatorScrollTileProps {
   combinedStakingInfo: CombinedStakingInfo;
   isSelectable?: boolean;
@@ -44,7 +46,8 @@ export const ValidatorScrollTile = ({
   const slideTrayRef = useRef<{ isOpen: () => void }>(null);
   const { refreshData } = useRefreshData();
 
-  const selectedValidators = useAtomValue(selectedValidatorsAtom);
+  // TODO: shouldn't this be showing filtered validators?
+  const selectedValidators = useAtomValue(filteredValidatorsAtom);
   const walletState = useAtomValue(walletStateAtom);
   const showCurrentValidators = useAtomValue(showCurrentValidatorsAtom);
 
@@ -66,7 +69,7 @@ export const ValidatorScrollTile = ({
     textClass: 'text-error' | 'text-warn' | 'text-blue';
   } | null>({ fee: '0 MLD', textClass: 'text-blue' });
 
-  const { validator, delegation, balance, rewards } = combinedStakingInfo;
+  const { validator, delegation, balance, rewards, unbondingBalance } = combinedStakingInfo;
   const delegationResponse = { delegation, balance };
 
   const symbol = LOCAL_ASSET_REGISTRY.note.symbol || DEFAULT_ASSET.symbol || 'MLD';
@@ -79,6 +82,8 @@ export const ValidatorScrollTile = ({
     parseFloat(rewardAmount),
     GREATER_EXPONENT_DEFAULT,
   ).toFixed(GREATER_EXPONENT_DEFAULT)}`;
+  const userIsUnbonding =
+    parseFloat(balance.amount) === 0 && parseFloat(unbondingBalance?.balance || '') > 0;
   const formattedRewardAmount = formatBalanceDisplay(strippedRewardAmount, symbol);
 
   const delegatedAmount = convertToGreaterUnit(
@@ -99,6 +104,8 @@ export const ValidatorScrollTile = ({
     subTitle = 'Jailed';
   } else if (validator.status === BondStatus.UNBONDED) {
     subTitle = 'Inactive';
+  } else if (userIsUnbonding) {
+    subTitle = 'Unstaking';
   } else if (delegatedAmount === 0) {
     subTitle = 'No delegation';
   } else {
@@ -381,7 +388,16 @@ export const ValidatorScrollTile = ({
   let subtitleStatus = TextFieldStatus.GOOD;
   let secondarySubtitleStatus = TextFieldStatus.GOOD;
 
-  if (!showCurrentValidators) {
+  if (showCurrentValidators) {
+    if (userIsUnbonding) {
+      value = formatBalanceDisplay(
+        parseFloat(unbondingBalance?.balance || '0').toFixed(GREATER_EXPONENT_DEFAULT),
+        'MLD',
+      );
+      statusColor = TextFieldStatus.WARN;
+      secondarySubtitle = 'Unstaking...';
+    }
+  } else {
     // TODO: uncomment when uptime is fixed
     // const uptime = parseFloat(combinedStakingInfo.uptime || '0');
     // subTitle = `${uptime}% uptime`;

@@ -100,7 +100,6 @@ export const CreateWallet = () => {
 
   /* ******************************************************************************************* */
   /* David Current TODOs */
-  // TODO: add "wallet" to memo
   // TODO: enable transaction fees for wallet transactions (bundle a transaction for revenue. based on transaction fees (0.5x basic transaction fee)?)
   /* ******************************************************************************************* */
 
