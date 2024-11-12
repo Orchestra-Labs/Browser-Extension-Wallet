@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { useEffect, useState} from 'react';
+import { NavLink, useLocation} from 'react-router-dom';
 import { ArrowLeft, Spinner, Swap } from '@/assets/icons';
 import { DEFAULT_ASSET, GREATER_EXPONENT_DEFAULT, ROUTES } from '@/constants';
 import { Button, Separator } from '@/ui-kit';
@@ -29,6 +29,9 @@ import { useExchangeRate, useRefreshData, useToast } from '@/hooks/';
 import { AddressInput } from './AddressInput';
 
 export const Send = () => {
+  const [isLeavingPage, setIsLeavingPage] = useState(() => {
+    return sessionStorage.getItem('isLeavingSendPage') === 'true'
+  });
   const { refreshData } = useRefreshData();
   const { exchangeRate } = useExchangeRate();
   const { toast } = useToast();
@@ -62,34 +65,43 @@ export const Send = () => {
   const [error, setError] = useState<string>('');
 
   const handleTransactionError = (errorMessage: string) => {
-    setError(errorMessage);
-
-    if (location.pathname !== ROUTES.APP.SEND) {
-      toast({
-        title: 'Transaction failed!',
-        description: errorMessage,
-      });
-    } else {
+    const isLeaving = sessionStorage.getItem('isLeavingSendPage') === 'true';
+    if (location.pathname === ROUTES.APP.SEND) {
+      setError(errorMessage);
       setTimeout(() => {
         setError('');
       }, 3000);
     }
-  };
-
-  // TODO: test for and handle case of not being on send page to send toast
-  const handleTransactionSuccess = (txHash: string) => {
-    if (location.pathname !== ROUTES.APP.SEND) {
-      // TODO: fix.  toast not currently functional (every attempt sees /send as the route)
-      const displayTransactionHash = truncateWalletAddress('', txHash);
+    
+    // Only show toast when component is unmounted
+    if (isLeaving) {
       toast({
-        title: `${transactionType.isSwap ? 'Swap' : 'Send'} success!`,
-        description: `Transaction hash: ${displayTransactionHash}`,
+        title: 'Transaction failed!',
+        description: errorMessage,
+        duration: 5000,
       });
-    } else {
-      setTransactionState({ isSuccess: true, txHash });
+      sessionStorage.removeItem('isLeavingSendPage');
     }
   };
 
+  const handleTransactionSuccess = (txHash: string) => {
+    const displayTransactionHash = truncateWalletAddress('', txHash);
+    const isLeaving = sessionStorage.getItem('isLeavingSendPage') === 'true';
+    if (location.pathname === ROUTES.APP.SEND) {
+      setTransactionState({ isSuccess: true, txHash });
+    }
+    
+    // Only show toast when component is unmounted
+    if (isLeaving) { 
+      toast({
+        title: `${transactionType.isSwap ? 'Swap' : 'Send'} success!`,
+        description: `Transaction hash: ${displayTransactionHash}`,
+        duration: 5000,
+      });
+      sessionStorage.removeItem('isLeavingSendPage');
+    }
+    refreshData({ validator: false });
+  };
   const handleTransaction = async ({ simulateTransaction = false } = {}) => {
     console.log('Starting handleTransaction');
     console.log('transactionType.isValid:', transactionType.isValid);
@@ -545,11 +557,6 @@ export const Send = () => {
     propagateChanges(callbackChangeMap, setCallbackChangeMap, true);
   }, [exchangeRate]);
 
-  useEffect(() => {
-    if (transactionState.isSuccess) {
-      refreshData({ validator: false });
-    }
-  }, [transactionState.isSuccess]);
 
   useEffect(() => {
     updateSendAsset(selectedAsset);
@@ -562,7 +569,12 @@ export const Send = () => {
     };
   }, []);
 
-  if (transactionState.isSuccess) {
+  const handleBackClick = () => {
+    sessionStorage.setItem('isLeavingSendPage', 'true');
+    setIsLeavingPage(true);
+  };
+
+  if (location.pathname === ROUTES.APP.SEND && transactionState.isSuccess) {
     return <WalletSuccessScreen caption="Transaction success!" txHash={transactionState.txHash} />;
   }
 
@@ -573,6 +585,7 @@ export const Send = () => {
         <NavLink
           to={ROUTES.APP.ROOT}
           className="flex items-center justify-center max-w-5 max-h-5 p-0.5"
+          onClick={handleBackClick}
         >
           <ArrowLeft className="w-full h-full text-white" />
         </NavLink>
