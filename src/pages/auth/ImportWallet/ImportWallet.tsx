@@ -63,7 +63,7 @@ export const ImportWallet = () => {
       console.log('trying to create wallet');
       // Generate wallet from the mnemonic and create the token
       const mnemonic = getStringMnemonic();
-      const walletName = 'Maestro';
+      const walletName = 'Aria';
       // TODO: make create/add wallet depending on source of origin
       await createAccount(mnemonic, password, walletName);
       console.log('create wallet function ended');

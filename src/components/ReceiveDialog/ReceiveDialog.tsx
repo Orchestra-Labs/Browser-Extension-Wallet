@@ -10,6 +10,7 @@ interface ReceiveDialogProps {
   buttonSize?: 'default' | 'medium' | 'small' | 'xsmall';
 }
 
+// TODO: pass unit to receive, default to wallet default
 export const ReceiveDialog: React.FC<ReceiveDialogProps> = ({ buttonSize = 'default' }) => {
   const walletState = useAtomValue(walletStateAtom);
 
@@ -37,14 +38,14 @@ export const ReceiveDialog: React.FC<ReceiveDialogProps> = ({ buttonSize = 'defa
     >
       <div className="flex flex-col items-center">
         <div className="mb-2">
-          Maestro only:{' '}
+          <span>Aria Wallet Exclusive:</span>
           <Button
             variant={!includeCoinPreference ? 'unselected' : 'selectedEnabled'}
             size="small"
             onClick={() => setIncludeCoinPreference(!includeCoinPreference)}
-            className="px-2 rounded-md text-xs"
+            className="ml-1 px-2 rounded-md text-xs"
           >
-            {`${includeCoinPreference ? 'Remove' : 'Include'} coin preference`}
+            {`${includeCoinPreference ? 'Receiving' : 'Receive'} ${DEFAULT_ASSET.symbol}${includeCoinPreference ? '' : '?'}`}
           </Button>
         </div>
 
