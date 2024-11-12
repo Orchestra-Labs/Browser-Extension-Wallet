@@ -1,5 +1,5 @@
-import { useEffect, useState} from 'react';
-import { NavLink, useLocation} from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
 import { ArrowLeft, Spinner, Swap } from '@/assets/icons';
 import { DEFAULT_ASSET, GREATER_EXPONENT_DEFAULT, ROUTES } from '@/constants';
 import { Button, Separator } from '@/ui-kit';
@@ -18,20 +18,37 @@ import { Asset, TransactionResult, TransactionSuccess } from '@/types';
 import { AssetInput, WalletSuccessScreen, TransactionResultsTile } from '@/components';
 import {
   formatBalanceDisplay,
+  getSessionStorageItem,
   isValidSwap,
   isValidTransaction,
+  removeSessionStorageItem,
   removeTrailingZeroes,
   sendTransaction,
+  setSessionStorageItem,
   swapTransaction,
   truncateWalletAddress,
 } from '@/helpers';
 import { useExchangeRate, useRefreshData, useToast } from '@/hooks/';
 import { AddressInput } from './AddressInput';
 
+const pageMountedKey = 'userIsOnPage';
+const setUserIsOnPage = (isOnPage: boolean) => {
+  console.log(`Setting user on page to: ${isOnPage}`);
+  if (isOnPage) {
+    removeSessionStorageItem(pageMountedKey);
+  } else {
+    setSessionStorageItem(pageMountedKey, 'false');
+  }
+  console.log(`Session storage after setting: ${getSessionStorageItem(pageMountedKey)}`);
+};
+const userIsOnPage = () => {
+  const result = getSessionStorageItem(pageMountedKey) !== 'false';
+  console.log(`Checking if user is on page (should be false if navigated away): ${result}`);
+  return result;
+};
+
+// TODO: navigating away and back results in not showing success or error messages
 export const Send = () => {
-  const [isLeavingPage, setIsLeavingPage] = useState(() => {
-    return sessionStorage.getItem('isLeavingSendPage') === 'true'
-  });
   const { refreshData } = useRefreshData();
   const { exchangeRate } = useExchangeRate();
   const { toast } = useToast();
@@ -65,47 +82,45 @@ export const Send = () => {
   const [error, setError] = useState<string>('');
 
   const handleTransactionError = (errorMessage: string) => {
-    const isLeaving = sessionStorage.getItem('isLeavingSendPage') === 'true';
-    if (location.pathname === ROUTES.APP.SEND) {
+    const onPage = userIsOnPage();
+
+    // Only show toast when component is unmounted
+    if (onPage) {
       setError(errorMessage);
       setTimeout(() => {
         setError('');
       }, 3000);
-    }
-    
-    // Only show toast when component is unmounted
-    if (isLeaving) {
+    } else {
       toast({
         title: 'Transaction failed!',
         description: errorMessage,
         duration: 5000,
       });
-      sessionStorage.removeItem('isLeavingSendPage');
+      setUserIsOnPage(false);
     }
   };
 
   const handleTransactionSuccess = (txHash: string) => {
     const displayTransactionHash = truncateWalletAddress('', txHash);
-    const isLeaving = sessionStorage.getItem('isLeavingSendPage') === 'true';
-    if (location.pathname === ROUTES.APP.SEND) {
-      setTransactionState({ isSuccess: true, txHash });
-    }
-    
+    const onPage = userIsOnPage();
+
     // Only show toast when component is unmounted
-    if (isLeaving) { 
+    if (onPage) {
+      if (location.pathname === ROUTES.APP.SEND) {
+        setTransactionState({ isSuccess: true, txHash });
+      }
+    } else {
       toast({
         title: `${transactionType.isSwap ? 'Swap' : 'Send'} success!`,
         description: `Transaction hash: ${displayTransactionHash}`,
         duration: 5000,
       });
-      sessionStorage.removeItem('isLeavingSendPage');
+      setUserIsOnPage(false);
     }
     refreshData({ validator: false });
   };
-  const handleTransaction = async ({ simulateTransaction = false } = {}) => {
-    console.log('Starting handleTransaction');
-    console.log('transactionType.isValid:', transactionType.isValid);
 
+  const handleTransaction = async ({ simulateTransaction = false } = {}) => {
     if (!transactionType.isValid) return;
 
     let currentRecipientAddress = '';
@@ -115,27 +130,20 @@ export const Send = () => {
       currentRecipientAddress = recipientAddress;
     }
 
-    console.log('Recipient address:', currentRecipientAddress);
     if (!currentRecipientAddress) return;
 
     const sendAsset = sendState.asset;
     const sendAmount = sendState.amount;
     const receiveAsset = receiveState.asset;
 
-    console.log('sendAsset:', sendAsset);
-    console.log('receiveAsset:', receiveAsset);
-
     if (!sendAsset || !receiveAsset) return;
 
     const assetToSend = walletAssets.find(a => a.denom === sendAsset.denom);
-    console.log('assetToSend:', assetToSend);
     if (!assetToSend) return;
 
     const adjustedAmount = (
       sendAmount * Math.pow(10, assetToSend.exponent || GREATER_EXPONENT_DEFAULT)
     ).toFixed(0); // No decimals, minor unit
-
-    console.log('Adjusted amount:', adjustedAmount);
 
     const sendObject = {
       recipientAddress: currentRecipientAddress,
@@ -143,12 +151,7 @@ export const Send = () => {
       denom: sendAsset.denom,
     };
 
-    console.log('sendObject:', sendObject);
-
-    if (!simulateTransaction) {
-      console.log('Setting loading state');
-      setLoading(true);
-    }
+    if (!simulateTransaction) setLoading(true);
 
     try {
       let result: TransactionResult;
@@ -407,36 +410,21 @@ export const Send = () => {
     setMap = setChangeMap,
     isExchangeRateUpdate = false,
   ) => {
-    console.log('Propagating changes:', {
-      map,
-      isExchangeRateUpdate,
-      exchangeRate,
-    });
-
     if (map.sendAsset) {
       const sendAsset = sendState.asset;
       const sendAmount = sendState.amount;
-      if (!sendAsset) {
-        console.log('No send asset found');
-        return;
-      }
+      if (!sendAsset) return;
 
       const maxAvailable = calculateMaxAvailable(sendAsset);
-      console.log('Calculated max available for send asset:', maxAvailable);
 
       if (sendAmount > maxAvailable) {
         const newSendAmount = maxAvailable;
         const newReceiveAmount = newSendAmount * (exchangeRate || 1);
-        console.log('Adjusting send and receive amounts due to max constraint:', {
-          newSendAmount,
-          newReceiveAmount,
-        });
 
         updateSendAmount(newSendAmount);
         updateReceiveAmount(newReceiveAmount);
       } else {
         const newReceiveAmount = sendAmount * (exchangeRate || 1);
-        console.log('Calculated new receive amount:', newReceiveAmount);
         updateReceiveAmount(newReceiveAmount);
       }
 
@@ -448,7 +436,6 @@ export const Send = () => {
     if (map.receiveAsset) {
       const sendAmount = sendState.amount;
       const newReceiveAmount = sendAmount * (exchangeRate || 1);
-      console.log('Updating receive amount based on send asset change:', newReceiveAmount);
 
       updateReceiveAmount(newReceiveAmount);
 
@@ -459,29 +446,19 @@ export const Send = () => {
 
     if (map.sendAmount) {
       const sendAsset = sendState.asset;
-      if (!sendAsset) {
-        console.log('No send asset found');
-        return;
-      }
+      if (!sendAsset) return;
 
       const sendAmount = sendState.amount;
       const maxAvailable = calculateMaxAvailable(sendAsset);
       const verifiedSendAmount = Math.min(sendAmount, maxAvailable);
 
       if (verifiedSendAmount !== sendAmount) {
-        console.log('Adjusting send amount due to max constraint:', verifiedSendAmount);
         updateSendAmount(verifiedSendAmount);
       }
 
       const applicableExchangeRate =
         sendAsset.denom === receiveState.asset?.denom ? 1 : exchangeRate || 1;
       const newReceiveAmount = verifiedSendAmount * applicableExchangeRate;
-
-      console.log('Updating receive amount based on verified send amount and exchange rate:', {
-        verifiedSendAmount,
-        applicableExchangeRate,
-        newReceiveAmount,
-      });
 
       updateReceiveAmount(newReceiveAmount);
 
@@ -492,10 +469,7 @@ export const Send = () => {
 
     if (map.receiveAmount) {
       const sendAsset = sendState.asset;
-      if (!sendAsset) {
-        console.log('No send asset found');
-        return;
-      }
+      if (!sendAsset) return;
 
       const receiveAmount = receiveState.amount;
       const applicableExchangeRate =
@@ -503,20 +477,9 @@ export const Send = () => {
       let newSendAmount = receiveAmount * applicableExchangeRate;
       const maxAvailable = calculateMaxAvailable(sendAsset);
 
-      console.log('Calculating send amount based on receive amount:', {
-        receiveAmount,
-        applicableExchangeRate,
-        newSendAmount,
-        maxAvailable,
-      });
-
       if (newSendAmount > maxAvailable) {
         newSendAmount = maxAvailable;
         const adjustedReceiveAmount = newSendAmount * (exchangeRate || 1);
-        console.log('Adjusting send and receive amounts due to max constraint:', {
-          newSendAmount,
-          adjustedReceiveAmount,
-        });
 
         updateSendAmount(newSendAmount);
         updateReceiveAmount(adjustedReceiveAmount);
@@ -530,7 +493,6 @@ export const Send = () => {
     }
 
     // TODO: add fee update to changemap?
-    console.log('Updating fee and transaction type');
     updateFee();
     updateTransactionType();
   };
@@ -557,21 +519,21 @@ export const Send = () => {
     propagateChanges(callbackChangeMap, setCallbackChangeMap, true);
   }, [exchangeRate]);
 
-
   useEffect(() => {
+    setUserIsOnPage(true);
     updateSendAsset(selectedAsset);
     updateReceiveAsset(selectedAsset);
     updateTransactionType();
 
     return () => {
+      setUserIsOnPage(false);
       // Reset the states when the component is unmounted (user leaves the page)
       resetStates();
     };
   }, []);
 
   const handleBackClick = () => {
-    sessionStorage.setItem('isLeavingSendPage', 'true');
-    setIsLeavingPage(true);
+    setUserIsOnPage(false);
   };
 
   if (location.pathname === ROUTES.APP.SEND && transactionState.isSuccess) {

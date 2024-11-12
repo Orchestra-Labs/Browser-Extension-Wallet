@@ -4,4 +4,5 @@ export * from './localStorage';
 export * from './nodes';
 export * from './password';
 export * from './session';
+export * from './sessionStorage';
 export * from './wallet';
