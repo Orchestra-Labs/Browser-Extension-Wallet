@@ -3,107 +3,40 @@ import 'swiper/swiper-bundle.css';
 import { BalanceCard, SearchBar, SortDialog, TileScroller } from '@/components';
 import {
   swiperIndexState,
-  validatorDataAtom,
   showCurrentValidatorsAtom,
   showAllAssetsAtom,
   searchTermAtom,
-  walletAssetsAtom,
-  isFetchingWalletDataAtom,
-  isFetchingValidatorDataAtom,
-  isInitialDataLoadAtom,
 } from '@/atoms';
 import { useEffect, useRef } from 'react';
-import { useAtom, useAtomValue, useSetAtom } from 'jotai';
+import { useAtom, useSetAtom } from 'jotai';
 import { Button } from '@/ui-kit';
-import { convertToGreaterUnit, formatBalanceDisplay } from '@/helpers';
-import { DEFAULT_ASSET, GREATER_EXPONENT_DEFAULT, LOCAL_ASSET_REGISTRY } from '@/constants';
 
 export const Main = () => {
   const swiperRef = useRef<SwiperClass | null>(null);
   const totalSlides = 2;
 
-  const [walletAssets] = useAtom(walletAssetsAtom);
   const [activeIndex, setActiveIndex] = useAtom(swiperIndexState);
-  const [validatorData] = useAtom(validatorDataAtom);
   const [showCurrentValidators, setShowCurrentValidators] = useAtom(showCurrentValidatorsAtom);
   const [showAllAssets, setShowAllAssets] = useAtom(showAllAssetsAtom);
   const setSearchTerm = useSetAtom(searchTermAtom);
-  const [isInitialDataLoad, setIsInitialDataLoad] = useAtom(isInitialDataLoadAtom);
-  const isFetchingWalletData = useAtomValue(isFetchingWalletDataAtom);
-  const validatorState = useAtomValue(validatorDataAtom);
-  const isFetchingValidatorData = useAtomValue(isFetchingValidatorDataAtom);
 
-  // Toggle between "Non-Zero" and "All" holdings
   const assetViewToggleChange = (shouldShowAllAssets: boolean) => {
     setShowAllAssets(shouldShowAllAssets);
   };
 
-  // Toggle between "All" and "Current" validators
   const validatorViewToggleChange = (shouldShowCurrent: boolean) => {
     setShowCurrentValidators(shouldShowCurrent);
   };
 
-  // Calculate total available MLD balance
-  const symbol = LOCAL_ASSET_REGISTRY.note.symbol || DEFAULT_ASSET.symbol || 'MLD';
-  const currentExponent = LOCAL_ASSET_REGISTRY.note.exponent || GREATER_EXPONENT_DEFAULT;
-  const totalAvailableMLD = walletAssets
-    .filter(asset => asset.denom === LOCAL_ASSET_REGISTRY.note.denom)
-    .reduce((sum, asset) => sum + parseFloat(asset.amount), 0)
-    .toFixed(currentExponent);
-  const formattedTotalAvailableMLD = formatBalanceDisplay(totalAvailableMLD, symbol);
-
-  // Calculate total staked MLD balance with safety check
-  const totalStakedMLD = validatorData
-    .filter(item => item.balance?.denom === LOCAL_ASSET_REGISTRY.note.denom)
-    .reduce((sum, item) => sum + parseFloat(item.balance?.amount || '0'), 0);
-  const formattedTotalStakedMLD = formatBalanceDisplay(
-    convertToGreaterUnit(totalStakedMLD, currentExponent).toFixed(currentExponent),
-    symbol,
-  );
-
-  // Calculate total rewards with safety check
-  const totalStakedRewards = validatorData.reduce((sum, item) => {
-    const totalReward = item.rewards?.reduce(
-      (rewardSum, reward) => rewardSum + parseFloat(reward.amount || '0'),
-      0,
-    );
-    return sum + totalReward;
-  }, 0);
-  const formattedConvertedTotalRewards = formatBalanceDisplay(
-    convertToGreaterUnit(totalStakedRewards, 6).toFixed(6),
-    symbol,
-  );
-
-  // Sync swiper visual state
   useEffect(() => {
     if (swiperRef.current) {
       swiperRef.current.slideTo(activeIndex);
     }
   }, [activeIndex]);
 
-  // Reset search term on active index change
   useEffect(() => {
     setSearchTerm('');
   }, [activeIndex]);
-
-  useEffect(() => {
-    if (isInitialDataLoad) {
-      const initialLoadHasCompleted =
-        !isFetchingWalletData &&
-        !isFetchingValidatorData &&
-        (walletAssets.length > 0 || validatorState.length > 0);
-
-      if (initialLoadHasCompleted) {
-        setIsInitialDataLoad(false);
-      }
-    }
-  }, [
-    isInitialDataLoad,
-    isFetchingWalletData,
-    isFetchingValidatorData,
-    walletAssets,
-    validatorState,
-  ]);
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
@@ -120,23 +53,12 @@ export const Main = () => {
         >
           <SwiperSlide>
             <div className="w-full px-4 mt-4 flex-shrink-0">
-              <BalanceCard
-                title="Available balance"
-                primaryText={formattedTotalAvailableMLD}
-                currentStep={activeIndex}
-                totalSteps={totalSlides}
-              />
+              <BalanceCard currentStep={activeIndex} totalSteps={totalSlides} />
             </div>
           </SwiperSlide>
           <SwiperSlide>
             <div className="w-full px-4 mt-4 flex-shrink-0">
-              <BalanceCard
-                title="Staked balance"
-                primaryText={formattedConvertedTotalRewards}
-                secondaryText={formattedTotalStakedMLD}
-                currentStep={activeIndex}
-                totalSteps={totalSlides}
-              />
+              <BalanceCard currentStep={activeIndex} totalSteps={totalSlides} />
             </div>
           </SwiperSlide>
         </Swiper>

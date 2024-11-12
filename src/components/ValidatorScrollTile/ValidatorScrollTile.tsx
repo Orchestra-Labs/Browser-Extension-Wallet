@@ -4,6 +4,7 @@ import { SlideTray, Button } from '@/ui-kit';
 import { LogoIcon } from '@/assets/icons';
 import { ScrollTile } from '../ScrollTile';
 import {
+  calculateRemainingTime,
   claimAndRestake,
   claimRewards,
   convertToGreaterUnit,
@@ -23,12 +24,14 @@ import {
   TransactionType,
 } from '@/constants';
 import { useAtomValue } from 'jotai';
-import { selectedValidatorsAtom, showCurrentValidatorsAtom, walletStateAtom } from '@/atoms';
+import { filteredValidatorsAtom, showCurrentValidatorsAtom, walletStateAtom } from '@/atoms';
 import { AssetInput } from '../AssetInput';
 import { Loader } from '../Loader';
 import { useRefreshData, useToast } from '@/hooks';
 import { TransactionResultsTile } from '../TransactionResultsTile';
 
+// TODO: show all validators for user, including those where the user is unstaking.
+// TODO: for the case where the user is unstaking all and the filtered validators would not include this tray, if this causes graphical errors, swipe away the tray and show toast
 interface ValidatorScrollTileProps {
   combinedStakingInfo: CombinedStakingInfo;
   isSelectable?: boolean;
@@ -44,7 +47,8 @@ export const ValidatorScrollTile = ({
   const slideTrayRef = useRef<{ isOpen: () => void }>(null);
   const { refreshData } = useRefreshData();
 
-  const selectedValidators = useAtomValue(selectedValidatorsAtom);
+  // TODO: shouldn't this be showing filtered validators?
+  const selectedValidators = useAtomValue(filteredValidatorsAtom);
   const walletState = useAtomValue(walletStateAtom);
   const showCurrentValidators = useAtomValue(showCurrentValidatorsAtom);
 
@@ -66,7 +70,7 @@ export const ValidatorScrollTile = ({
     textClass: 'text-error' | 'text-warn' | 'text-blue';
   } | null>({ fee: '0 MLD', textClass: 'text-blue' });
 
-  const { validator, delegation, balance, rewards } = combinedStakingInfo;
+  const { validator, delegation, balance, rewards, unbondingBalance } = combinedStakingInfo;
   const delegationResponse = { delegation, balance };
 
   const symbol = LOCAL_ASSET_REGISTRY.note.symbol || DEFAULT_ASSET.symbol || 'MLD';
@@ -79,6 +83,7 @@ export const ValidatorScrollTile = ({
     parseFloat(rewardAmount),
     GREATER_EXPONENT_DEFAULT,
   ).toFixed(GREATER_EXPONENT_DEFAULT)}`;
+  const userIsUnbonding = unbondingBalance && parseFloat(unbondingBalance?.balance || '') > 0;
   const formattedRewardAmount = formatBalanceDisplay(strippedRewardAmount, symbol);
 
   const delegatedAmount = convertToGreaterUnit(
@@ -99,6 +104,8 @@ export const ValidatorScrollTile = ({
     subTitle = 'Jailed';
   } else if (validator.status === BondStatus.UNBONDED) {
     subTitle = 'Inactive';
+  } else if (userIsUnbonding) {
+    subTitle = 'Unstaking';
   } else if (delegatedAmount === 0) {
     subTitle = 'No delegation';
   } else {
@@ -112,6 +119,7 @@ export const ValidatorScrollTile = ({
   );
 
   const unbondingDays = `${combinedStakingInfo.stakingParams?.unbonding_time} days`;
+  const unstakingTime = `${calculateRemainingTime(combinedStakingInfo.unbondingBalance?.completion_time || '')}`;
 
   let statusLabel = '';
   let statusColor = TextFieldStatus.GOOD;
@@ -357,16 +365,6 @@ export const ValidatorScrollTile = ({
     }
   };
 
-  useEffect(() => {
-    if (slideTrayIsOpen) updateFee();
-  }, [slideTrayIsOpen, selectedAction, amount, isClaimToRestake]);
-
-  useEffect(() => {
-    if (transactionSuccess.success) {
-      refreshData();
-    }
-  }, [transactionSuccess.success]);
-
   const resetDefaults = () => {
     setAmount(0);
     setSimulatedFee({ fee: '0 MLD', textClass: 'text-blue' });
@@ -375,13 +373,21 @@ export const ValidatorScrollTile = ({
   };
 
   // let showingCurrentValidators = isSelectable && showCurrentValidators;
-  console.log('is selectable', isSelectable, 'show current validators', showCurrentValidators);
   let value = formattedRewardAmount;
   let secondarySubtitle = null;
   let subtitleStatus = TextFieldStatus.GOOD;
   let secondarySubtitleStatus = TextFieldStatus.GOOD;
 
-  if (!showCurrentValidators) {
+  if (showCurrentValidators) {
+    if (userIsUnbonding) {
+      value = formatBalanceDisplay(
+        parseFloat(unbondingBalance?.balance || '0').toFixed(GREATER_EXPONENT_DEFAULT),
+        'MLD',
+      );
+      statusColor = TextFieldStatus.WARN;
+      secondarySubtitle = 'Unstaking...';
+    }
+  } else {
     // TODO: uncomment when uptime is fixed
     // const uptime = parseFloat(combinedStakingInfo.uptime || '0');
     // subTitle = `${uptime}% uptime`;
@@ -404,6 +410,16 @@ export const ValidatorScrollTile = ({
     }
   }
 
+  useEffect(() => {
+    if (slideTrayIsOpen) updateFee();
+  }, [slideTrayIsOpen, selectedAction, amount, isClaimToRestake]);
+
+  useEffect(() => {
+    if (transactionSuccess.success) {
+      refreshData();
+    }
+  }, [transactionSuccess.success]);
+
   return (
     <>
       {isSelectable ? (
@@ -417,6 +433,7 @@ export const ValidatorScrollTile = ({
           onClick={handleClick}
         />
       ) : (
+        // TODO: separate slidetray from component to reduce required build
         <SlideTray
           ref={slideTrayRef}
           triggerComponent={
@@ -450,19 +467,30 @@ export const ValidatorScrollTile = ({
               </div>
             )}
 
-            {/* TODO: make scrollable? collapse/expand on button press? if collapse, animate collapse to 1 line / re-expansion */}
+            {/* TODO: make scrollable, make into a component, and pass an array of text and color maps */}
             {/* Validator Information */}
             <div className="mb-4 min-h-[7.5rem] max-h-[7.5rem] overflow-hidden shadow-md bg-black p-2">
               <p>
-                <strong>Status: </strong>
-                <span className={textColor}>{statusLabel}</span>
+                <strong>Status:</strong> <span className={textColor}>{statusLabel}</span>
               </p>
               <p className="line-clamp-1">
+                {' '}
                 <strong>Amount Staked:</strong> <span className="text-blue">{dialogSubTitle}</span>
               </p>
-              <p>
-                <strong>Validator Commission:</strong> {commission}
-              </p>
+              {userIsUnbonding && (
+                <>
+                  <p className="line-clamp-1">
+                    <strong>Amount Unstaking:</strong> <span className="text-blue">{value}</span>
+                  </p>
+                  <p className="line-clamp-1">
+                    <strong>Remaining Time to Unstake:</strong>{' '}
+                    <span className="text-blue">{unstakingTime}</span>
+                  </p>
+                  <p>
+                    <strong>Validator Commission:</strong> <span>{commission}</span>
+                  </p>
+                </>
+              )}
               <p className="truncate">
                 <strong>Website:</strong>{' '}
                 {isWebsiteValid ? (

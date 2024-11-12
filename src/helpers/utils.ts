@@ -57,3 +57,17 @@ export const isValidTransaction = ({
 
   return result;
 };
+
+export const calculateRemainingTime = (completionTime: string): string => {
+  const now = new Date();
+  const endTime = new Date(completionTime);
+  const remainingMs = endTime.getTime() - now.getTime();
+
+  if (remainingMs <= 0) return 'Unbonding Complete';
+
+  const days = Math.floor(remainingMs / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((remainingMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const minutes = Math.floor((remainingMs % (1000 * 60 * 60)) / (1000 * 60));
+
+  return `${days}d ${hours}h ${minutes}m`;
+};
