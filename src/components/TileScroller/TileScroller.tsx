@@ -11,7 +11,7 @@ import { AssetTiles } from '../TileScroller/AssetTiles';
 import { useRefreshData } from '@/hooks';
 
 interface TileScrollerProps {
-  activeIndex: number;
+  activeIndex?: number;
   isSelectable?: boolean;
   onSelectAsset?: (asset: Asset) => void;
   onSelectValidator?: (validator: CombinedStakingInfo) => void;
@@ -20,7 +20,7 @@ interface TileScrollerProps {
 }
 
 export const TileScroller: React.FC<TileScrollerProps> = ({
-  activeIndex,
+  activeIndex = 0,
   isSelectable = false,
   onSelectAsset,
   onSelectValidator,

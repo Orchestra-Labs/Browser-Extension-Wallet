@@ -18,7 +18,7 @@ export interface AccountRecord {
 export interface WalletRecord {
   id: string;
   name: string;
-  mnemonic: string;
+  encryptedMnemonic: string;
   settings: {};
 }
 

@@ -1,10 +1,13 @@
 import {
   isFetchingWalletDataAtom,
   isInitialDataLoadAtom,
+  userWalletAtom,
   validatorDataAtom,
   walletAssetsAtom,
 } from '@/atoms';
-import { useAtom, useAtomValue } from 'jotai';
+import { userAccountAtom } from '@/atoms/accountAtom';
+import { getWalletByID } from '@/helpers/dataHelpers/account';
+import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { useEffect } from 'react';
 
 export const DataProvider: React.FC<{}> = ({}) => {
@@ -13,6 +16,8 @@ export const DataProvider: React.FC<{}> = ({}) => {
   const isFetchingWalletData = useAtomValue(isFetchingWalletDataAtom);
   const validatorState = useAtomValue(validatorDataAtom);
   const isFetchingValidatorData = useAtomValue(isFetchingWalletDataAtom);
+  const account = useAtomValue(userAccountAtom);
+  const setWallet = useSetAtom(userWalletAtom);
 
   useEffect(() => {
     if (isInitialDataLoad) {
@@ -32,6 +37,13 @@ export const DataProvider: React.FC<{}> = ({}) => {
     walletAssets,
     validatorState,
   ]);
+
+  useEffect(() => {
+    if (account) {
+      const wallet = getWalletByID(account, account.settings.activeWalletID);
+      if (wallet) setWallet(wallet);
+    }
+  }, [account]);
 
   return null;
 };

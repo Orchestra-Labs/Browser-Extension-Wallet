@@ -1,5 +1,5 @@
 import { atom } from 'jotai';
-import { Asset } from '@/types';
+import { Asset, WalletRecord } from '@/types';
 import {
   searchTermAtom,
   assetSortOrderAtom,
@@ -10,6 +10,8 @@ import {
   assetDialogSortTypeAtom,
 } from '@/atoms';
 import { filterAndSortAssets } from '@/helpers';
+
+export const userWalletAtom = atom<WalletRecord | null>(null);
 
 export const walletAddressAtom = atom<string>('');
 export const walletAssetsAtom = atom<Array<Asset>>([]);
