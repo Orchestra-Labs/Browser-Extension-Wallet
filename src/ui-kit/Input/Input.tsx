@@ -47,7 +47,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             <div
               className={cn(
                 'flex items-center w-full rounded-md border bg-transparent group',
-                'focus-within:outline-0 focus-within:border-blue',
+                'focus-within:outline-0 focus-within:!border-blue',
                 'hover:border-neutral-1',
                 isError && 'border-error text-error hover:border-error focus-within:border-error',
                 isSuccess &&
@@ -72,17 +72,19 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
                 ref={ref}
                 {...props}
               />
+
               {icon && (
                 <div
                   className={cn(
-                    'h-[57%] w-[1px]',
-                    'group-hover:bg-neutral-1 group-focus-within:bg-blue',
+                    'h-[57%] min-h-[21px] w-[1px]',
+                    'group-focus-within:!bg-blue group-hover:bg-neutral-1',
                     isError && 'bg-error group-hover:bg-error group-focus-within:bg-error',
                     isSuccess && 'bg-success group-hover:bg-success group-focus-within:bg-success',
                     !isError && !isSuccess && !isInfo && 'bg-neutral-3',
                   )}
                 />
               )}
+
               {icon && (
                 <div
                   role={iconRole}

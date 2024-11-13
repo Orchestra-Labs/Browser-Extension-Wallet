@@ -584,7 +584,7 @@ export const Send = () => {
           />
 
           {/* Separator with reverse icon */}
-          <div className="flex justify-center my-4">
+          <div className="flex justify-center my-2">
             <Button className="rounded-md h-9 w-9 bg-neutral-3" onClick={switchFields}>
               <Swap />
             </Button>
