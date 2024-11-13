@@ -47,8 +47,8 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             <div
               className={cn(
                 'flex items-center w-full rounded-md border bg-transparent group',
-                'focus-within:outline-0 focus-within:!border-blue',
                 'hover:border-neutral-1',
+                'focus-within:outline-0 focus-within:!border-blue',
                 isError && 'border-error text-error hover:border-error focus-within:border-error',
                 isSuccess &&
                   'border-success text-success hover:border-success focus-within:border-success',
@@ -77,7 +77,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
                 <div
                   className={cn(
                     'h-[57%] min-h-[21px] w-[1px]',
-                    'group-focus-within:!bg-blue group-hover:bg-neutral-1',
+                    'group-hover:bg-neutral-1 group-focus-within:!bg-blue',
                     isError && 'bg-error group-hover:bg-error group-focus-within:bg-error',
                     isSuccess && 'bg-success group-hover:bg-success group-focus-within:bg-success',
                     !isError && !isSuccess && !isInfo && 'bg-neutral-3',
