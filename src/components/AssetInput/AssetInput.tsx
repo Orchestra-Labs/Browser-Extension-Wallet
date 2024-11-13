@@ -167,7 +167,7 @@ export const AssetInput: React.FC<AssetInputProps> = ({
           className={cn(
             variant === 'stake'
               ? 'text-white mx-2'
-              : 'p-2.5 text-white border border-neutral-2 rounded-md w-full h-10',
+              : 'text-white border border-neutral-2 rounded-md w-full h-10',
           )}
         />
       </div>
