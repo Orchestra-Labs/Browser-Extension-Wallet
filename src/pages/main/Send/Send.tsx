@@ -560,6 +560,7 @@ export const Send = () => {
       {/* Content container */}
       <div className="flex flex-col justify-between flex-grow p-4 border border-neutral-2 rounded-lg overflow-y-auto">
         <>
+          {/* TODO: add chain selection if self */}
           {/* Address Input */}
           <AddressInput
             addBottomMargin={false}
@@ -583,7 +584,7 @@ export const Send = () => {
           />
 
           {/* Separator with reverse icon */}
-          <div className="flex justify-center my-4">
+          <div className="flex justify-center my-2">
             <Button className="rounded-md h-9 w-9 bg-neutral-3" onClick={switchFields}>
               <Swap />
             </Button>
