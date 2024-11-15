@@ -42,9 +42,12 @@ export const Main = () => {
     setSearchTerm('');
   }, [activeIndex]);
 
-  // TODO: if no visible coins, show chainvisibilityscreen.  set to state to force reload, then save to localstorage
+  // TODO: modify editcoinlistscreen to different display for tiles.
+  // TODO: add 'enable IBC' option to top of visible coins page
+  // TODO: center configm button on edit page
   return (
     <>
+      {/* TODO: use routing instead */}
       {routeToVisibilitySelection ? (
         <EditCoinListScreen />
       ) : (
