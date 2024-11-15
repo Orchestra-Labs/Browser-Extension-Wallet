@@ -1,6 +1,6 @@
 import { Dialog, DialogTrigger } from '@radix-ui/react-dialog';
 import { LogOut } from 'lucide-react';
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import { ArrowLeft, Discord, DotsVertical, Edit } from '@/assets/icons';
@@ -12,7 +12,7 @@ const OPTIONS = [
   {
     id: 1,
     name: 'Edit Coin List',
-    icon: <Edit />,
+    icon: <Edit width={16} height={16} />,
     target: '',
     to: ROUTES.APP.EDIT_COIN_LIST,
   },
@@ -25,15 +25,21 @@ const OPTIONS = [
   },
 ];
 
+// TODO: add animation slide down on open, animation slide up on close
 export const OptionsDialog: React.FC = () => {
+  const [open, setOpen] = useState(false);
   const logout = useLogout();
 
   const handleLogOut = () => {
     logout();
   };
 
+  const handleOptionSelect = () => {
+    setOpen(false);
+  };
+
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button className="p-[7px]" variant="icon" size="rounded-default">
           <DotsVertical width="100%" height="100%" />
@@ -47,6 +53,7 @@ export const OptionsDialog: React.FC = () => {
               key={option.id}
               to={option.to}
               target={option.target}
+              onClick={handleOptionSelect}
               className="flex items-center text-sm text-white font-normal py-3 not-last:border-b not-last:border-neutral-4 hover:text-white"
             >
               <div className="h-8 w-8 bg-blue rounded-full flex items-center justify-center p-1.5 mr-2.5 text-black">
@@ -63,7 +70,7 @@ export const OptionsDialog: React.FC = () => {
             onClick={handleLogOut}
           >
             <div className="h-8 w-8 bg-blue rounded-full flex items-center justify-center p-1.5 mr-2.5 text-black">
-              <LogOut width={16} />
+              <LogOut width={16} height={16} />
             </div>
             Logout
             <div className="flex-1" />
