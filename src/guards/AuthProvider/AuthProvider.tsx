@@ -27,7 +27,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const isLoggedIn = useAtomValue(isLoggedInAtom);
   const setWalletAddress = useSetAtom(walletAddressAtom);
-  const setAccount = useSetAtom(userAccountAtom);
+  const setUserAccount = useSetAtom(userAccountAtom);
 
   const initializeWallet = async () => {
     const sessionToken = getSessionToken();
@@ -41,7 +41,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       refreshData({ address });
 
       const accountData = getAccountByID(sessionToken.accountID);
-      setAccount(accountData);
+      setUserAccount(accountData);
     } catch (error) {
       console.error('Error initializing wallet address:', error);
     }

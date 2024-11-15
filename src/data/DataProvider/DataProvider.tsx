@@ -16,8 +16,8 @@ export const DataProvider: React.FC<{}> = ({}) => {
   const isFetchingWalletData = useAtomValue(isFetchingWalletDataAtom);
   const validatorState = useAtomValue(validatorDataAtom);
   const isFetchingValidatorData = useAtomValue(isFetchingWalletDataAtom);
-  const account = useAtomValue(userAccountAtom);
-  const setWallet = useSetAtom(userWalletAtom);
+  const userAccount = useAtomValue(userAccountAtom);
+  const setUserWallet = useSetAtom(userWalletAtom);
 
   useEffect(() => {
     if (isInitialDataLoad) {
@@ -39,11 +39,11 @@ export const DataProvider: React.FC<{}> = ({}) => {
   ]);
 
   useEffect(() => {
-    if (account) {
-      const wallet = getWalletByID(account, account.settings.activeWalletID);
-      if (wallet) setWallet(wallet);
+    if (userAccount) {
+      const wallet = getWalletByID(userAccount, userAccount.settings.activeWalletID);
+      if (wallet) setUserWallet(wallet);
     }
-  }, [account]);
+  }, [userAccount]);
 
   return null;
 };

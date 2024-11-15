@@ -10,6 +10,7 @@ export interface AccountRecord {
   settings: {
     activeNetworkID: string;
     visibleNetworks: string[];
+    visibleCoins: string[];
     activeWalletID: string;
   };
   wallets: WalletRecord[];
