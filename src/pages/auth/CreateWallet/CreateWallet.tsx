@@ -110,12 +110,11 @@ export const CreateWallet = () => {
 
   /* ******************************************************************************************* */
   /* David Current TODOs */
-  // TODO: enable transaction fees for wallet transactions (bundle a transaction for revenue. based on transaction fees (0.5x basic transaction fee)?)
+  // TODO: add auth support for dApps
   /* ******************************************************************************************* */
 
   /* Current TODOs */
   // TODO: add ledger support
-  // TODO: add auth support for dApps
   // TODO: abstract wallet prefix and mnemonic decryption
   // TODO: abstract IBC needs
   // TODO: add button to "add chain" at bottom of Holdings list

@@ -184,7 +184,6 @@ export const EditCoinListScreen: React.FC<EditCoinListScreenProps> = ({}) => {
       <div className="flex pt-2 px-4 justify-between items-center px-2">
         <div className="text-sm">Tap to select</div>
         <div className="flex items-center">
-          <p className="text-sm pr-1">Select:</p>
           <Button
             variant={allCoinsSelected ? 'selected' : 'unselected'}
             size="xsmall"
