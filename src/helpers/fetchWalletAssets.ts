@@ -3,17 +3,17 @@ import {
   LOCAL_ASSET_REGISTRY,
   GREATER_EXPONENT_DEFAULT,
   CHAIN_ENDPOINTS,
+  LOCAL_CHAIN_REGISTRY,
 } from '@/constants';
-import { Asset } from '@/types';
+import { Asset, SubscriptionRecord } from '@/types';
 import { queryRestNode } from './queryNodes';
 
-// Adjust the amount by shifting the decimal point
 const adjustAmountByExponent = (amount: string, exponent: number): string => {
   const divisor = Math.pow(10, exponent);
   return (parseFloat(amount) / divisor).toFixed(exponent);
 };
 
-// Resolves IBC denom to base denom with additional properties
+// TODO: get IBC channel information from registry (getting from query doesn't include channel ID)
 const resolveIbcDenom = async (
   ibcDenom: string,
 ): Promise<{ denom: string; symbol: string; logo?: string; exponent: number }> => {
@@ -53,7 +53,6 @@ const resolveIbcDenom = async (
   }
 };
 
-// Fetch balances using queryNode instead of static node
 const getBalances = async (walletAddress: string): Promise<Asset[]> => {
   const getBalanceEndpoint = CHAIN_ENDPOINTS.getBalance;
 
@@ -68,29 +67,46 @@ const getBalances = async (walletAddress: string): Promise<Asset[]> => {
   return response.balances;
 };
 
-// Fetch wallet assets
-export async function fetchWalletAssets(walletAddress: string): Promise<Asset[]> {
+export async function fetchWalletAssets(
+  walletAddress: string,
+  networkID: string,
+  subscription: SubscriptionRecord,
+): Promise<Asset[]> {
   if (!walletAddress) {
     console.error('No wallet address available in walletState!');
     return [];
   }
 
   try {
-    // Fetch balances from the nodes
+    console.log(`Fetching assets for wallet address: ${walletAddress}, network ID: ${networkID}`);
+
     const coins: Asset[] = await getBalances(walletAddress);
+    console.log('Coins fetched from getBalances:', coins);
+
+    const coinDenoms: string[] = subscription.coinDenoms || [];
+    const networkName = LOCAL_CHAIN_REGISTRY[networkID]?.chainName || 'Unknown Network';
+
+    // Filter assets if coinDenoms is not empty, otherwise include all
+    const filteredCoins =
+      coinDenoms.length > 0 ? coins.filter(coin => coinDenoms.includes(coin.denom)) : coins;
+    console.log('Filtered coins after applying subscription filter:', filteredCoins);
 
     // Map through the balances and resolve their properties
     const walletAssets = await Promise.all(
-      coins.map(async (coin: Asset) => {
+      filteredCoins.map(async (coin: Asset) => {
+        console.log(`Processing coin: ${coin.denom}, amount: ${coin.amount}`);
+
         let symbol: string;
         let logo: string | undefined;
         let exponent: number;
 
         const registryAsset = LOCAL_ASSET_REGISTRY[coin.denom] || null;
+        console.log(`Registry asset lookup for ${coin.denom}:`, registryAsset);
+
         if (!registryAsset) {
-          symbol = LOCAL_ASSET_REGISTRY[coin.denom]?.symbol ?? coin.denom;
-          exponent = LOCAL_ASSET_REGISTRY[coin.denom]?.exponent ?? GREATER_EXPONENT_DEFAULT;
-          logo = LOCAL_ASSET_REGISTRY[coin.denom]?.logo;
+          symbol = coin.denom;
+          exponent = GREATER_EXPONENT_DEFAULT;
+          logo = undefined;
         } else {
           symbol = registryAsset.symbol ?? coin.denom;
           exponent = registryAsset.exponent ?? GREATER_EXPONENT_DEFAULT;
@@ -99,9 +115,11 @@ export async function fetchWalletAssets(walletAddress: string): Promise<Asset[]>
 
         // Adjust the coin amount by the exponent (shift decimal)
         const adjustedAmount = adjustAmountByExponent(coin.amount, exponent);
+        console.log(`Adjusted amount for ${coin.denom}:`, adjustedAmount);
 
         if (coin.denom.startsWith(IBC_PREFIX)) {
           // Resolve IBC denom details
+          console.log(`Resolving IBC denom for: ${coin.denom}`);
           const {
             denom: resolvedDenom,
             symbol: resolvedSymbol,
@@ -112,7 +130,6 @@ export async function fetchWalletAssets(walletAddress: string): Promise<Asset[]>
           // Adjust the amount based on the resolved exponent
           const resolvedAmount = adjustAmountByExponent(coin.amount, resolvedExponent);
 
-          // Return the adjusted and resolved IBC asset data
           return {
             ...coin,
             denom: resolvedDenom,
@@ -121,14 +138,25 @@ export async function fetchWalletAssets(walletAddress: string): Promise<Asset[]>
             exponent: resolvedExponent,
             amount: resolvedAmount,
             isIbc: true,
+            networkName,
+            networkID,
           };
         }
 
-        // Return the adjusted asset data
-        return { ...coin, symbol, logo, exponent, amount: adjustedAmount, isIbc: false };
+        return {
+          ...coin,
+          symbol,
+          logo,
+          exponent,
+          amount: adjustedAmount,
+          isIbc: false,
+          networkName,
+          networkID,
+        };
       }),
     );
 
+    console.log('Final wallet assets:', walletAssets);
     return walletAssets;
   } catch (error) {
     console.error('Error fetching wallet assets:', error);

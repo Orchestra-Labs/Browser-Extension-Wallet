@@ -5,15 +5,8 @@ export interface SessionToken {
   timestamp: string;
 }
 
-export interface AccountRecord {
-  id: string; // password and account share ID
-  settings: {
-    activeNetworkID: string;
-    visibleNetworks: string[];
-    visibleCoins: string[];
-    activeWalletID: string;
-  };
-  wallets: WalletRecord[];
+export interface SubscriptionRecord {
+  coinDenoms: string[];
 }
 
 export interface WalletRecord {
@@ -21,6 +14,19 @@ export interface WalletRecord {
   name: string;
   encryptedMnemonic: string;
   settings: {};
+}
+
+export interface AccountRecord {
+  id: string; // password and account share ID
+  // prioritize lowest level settings for priority (wallet visibility over account visibility)
+  settings: {
+    hasSetCoinList: boolean;
+    defaultNetworkID: string;
+    defaultCoinDenom: string;
+    subscribedTo: { [networkID: string]: SubscriptionRecord };
+    activeWalletID: string;
+  };
+  wallets: WalletRecord[];
 }
 
 export interface PasswordRecord {
@@ -38,6 +44,8 @@ export interface Asset {
   symbol?: string;
   exponent?: number;
   isFeeToken?: boolean;
+  networkName?: string;
+  networkID?: string;
 }
 
 export interface WalletAssets {

@@ -351,10 +351,6 @@ export const fetchValidatorData = async (
       return combinedInfo;
     });
 
-    const filteredValidators = combinedData.filter(
-      item => item.unbondingBalance && parseFloat(item.unbondingBalance.balance) > 0,
-    );
-    console.log('validator data', filteredValidators);
     return combinedData;
   } catch (error) {
     console.error('Error fetching validator data:', error);

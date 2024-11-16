@@ -4,17 +4,16 @@ import {
   assetDialogSortOrderAtom,
   assetDialogSortTypeAtom,
   dialogSearchTermAtom,
-  filteredAssetsAtom,
   filteredExchangeAssetsAtom,
   isInitialDataLoadAtom,
   selectedCoinListAtom,
 } from '@/atoms';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { DEFAULT_ASSET, LOCAL_CHAIN_REGISTRY, ROUTES } from '@/constants';
+import { DEFAULT_SUBSCRIPTION, LOCAL_CHAIN_REGISTRY, ROUTES } from '@/constants';
 import { X } from '@/assets/icons';
 import { Button, Separator } from '@/ui-kit';
-import { Asset } from '@/types';
+import { Asset, SubscriptionRecord } from '@/types';
 import { saveAccountByID } from '@/helpers/dataHelpers/account';
 import { userAccountAtom } from '@/atoms/accountAtom';
 
@@ -30,7 +29,6 @@ export const EditCoinListScreen: React.FC<EditCoinListScreenProps> = ({}) => {
 
   const isInitialDataLoad = useAtomValue(isInitialDataLoadAtom);
   const [selectedCoins, setSelectedCoins] = useAtom(selectedCoinListAtom);
-  const filteredCoins = useAtomValue(filteredAssetsAtom);
   const filteredExchangeCoins = useAtomValue(filteredExchangeAssetsAtom);
   const setSearchTerm = useSetAtom(dialogSearchTermAtom);
   const setSortOrder = useSetAtom(assetDialogSortOrderAtom);
@@ -42,37 +40,24 @@ export const EditCoinListScreen: React.FC<EditCoinListScreenProps> = ({}) => {
 
   // Store initial settings to revert to them on cancel
   const initialSettings = {
-    visibleCoins: userAccount?.settings.visibleCoins || [DEFAULT_ASSET.denom],
-    visibleNetworks: userAccount?.settings.visibleNetworks || [
-      LOCAL_CHAIN_REGISTRY.Symphony.chainID,
-    ],
+    subscribedTo:
+      userAccount?.settings.subscribedTo &&
+      Object.keys(userAccount.settings.subscribedTo).length > 0
+        ? userAccount.settings.subscribedTo
+        : DEFAULT_SUBSCRIPTION,
   };
 
-  console.log('Page loaded. Initial selected coins:', initialSettings.visibleCoins);
-
   const resetDefaults = () => {
-    console.log('Resetting search and sort defaults.');
     setSearchTerm('');
     setSortOrder('Desc');
     setSortType('name');
   };
 
-  const getChainsByDenom = (denom: string) => {
-    const chains = Object.entries(LOCAL_CHAIN_REGISTRY)
-      .filter(([_, chain]) => Object.values(chain.assets).some(asset => asset.denom === denom))
-      .map(([chainName, _]) => chainName);
-
-    console.log(`Chains for denom ${denom}:`, chains);
-    return chains;
-  };
-
   const handleSelectAll = () => {
-    console.log('Selecting all coins.');
     setSelectedCoins(filteredExchangeCoins);
   };
 
   const handleSelectNone = () => {
-    console.log('Deselecting all coins.');
     setSelectedCoins([]);
   };
 
@@ -82,7 +67,6 @@ export const EditCoinListScreen: React.FC<EditCoinListScreenProps> = ({}) => {
   };
 
   const handleSelectCoin = (coin: Asset) => {
-    console.log('Toggling selection for coin:', coin);
     setSelectedCoins(prevSelectedCoins => {
       const isAlreadySelected = prevSelectedCoins.some(
         selectedCoin => selectedCoin.denom === coin.denom,
@@ -92,40 +76,44 @@ export const EditCoinListScreen: React.FC<EditCoinListScreenProps> = ({}) => {
         ? prevSelectedCoins.filter(selectedCoin => selectedCoin.denom !== coin.denom)
         : [...prevSelectedCoins, coin];
 
-      console.log('Updated selected coins:', updatedCoins);
       return updatedCoins;
     });
   };
 
+  // TODO: with multi-coin support, change to select specific coin and chain by sorted category and selection
   const confirmSelection = () => {
     if (userAccount) {
-      const visibleNetworks = new Set<string>();
-      const visibleCoins = new Set<string>();
+      const updatedSubscriptions: { [networkID: string]: SubscriptionRecord } = {};
 
-      // TODO: with multi-coin support, change to select specific coin and chain by sorted category and selection
-      selectedCoins.forEach(coin => {
-        const chains = getChainsByDenom(coin.denom);
-        chains.forEach(chain => visibleNetworks.add(chain));
-        visibleCoins.add(coin.denom);
+      // TODO: change page's save structure to reflect subscription/registry structure to prevent excess looping here
+      Object.keys(LOCAL_CHAIN_REGISTRY).forEach(networkID => {
+        const networkAssets = LOCAL_CHAIN_REGISTRY[networkID]?.assets || {};
+        const networkCoinDenoms = Object.keys(networkAssets);
+
+        const selectedNetworkCoins = selectedCoins
+          .filter(coin => coin.networkID === networkID)
+          .map(coin => coin.denom);
+
+        if (selectedNetworkCoins.length === networkCoinDenoms.length) {
+          // All coins in the network are selected, so save as an empty array
+          updatedSubscriptions[networkID] = { coinDenoms: [] };
+        } else if (selectedNetworkCoins.length > 0) {
+          // Partial selection, save the selected denoms
+          updatedSubscriptions[networkID] = { coinDenoms: selectedNetworkCoins };
+        }
       });
 
       const updatedUserAccount = {
         ...userAccount,
         settings: {
           ...userAccount.settings,
-          visibleNetworks: Array.from(visibleNetworks),
-          visibleCoins: Array.from(visibleCoins),
+          subscribedTo: updatedSubscriptions,
         },
       };
 
       // Update state and save to local storage
       setUserAccount(updatedUserAccount);
       saveAccountByID(updatedUserAccount);
-
-      console.log(
-        'Confirming selection. Updated user account settings:',
-        updatedUserAccount.settings,
-      );
     }
 
     closeAndReturn();
@@ -134,9 +122,7 @@ export const EditCoinListScreen: React.FC<EditCoinListScreenProps> = ({}) => {
   const cancel = () => {
     if (userAccount) {
       // Restore the initial settings
-      userAccount.settings.visibleNetworks = initialSettings.visibleNetworks;
-      userAccount.settings.visibleCoins = initialSettings.visibleCoins;
-      console.log('Canceling. Restoring original user account settings:', userAccount.settings);
+      userAccount.settings.subscribedTo = initialSettings.subscribedTo;
       saveAccountByID(userAccount);
     }
 
@@ -144,20 +130,27 @@ export const EditCoinListScreen: React.FC<EditCoinListScreenProps> = ({}) => {
   };
 
   useEffect(() => {
-    // Set initial selected coins and networks if not already set
     if (userAccount) {
-      if (userAccount.settings.visibleCoins.length === 0) {
-        setSelectedCoins([DEFAULT_ASSET]);
-        userAccount.settings.visibleCoins = [DEFAULT_ASSET.denom];
-      } else {
-        setSelectedCoins(filteredCoins);
-      }
+      const initialCoins: Asset[] = [];
 
-      if (userAccount.settings.visibleNetworks.length === 0) {
-        userAccount.settings.visibleNetworks = [LOCAL_CHAIN_REGISTRY.Symphony.chainID];
-      }
+      Object.entries(userAccount.settings.subscribedTo).forEach(([networkID, subscription]) => {
+        const networkAssets = LOCAL_CHAIN_REGISTRY[networkID]?.assets;
 
-      setUserAccount(userAccount);
+        if (!networkAssets) return;
+
+        if (subscription.coinDenoms.length === 0) {
+          initialCoins.push(...Object.values(networkAssets));
+        } else {
+          subscription.coinDenoms.forEach(denom => {
+            const asset = networkAssets[denom];
+            if (asset) {
+              initialCoins.push(asset);
+            }
+          });
+        }
+      });
+
+      setSelectedCoins(initialCoins);
     }
   }, []);
 
@@ -213,6 +206,7 @@ export const EditCoinListScreen: React.FC<EditCoinListScreenProps> = ({}) => {
         {isInitialDataLoad ? (
           <Loader />
         ) : (
+          // TODO: create CategoryTiles option or new component that allows for animated tile inclusion
           <TileScroller
             activeIndex={0}
             onSelectAsset={handleSelectCoin}
@@ -226,13 +220,15 @@ export const EditCoinListScreen: React.FC<EditCoinListScreenProps> = ({}) => {
       </div>
 
       <Separator variant="top" />
-      <Button
-        className="w-[56%]"
-        disabled={selectedCoins.length === 0}
-        onClick={() => confirmSelection()}
-      >
-        Confirm
-      </Button>
+      <div className="flex justify-center mb-4">
+        <Button
+          className="w-[56%] text-center"
+          disabled={selectedCoins.length === 0}
+          onClick={() => confirmSelection()}
+        >
+          Confirm
+        </Button>
+      </div>
     </div>
   );
 };

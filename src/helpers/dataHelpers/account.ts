@@ -1,4 +1,4 @@
-import { AccountRecord, WalletRecord } from '@/types';
+import { AccountRecord, SubscriptionRecord, WalletRecord } from '@/types';
 import { getLocalStorageItem, setLocalStorageItem } from './localStorage';
 import { getPasswordRecords, hashPassword, savePasswordHash } from './password';
 import { createWallet } from './wallet';
@@ -70,29 +70,31 @@ export const createAccount = async (
   mnemonic: string,
   password: string,
   walletName: string,
-  visibleNetworks: string[] = [], // list of network IDs
-  visibleCoins: string[] = [], // list of coin denoms
+  subscriptions: { [networkID: string]: SubscriptionRecord } = {},
   persist: boolean = true,
 ): Promise<AccountRecord> => {
   console.log('Creating new account with walletName:', walletName);
+
   const accountID = generateUUID();
   const passwordHash = savePasswordHash(accountID, password);
   console.log('Password hash generated:', passwordHash);
 
   const walletInfo = await createWallet(mnemonic, password, walletName);
-  const wallet = walletInfo.wallet;
+  const secpWallet = walletInfo.wallet;
   const walletRecord = walletInfo.walletRecord;
   console.log('Wallet created and wallet record generated:', walletRecord);
 
-  // TODO: make this a search
-  const networkID = 'symphony-testnet-1';
+  // Set default network and coin denom based on the first entry in subscriptions, if available
+  const defaultNetworkID = Object.keys(subscriptions)[0] || '';
+  const defaultCoinDenom = subscriptions[defaultNetworkID]?.coinDenoms?.at(0) || '';
 
   const newAccount: AccountRecord = {
     id: accountID,
     settings: {
-      activeNetworkID: networkID,
-      visibleNetworks,
-      visibleCoins,
+      hasSetCoinList: false,
+      defaultNetworkID,
+      defaultCoinDenom,
+      subscribedTo: subscriptions,
       activeWalletID: walletRecord.id,
     },
     wallets: [walletRecord],
@@ -105,7 +107,7 @@ export const createAccount = async (
   saveAccounts(accounts);
   console.log('New account saved successfully.');
 
-  const sessionCreated = await saveSessionData(wallet, passwordHash, persist);
+  const sessionCreated = await saveSessionData(secpWallet, passwordHash, persist);
   console.log('Session created:', sessionCreated);
 
   if (!sessionCreated) {

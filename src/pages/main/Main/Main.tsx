@@ -22,7 +22,9 @@ export const Main = () => {
   const [showAllAssets, setShowAllAssets] = useAtom(showAllAssetsAtom);
   const setSearchTerm = useSetAtom(searchTermAtom);
   const userAccount = useAtomValue(userAccountAtom);
-  const routeToVisibilitySelection = userAccount?.settings.visibleNetworks.length === 0;
+  const routeToVisibilitySelection =
+    userAccount?.settings.subscribedTo &&
+    Object.keys(userAccount.settings.subscribedTo).length === 0;
 
   const assetViewToggleChange = (shouldShowAllAssets: boolean) => {
     setShowAllAssets(shouldShowAllAssets);
@@ -42,14 +44,9 @@ export const Main = () => {
     setSearchTerm('');
   }, [activeIndex]);
 
-  // TODO: change saved settings to view: [chain: [coin]]
-  // TODO: if empty list, chain list, view none.  if empty coin list, view all
-  // TODO: add settings boolean for shouldSetCoinList
   // TODO: make tiles name of chain with dropdown on right side.  coins for that chain are slightly shifted right
   // TODO: allow search by chain name
   // TODO: modify editcoinlistscreen to different display for tiles.
-  // TODO: add 'enable IBC' option to top of visible coins page
-  // TODO: center config button on edit page
   return (
     <>
       {/* TODO: use routing instead */}
