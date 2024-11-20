@@ -110,16 +110,20 @@ export const CreateWallet = () => {
 
   /* ******************************************************************************************* */
   /* David Current TODOs */
-  // TODO: add auth support for dApps
+  // TODO: enable search function for wallet asset list by chain (on top of current functionality)
+  // TODO: enable search function to validator list by chain (on top of current functionality)
+  // TODO: add show/hide function to validator list (by chain)
+  // TODO: abstract IBC needs
+  // TODO: abstract wallet prefix and mnemonic decryption
   /* ******************************************************************************************* */
 
   /* Current TODOs */
-  // TODO: add ledger support
-  // TODO: abstract wallet prefix and mnemonic decryption
-  // TODO: abstract IBC needs
-  // TODO: add button to "add chain" at bottom of Holdings list
+  // TODO: add auth support for dApps
+  // TODO: add button to "add chain" in center of empty chain list
+  // TODO: add button to "stake to validator" in center of empty 'current' validator list
+  // TODO: add text for "no validators found.  how are you seeing this?" in center of empty 'all' validator list
   // TODO: add link to github repo for registry
-  // TODO: enable Wallet Name display
+  // TODO: add ledger support
 
   /* Revenue TODOs (ensure no added fees from us adds total fees over 1% on transaction */
   // TODO: list these in user info:
@@ -138,9 +142,6 @@ export const CreateWallet = () => {
   // TODO: ensure pipeline to other registries is functional.  change here auto-PRs there
   // TODO: integrate skip protocol or automated use of exchange to allow swapping between chains
   // TODO: modify claim, restake, and unstake functions to withdraw from all unique delegator addresses
-  // TODO: enable search function for wallet asset list by chain (on top of current functionality)
-  // TODO: enable search function to validator list by chain (on top of current functionality)
-  // TODO: add show/hide function to validator list (by chain)
 
   /* dApp TODOs */
   // TODO: add page
