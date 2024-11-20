@@ -358,7 +358,6 @@ export const ValidatorSelectDialog: React.FC<ValidatorSelectDialogProps> = ({
         <div className="flex justify-between items-center px-2">
           <div className="flex-1 text-sm">Tap to select</div>
           <div className="flex items-center">
-            <p className="text-sm pr-1">Select:</p>
             <Button
               variant={allValidatorsSelected ? 'selected' : 'unselected'}
               size="xsmall"
