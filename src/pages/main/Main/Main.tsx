@@ -11,7 +11,7 @@ import { useEffect, useRef } from 'react';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { Button } from '@/ui-kit';
 import { userAccountAtom } from '@/atoms/accountAtom';
-import { EditCoinListScreen } from '../EditCoinListScreen';
+import { EditChainListScreen } from '../EditChainListScreen';
 
 export const Main = () => {
   const swiperRef = useRef<SwiperClass | null>(null);
@@ -51,7 +51,7 @@ export const Main = () => {
     <>
       {/* TODO: use routing instead */}
       {routeToVisibilitySelection ? (
-        <EditCoinListScreen />
+        <EditChainListScreen />
       ) : (
         <div className="h-full flex flex-col overflow-hidden">
           {/* Swiper Component for Balance Cards */}

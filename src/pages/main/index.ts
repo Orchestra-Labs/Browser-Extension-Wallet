@@ -1,4 +1,5 @@
 export * from './AddNewNetwork';
+export * from './EditChainListScreen';
 export * from './EditCoinListScreen';
 export * from './Main';
 export * from './Send';

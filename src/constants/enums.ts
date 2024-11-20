@@ -32,3 +32,7 @@ export enum ValidatorSortType {
   APY = 'apy',
   VOTING_POWER = 'votingPower',
 }
+
+export enum ChainSortType {
+  NAME = 'name',
+}

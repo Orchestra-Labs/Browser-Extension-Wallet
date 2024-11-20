@@ -212,3 +212,11 @@ export interface StakingParams {
   historical_entries: number;
   bond_denom: string;
 }
+
+export interface ChainRecord {
+  name: string;
+  chainId: string;
+  rpcUrls: string[];
+  restUrls: string[];
+  status: string;
+}
