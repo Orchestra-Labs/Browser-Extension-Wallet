@@ -100,10 +100,11 @@ export const CreateWallet = () => {
 
   /* ******************************************************************************************* */
   /* David Current TODOs */
-  // Add get for IBC information
-  // Add support for IBC sends
-  // Add first level of routing (swap to IBC send or IBC to swap)
-  // Add additional chain views to verify above
+  // TODO: Add remember me
+  // TODO: Add get for IBC information
+  // TODO: Add support for IBC sends
+  // TODO: Add first level of routing (swap to IBC send or IBC to swap)
+  // TODO: Add additional chain views to verify above
   /* ******************************************************************************************* */
 
   /* Current TODOs */
