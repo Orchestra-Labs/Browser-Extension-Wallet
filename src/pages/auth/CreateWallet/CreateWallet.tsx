@@ -101,6 +101,7 @@ export const CreateWallet = () => {
   /* ******************************************************************************************* */
   /* David Current TODOs */
   // TODO: Add remember me
+  // TODO: make toast animate in, animate out, and swipe-away
   // TODO: Add get for IBC information
   // TODO: Add support for IBC sends
   // TODO: Add first level of routing (swap to IBC send or IBC to swap)
