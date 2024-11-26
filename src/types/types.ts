@@ -213,3 +213,15 @@ export interface IBCConnection {
   counterparty_connection_id: string;
   state: IBCConnectionState;
 }
+
+export interface ChainData {
+  coin: string;
+  mainnet: string | null;
+  testnet: string | null;
+  regtest: string | null;
+}
+
+export interface PrefixStorage {
+  lastUpdated: string;
+  data: ChainData[];
+}

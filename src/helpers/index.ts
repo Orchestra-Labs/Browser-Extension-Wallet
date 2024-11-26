@@ -1,5 +1,6 @@
 export * from './dataHelpers';
 export * from './claimRewards';
+export * from './fetchBech32Prefixes';
 export * from './fetchStakingInfo';
 export * from './fetchWalletAssets';
 export * from './formatString';
