@@ -1,4 +1,3 @@
-// constants/defaultValues.ts
 import { Asset } from '@/types';
 
 // Network-related constants
@@ -18,7 +17,7 @@ export const MAX_NODES_PER_QUERY = 3;
 
 const isDev = import.meta.env.DEV;
 
-const DEV_PROXY = 'http://localhost:5173'; // Your Vite dev server URL
+const DEV_PROXY = 'http://localhost:5173';
 
 // Define the shape of the local asset registry
 type AssetRegistry = {
