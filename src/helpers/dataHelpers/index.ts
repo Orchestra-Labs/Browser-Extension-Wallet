@@ -1,5 +1,7 @@
+export * from './account';
 export * from './auth';
 export * from './crypto';
+export * from './ibcChannels';
 export * from './localStorage';
 export * from './nodes';
 export * from './password';

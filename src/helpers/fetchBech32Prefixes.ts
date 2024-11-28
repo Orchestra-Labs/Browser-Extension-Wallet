@@ -1,24 +1,14 @@
 import axios from 'axios';
-import {
-  getPrefixesFromLocalStorage,
-  prefixesNeedRefresh,
-  savePrefixesToLocalStorage,
-} from './dataHelpers';
+import { getPrefixes, prefixesNeedRefresh, savePrefixes } from './dataHelpers';
+import { ChainData } from '@/types';
 
 // TODO: lastUpdated in localStorage.  if not exists or past 24 hours, call to update data
 // TODO: load data into state, use for address input verification
 // TODO: on valid address, check for route
 const SLIP_0173_URL = 'https://raw.githubusercontent.com/satoshilabs/slips/master/slip-0173.md';
 
-interface ChainData {
-  coin: string;
-  mainnet: string | null;
-  testnet: string | null;
-  regtest: string | null;
-}
-
 export const fetchBech32Prefixes = async (): Promise<ChainData[]> => {
-  const prefixStorage = getPrefixesFromLocalStorage();
+  const prefixStorage = getPrefixes();
 
   if (prefixStorage && !prefixesNeedRefresh(prefixStorage)) {
     return prefixStorage.data;
@@ -29,7 +19,7 @@ export const fetchBech32Prefixes = async (): Promise<ChainData[]> => {
     const markdownContent = response.data;
 
     const chainData = parseBech32Markdown(markdownContent);
-    savePrefixesToLocalStorage(chainData);
+    savePrefixes(chainData);
     return chainData;
   } catch (error) {
     if (prefixStorage) {
@@ -60,11 +50,16 @@ const parseBech32Markdown = (markdown: string): ChainData[] => {
     if (columns.length < 4) continue;
 
     const coin: string = columns[1] || '';
-    const mainnet: string | null = columns[2] || null;
-    const testnet: string | null = columns[3] || mainnet;
-    const regtest: string | null = columns[4] || mainnet;
+    const mainnet: string = columns[2] || '';
+    const testnet: string = columns[3] || mainnet;
+    // const regtest: string | null = columns[4] || mainnet;
 
-    chains.push({ coin, mainnet, testnet, regtest });
+    chains.push({
+      coin,
+      mainnet,
+      testnet,
+      // regtest
+    });
   }
 
   return chains;

@@ -45,3 +45,8 @@ export enum InputStatus {
   INFO = 'info',
   NEUTRAL = '',
 }
+
+export enum NetworkOptions {
+  TESTNET = 'testnet',
+  MAINNET = 'mainnet',
+}

@@ -1,10 +1,10 @@
-import { ONE_DAY } from '@/constants';
+import { STORED_DATA_TIMEOUT } from '@/constants';
 import { getLocalStorageItem, setLocalStorageItem } from './localStorage';
 import { ChainData, PrefixStorage } from '@/types';
 
 const PREFIXES_STORAGE_KEY = 'bech32Prefixes';
 
-export const getPrefixesFromLocalStorage = (): PrefixStorage | null => {
+export const getPrefixes = (): PrefixStorage | null => {
   const storedData = getLocalStorageItem(PREFIXES_STORAGE_KEY);
 
   if (storedData) {
@@ -18,7 +18,7 @@ export const getPrefixesFromLocalStorage = (): PrefixStorage | null => {
   return null;
 };
 
-export const savePrefixesToLocalStorage = (data: ChainData[]): void => {
+export const savePrefixes = (data: ChainData[]): void => {
   const prefixStorage: PrefixStorage = {
     lastUpdated: new Date().toISOString(),
     data,
@@ -33,5 +33,5 @@ export const prefixesNeedRefresh = (prefixStorage: PrefixStorage | null): boolea
   const lastUpdatedTime = new Date(prefixStorage.lastUpdated).getTime();
   const currentTime = new Date().getTime();
 
-  return currentTime - lastUpdatedTime >= ONE_DAY;
+  return currentTime - lastUpdatedTime >= STORED_DATA_TIMEOUT;
 };

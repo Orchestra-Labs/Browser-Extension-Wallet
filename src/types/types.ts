@@ -1,4 +1,4 @@
-import { IBCConnectionState } from '@/constants';
+import { NetworkOptions } from '@/constants';
 
 export interface SessionToken {
   mnemonic: string;
@@ -54,6 +54,14 @@ export interface SendObject {
 export interface SwapObject {
   sendObject: SendObject;
   resultDenom: string;
+}
+
+export interface IBCObject {
+  fromAddress: string;
+  sendObject: SendObject;
+  sendChain: string;
+  receiveChain: string;
+  networkLevel: NetworkOptions;
 }
 
 export interface DelegationResponse {
@@ -206,22 +214,68 @@ export interface StakingParams {
   bond_denom: string;
 }
 
-export interface IBCConnection {
-  id: string;
-  client_id: string;
-  counterparty_client_id: string;
-  counterparty_connection_id: string;
-  state: IBCConnectionState;
+// TODO: ensure IBC channel used is always the one for the sending chain
+export interface IBCChannel {
+  channel_id: string;
+  port_id: string;
+  state: string;
+  counterparty: {
+    channel_id: string;
+    port_id: string;
+  };
 }
 
 export interface ChainData {
   coin: string;
-  mainnet: string | null;
-  testnet: string | null;
-  regtest: string | null;
+  mainnet: string;
+  testnet: string;
+  // regtest: string | null;
 }
 
 export interface PrefixStorage {
   lastUpdated: string;
   data: ChainData[];
+}
+
+export interface GitHubFile {
+  name: string;
+  path: string;
+  download_url: string;
+}
+
+export interface GitHubFileResponse {
+  content: string;
+  encoding: string;
+}
+
+export interface IBCConnectionFileChain {
+  chain_name: string;
+  client_id: string;
+  connection_id: string;
+}
+
+export interface IBCConnectionFileChannel {
+  channel_id: string;
+  port_id: string;
+}
+
+export interface IBCConnectionFile {
+  chain_1: any;
+  chain_2: any;
+  channels: Array<{
+    chain_1: IBCConnectionFileChannel;
+    chain_2: IBCConnectionFileChannel;
+  }>;
+}
+
+export interface TransactionState {
+  asset: Asset;
+  amount: number;
+  chainName: string;
+  networkOption: NetworkOptions;
+}
+
+export interface CachedIBCFile {
+  lastUpdated: string;
+  data: IBCConnectionFile;
 }

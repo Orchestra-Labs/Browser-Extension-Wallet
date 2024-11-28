@@ -1,4 +1,5 @@
 import { Asset } from '@/types';
+import { NetworkOptions } from './enums';
 
 // Network-related constants
 export const NETWORK = 'symphony';
@@ -115,8 +116,8 @@ export const CHAIN_ENDPOINTS = {
   exchangeRequirements: '/symphony/market/v1beta1/exchange_requirements',
   getStakingParams: '/cosmos/staking/v1beta1/params',
   getUptime: '/cosmos/slashing/v1beta1/signing_infos/',
-  getIBCConnections: '/ibc/core/channel/v1/connections',
-  sendIbcMessage: '/ibc/apps/transfer/v1/transactions',
+  getIBCConnections: '/ibc/core/channel/v1/channels',
+  sendIbcMessage: '/cosmos/tx/v1beta1/txs',
 };
 
 export const LOCAL_CHAIN_REGISTRY = {
@@ -129,15 +130,29 @@ export const LOCAL_CHAIN_REGISTRY = {
 };
 
 // Time constants
-const ONE_MINUTE = 60 * 1000;
+export const ONE_MINUTE = 60 * 1000;
 const FIVE_MINUTES = 5 * ONE_MINUTE;
 const FIFTEEN_MINUTES = 3 * FIVE_MINUTES; // 15 minutes in milliseconds
 const ONE_HOUR = 4 * FIFTEEN_MINUTES;
-export const ONE_DAY = 24 * ONE_HOUR;
+const ONE_DAY = 24 * ONE_HOUR;
 
 export const RECHECK_TIMEOUT = FIVE_MINUTES;
 export const INACTIVITY_TIMEOUT = FIFTEEN_MINUTES;
 export const TOKEN_EXPIRATION_TIME = FIFTEEN_MINUTES;
+export const STORED_DATA_TIMEOUT = ONE_DAY;
 export const DATA_FRESHNESS_TIMEOUT = 15 * 1000; // Data is considered fresh for 15 seconds
 export const ICON_CHANGEOVER_TIMEOUT = 750; // 0.75 seconds to hold confirmation icon
 export const DELAY_BETWEEN_NODE_ATTEMPTS = 1000; //1 second between queries
+
+export const defaultSendState = {
+  asset: DEFAULT_ASSET,
+  amount: 0,
+  chainName: DEFAULT_CHAIN_NAME,
+  networkOption: NetworkOptions.TESTNET,
+};
+export const defaultReceiveState = {
+  asset: DEFAULT_ASSET,
+  amount: 0,
+  chainName: DEFAULT_CHAIN_NAME,
+  networkOption: NetworkOptions.TESTNET,
+};

@@ -4,7 +4,7 @@ export * from './fetchBech32Prefixes';
 export * from './fetchStakingInfo';
 export * from './fetchWalletAssets';
 export * from './formatString';
-export * from './dataHelpers/nodes';
+export * from './ibcTransactions';
 export * from './queryNodes';
 export * from './sendTransactions';
 export * from './sort';

@@ -1,6 +1,11 @@
 import { Input } from '@/ui-kit';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
-import { addressVerifiedAtom, recipientAddressAtom, walletStateAtom } from '@/atoms';
+import {
+  addressVerifiedAtom,
+  receiveStateAtom,
+  recipientAddressAtom,
+  walletStateAtom,
+} from '@/atoms';
 import { useEffect, useState } from 'react';
 import { InputStatus } from '@/constants';
 import { cn, fetchBech32Prefixes } from '@/helpers';
@@ -21,6 +26,7 @@ export const AddressInput: React.FC<AddressInputProps> = ({
 }) => {
   const [address, setAddress] = useAtom(recipientAddressAtom);
   const setAddressVerified = useSetAtom(addressVerifiedAtom);
+  const setReceiveState = useSetAtom(receiveStateAtom);
   const walletState = useAtomValue(walletStateAtom);
 
   const [addressStatus, setAddressStatus] = useState<InputStatus>(InputStatus.NEUTRAL);
@@ -36,10 +42,17 @@ export const AddressInput: React.FC<AddressInputProps> = ({
       setMessageText('');
       return;
     }
+
+    const isAlphanumeric = /^[a-zA-Z0-9]+$/.test(address);
+    if (!isAlphanumeric) {
+      setAddressStatus(InputStatus.ERROR);
+      setMessageText('Address contains invalid characters.');
+      setAddressVerified(false);
+      return;
+    }
+
     try {
       const decoded = bech32.decode(address);
-
-      const isAlphanumeric = /^[a-zA-Z0-9]+$/.test(address);
 
       // TODO: check this verifies prefix presence properly
       console.log('found prefix', decoded.prefix);
@@ -53,10 +66,6 @@ export const AddressInput: React.FC<AddressInputProps> = ({
       // TODO: use net of sending coin
       const matchedChain = testnetPrefixes.find(chain => chain.testnet === decoded.prefix);
 
-      // TODO: verify chain levels match (no sending mainnet to testnet)
-
-      // TODO: verify known IBC channel exists.  if not, mark as IBC not possible, esle send to that channel
-
       if (!matchedChain) {
         setAddressStatus(InputStatus.WARNING);
         setMessageText('Prefix not known');
@@ -64,16 +73,13 @@ export const AddressInput: React.FC<AddressInputProps> = ({
         return;
       }
 
-      if (!isAlphanumeric) {
-        setAddressStatus(InputStatus.ERROR);
-        setMessageText('Address contains invalid characters.');
-        setAddressVerified(false);
-        return;
-      }
-
       setAddressStatus(InputStatus.SUCCESS);
       setMessageText('');
       setAddressVerified(true);
+      setReceiveState(prevState => ({
+        ...prevState,
+        chainName: matchedChain.coin.toLowerCase(),
+      }));
     } catch (error) {
       setAddressStatus(InputStatus.ERROR);
       setMessageText('Invalid Bech32 encoding.');
