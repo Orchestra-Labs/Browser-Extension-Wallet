@@ -106,16 +106,16 @@ export const CreateWallet = () => {
   // TODO: Add support for IBC sends
   // TODO: Add first level of routing (swap to IBC send or IBC to swap)
   // TODO: Add additional chain views to verify above
+  // TODO: enable Wallet Name display
+  // TODO: abstract wallet prefix and mnemonic decryption
   /* ******************************************************************************************* */
 
   /* Current TODOs */
   // TODO: add ledger support
   // TODO: add auth support for dApps
-  // TODO: abstract wallet prefix and mnemonic decryption
   // TODO: abstract IBC needs
   // TODO: add button to "add chain" at bottom of Holdings list
   // TODO: add link to github repo for registry
-  // TODO: enable Wallet Name display
   // Add routing
   // TODO: modify claim, restake, and unstake functions to withdraw from all unique delegator addresses
   // TODO: enable search function for wallet asset list by chain (on top of current functionality)
@@ -149,7 +149,7 @@ export const CreateWallet = () => {
 
   /* Nice to have TODOs */
   // TODO: get google analytics going
-  // TODO: creation of wallet with old password should add additional wallet on same account
+  // TODO: creation of wallet with old password should overwrite old wallet
   // TODO: fix issue with gas on 'all' button for validator selections (bundle transactions)
   // TODO: make toasts copy-on-click
   // TODO: fix copytextfield issue of enlarged border on click
