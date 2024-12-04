@@ -1,5 +1,5 @@
-// constants/defaultValues.ts
 import { Asset } from '@/types';
+import { NetworkLevel } from './enums';
 
 // Network-related constants
 export const NETWORK = 'symphony';
@@ -18,7 +18,7 @@ export const MAX_NODES_PER_QUERY = 3;
 
 const isDev = import.meta.env.DEV;
 
-const DEV_PROXY = 'http://localhost:5173'; // Your Vite dev server URL
+const DEV_PROXY = 'http://localhost:5173';
 
 // Define the shape of the local asset registry
 type AssetRegistry = {
@@ -125,10 +125,12 @@ export const CHAIN_ENDPOINTS = {
   delegateToValidator: '/cosmos.staking.v1beta1.MsgDelegate',
   undelegateFromValidator: '/cosmos.staking.v1beta1.MsgUndelegate',
   sendMessage: '/cosmos.bank.v1beta1.MsgSend',
-  swap: '/osmosis/market/v1beta1/swap?',
-  exchangeRequirements: '/osmosis/market/v1beta1/exchange_requirements',
+  swap: '/symphony/market/v1beta1/swap?',
+  exchangeRequirements: '/symphony/market/v1beta1/exchange_requirements',
   getStakingParams: '/cosmos/staking/v1beta1/params',
   getUptime: '/cosmos/slashing/v1beta1/signing_infos/',
+  getIBCConnections: '/ibc/core/channel/v1/channels',
+  sendIbcMessage: '/cosmos/tx/v1beta1/txs',
 };
 
 type LocalChainRegistryType = {
@@ -158,13 +160,29 @@ export const DEFAULT_SUBSCRIPTION = {
 };
 
 // Time constants
-const ONE_MINUTE = 60 * 1000;
+export const ONE_MINUTE = 60 * 1000;
 const FIVE_MINUTES = 5 * ONE_MINUTE;
 const FIFTEEN_MINUTES = 3 * FIVE_MINUTES; // 15 minutes in milliseconds
+const ONE_HOUR = 4 * FIFTEEN_MINUTES;
+const ONE_DAY = 24 * ONE_HOUR;
 
 export const RECHECK_TIMEOUT = FIVE_MINUTES;
 export const INACTIVITY_TIMEOUT = FIFTEEN_MINUTES;
 export const TOKEN_EXPIRATION_TIME = FIFTEEN_MINUTES;
+export const STORED_DATA_TIMEOUT = ONE_DAY;
 export const DATA_FRESHNESS_TIMEOUT = 15 * 1000; // Data is considered fresh for 15 seconds
 export const ICON_CHANGEOVER_TIMEOUT = 750; // 0.75 seconds to hold confirmation icon
 export const DELAY_BETWEEN_NODE_ATTEMPTS = 1000; //1 second between queries
+
+export const defaultSendState = {
+  asset: DEFAULT_ASSET,
+  amount: 0,
+  chainName: DEFAULT_CHAIN_NAME,
+  networkLevel: NetworkLevel.TESTNET,
+};
+export const defaultReceiveState = {
+  asset: DEFAULT_ASSET,
+  amount: 0,
+  chainName: DEFAULT_CHAIN_NAME,
+  networkLevel: NetworkLevel.TESTNET,
+};

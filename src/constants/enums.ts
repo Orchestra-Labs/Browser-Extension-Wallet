@@ -36,3 +36,21 @@ export enum ValidatorSortType {
 export enum ChainSortType {
   NAME = 'name',
 }
+
+export enum IBCConnectionState {
+  OPEN = 'STATE_OPEN',
+  CLOSED = 'STATE_CLOSED',
+}
+
+export enum InputStatus {
+  ERROR = 'error',
+  SUCCESS = 'success',
+  WARNING = 'warning',
+  INFO = 'info',
+  NEUTRAL = '',
+}
+
+export enum NetworkLevel {
+  TESTNET = 'testnet',
+  MAINNET = 'mainnet',
+}

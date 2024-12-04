@@ -2,12 +2,13 @@ import * as React from 'react';
 import { ReactNode } from 'react';
 
 import { cn } from '@/helpers/utils';
+import { InputStatus } from '@/constants';
 
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   variant?: 'primary' | 'unstyled';
   label?: string;
   showMessageText?: boolean;
-  status?: 'error' | 'success' | 'info' | null;
+  status?: InputStatus;
   messageText?: string;
   icon?: ReactNode;
   wrapperClass?: string;
@@ -24,7 +25,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
       type,
       label,
       showMessageText = false,
-      status = null,
+      status = InputStatus.NEUTRAL,
       messageText,
       icon,
       wrapperClass,
@@ -35,9 +36,10 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
     },
     ref,
   ) => {
-    const isError = status === 'error';
-    const isSuccess = status === 'success';
-    const isInfo = status === 'info';
+    const isError = status === InputStatus.ERROR;
+    const isWarning = status === InputStatus.WARNING;
+    const isSuccess = status === InputStatus.SUCCESS;
+    const isInfo = status === InputStatus.INFO;
 
     switch (variant) {
       case 'primary': {
@@ -48,11 +50,13 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
               className={cn(
                 'flex items-center w-full rounded-md border bg-transparent group',
                 'hover:border-neutral-1',
-                'focus-within:outline-0',
+                'focus-within:outline-0 focus-within:!border-blue',
                 isError && 'border-error text-error hover:border-error focus-within:border-error',
+                isWarning &&
+                  'border-warning text-warning hover:border-warning focus-within:border-warning',
                 isSuccess &&
                   'border-success text-success hover:border-success focus-within:border-success',
-                !isError && !isSuccess && !isInfo && 'border-neutral-3 focus-within:!border-blue',
+                !status && 'border-neutral-3',
                 className,
               )}
             >
@@ -62,13 +66,12 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
                   'select-text',
                   `flex-grow ${reducedHeight ? 'h-8' : 'h-10'} bg-transparent px-2 py-1.5 text-base text-neutral-3`,
                   'border-none focus:outline-0',
+                  'hover:text-neutral-1 focus:text-white',
                   'placeholder:text-xs placeholder:text-neutral-3',
                   isError && 'text-error hover:text-error focus:text-error',
+                  isWarning && 'text-warning hover:text-warning focus:text-warning',
                   isSuccess && 'text-success hover:text-success focus:text-success',
-                  !isError &&
-                    !isSuccess &&
-                    !isInfo &&
-                    'text-neutral-3 focus:text-white hover:text-neutral-1',
+                  !status && 'text-neutral-3',
                   icon && 'pr-2',
                 )}
                 ref={ref}
@@ -79,10 +82,11 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
                 <div
                   className={cn(
                     'h-[57%] min-h-[21px] w-[1px]',
-                    'group-hover:bg-neutral-1',
+                    'group-hover:bg-neutral-1 group-focus-within:!bg-blue',
                     isError && 'bg-error group-hover:bg-error group-focus-within:bg-error',
+                    isWarning && 'bg-warning group-hover:bg-warning group-focus-within:bg-warning',
                     isSuccess && 'bg-success group-hover:bg-success group-focus-within:bg-success',
-                    !isError && !isSuccess && !isInfo && 'bg-neutral-3 group-focus-within:!bg-blue',
+                    !status && 'bg-neutral-3',
                   )}
                 />
               )}
@@ -95,6 +99,8 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
                     'rounded-r-md',
                     'text-neutral-3 hover:text-neutral-1 focus:text-white',
                     isError && 'text-error hover:text-error focus:text-error border-error',
+                    isWarning &&
+                      'text-warning hover:text-warning focus:text-warning border-warning',
                     isSuccess &&
                       'text-success hover:text-success focus:text-success border-success',
                     isInfo && 'text-blue hover:text-blue-hover focus:text-blue-pressed border-blue',
@@ -106,7 +112,11 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
               )}
             </div>
             {showMessageText && (
-              <span className="mt-1.5 text-sm text-error min-h-[20px] mb-4">
+              <span
+                className={cn(
+                  `mt-1.5 text-sm ${isWarning && 'text-warning'} ${isError && 'text-error'} min-h-[20px] mb-4`,
+                )}
+              >
                 {messageText || '\u00A0'}
               </span>
             )}
