@@ -32,3 +32,16 @@ export enum ValidatorSortType {
   APY = 'apy',
   VOTING_POWER = 'votingPower',
 }
+
+export enum InputStatus {
+  ERROR = 'error',
+  SUCCESS = 'success',
+  WARNING = 'warning',
+  INFO = 'info',
+  NEUTRAL = '',
+}
+
+export enum NetworkLevel {
+  TESTNET = 'testnet',
+  MAINNET = 'mainnet',
+}

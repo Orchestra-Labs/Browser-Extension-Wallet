@@ -1,3 +1,5 @@
+import { NetworkLevel } from '@/constants';
+
 export interface SessionToken {
   mnemonic: string;
   accountID: string;
@@ -211,4 +213,22 @@ export interface StakingParams {
   max_entries: number;
   historical_entries: number;
   bond_denom: string;
+}
+
+export interface ChainData {
+  coin: string;
+  mainnet: string;
+  testnet: string;
+}
+
+export interface PrefixStorage {
+  lastUpdated: string;
+  data: ChainData[];
+}
+
+export interface TransactionState {
+  asset: Asset;
+  amount: number;
+  chainName: string;
+  networkLevel: NetworkLevel;
 }
