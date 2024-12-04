@@ -46,7 +46,7 @@ export enum InputStatus {
   NEUTRAL = '',
 }
 
-export enum NetworkOptions {
+export enum NetworkLevel {
   TESTNET = 'testnet',
   MAINNET = 'mainnet',
 }

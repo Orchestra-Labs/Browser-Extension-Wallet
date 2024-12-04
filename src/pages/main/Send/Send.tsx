@@ -6,7 +6,7 @@ import {
   defaultReceiveState,
   defaultSendState,
   GREATER_EXPONENT_DEFAULT,
-  NetworkOptions,
+  NetworkLevel,
   ROUTES,
 } from '@/constants';
 import { Button, Separator } from '@/ui-kit';
@@ -180,7 +180,7 @@ export const Send = () => {
         // TODO: move chain and network level into sendState and receiveState
         const sendChain = sendState.chainName;
         const receiveChain = receiveState.chainName;
-        const networkLevel = NetworkOptions.TESTNET;
+        const networkLevel = NetworkLevel.TESTNET;
         const ibcObject = { fromAddress, sendObject, sendChain, receiveChain, networkLevel };
         console.log('Executing IBC Transaction with the following details:');
         console.log('From Address:', fromAddress);
@@ -368,7 +368,7 @@ export const Send = () => {
   const updateTransactionType = async () => {
     const sendAsset = sendState.asset;
     const receiveAsset = receiveState.asset;
-    const network = sendState.networkOption;
+    const network = sendState.networkLevel;
 
     if (!sendAsset || !receiveAsset) {
       console.log('Missing assets for transaction type update');

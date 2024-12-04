@@ -1,4 +1,4 @@
-import { NetworkOptions } from '@/constants';
+import { NetworkLevel } from '@/constants';
 
 export interface SessionToken {
   mnemonic: string;
@@ -7,21 +7,28 @@ export interface SessionToken {
   timestamp: string;
 }
 
-export interface AccountRecord {
-  id: string; // password and account share ID
-  settings: {
-    activeNetworkID: string;
-    visibleNetworks: string[];
-    activeWalletID: string;
-  };
-  wallets: WalletRecord[];
+export interface SubscriptionRecord {
+  coinDenoms: string[];
 }
 
 export interface WalletRecord {
   id: string;
   name: string;
-  mnemonic: string;
+  encryptedMnemonic: string;
   settings: {};
+}
+
+export interface AccountRecord {
+  id: string; // password and account share ID
+  // prioritize lowest level settings for priority (wallet visibility over account visibility)
+  settings: {
+    hasSetCoinList: boolean;
+    defaultNetworkID: string;
+    defaultCoinDenom: string;
+    subscribedTo: { [networkID: string]: SubscriptionRecord };
+    activeWalletID: string;
+  };
+  wallets: WalletRecord[];
 }
 
 export interface PasswordRecord {
@@ -39,6 +46,8 @@ export interface Asset {
   symbol?: string;
   exponent?: number;
   isFeeToken?: boolean;
+  networkName?: string;
+  networkID?: string;
 }
 
 export interface WalletAssets {
@@ -229,7 +238,6 @@ export interface ChainData {
   coin: string;
   mainnet: string;
   testnet: string;
-  // regtest: string | null;
 }
 
 export interface PrefixStorage {
@@ -272,10 +280,5 @@ export interface TransactionState {
   asset: Asset;
   amount: number;
   chainName: string;
-  networkOption: NetworkOptions;
-}
-
-export interface CachedIBCFile {
-  lastUpdated: string;
-  data: IBCConnectionFile;
+  networkLevel: NetworkLevel;
 }

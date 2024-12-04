@@ -1,5 +1,5 @@
 import { Asset } from '@/types';
-import { NetworkOptions } from './enums';
+import { NetworkLevel } from './enums';
 
 // Network-related constants
 export const NETWORK = 'symphony';
@@ -34,6 +34,8 @@ export const LOCAL_ASSET_REGISTRY: AssetRegistry = {
     logo: 'https://raw.githubusercontent.com/cosmos/chain-registry/master/testnets/symphonytestnet/images/husd.png',
     symbol: 'HUSD',
     exponent: GREATER_EXPONENT_DEFAULT,
+    networkName: 'Symphony Testnet',
+    networkID: 'symphony-testnet-1',
   },
   ukhd: {
     denom: 'ukhd',
@@ -42,6 +44,8 @@ export const LOCAL_ASSET_REGISTRY: AssetRegistry = {
     logo: 'https://raw.githubusercontent.com/cosmos/chain-registry/master/testnets/symphonytestnet/images/hhkd.png',
     symbol: 'HHKD',
     exponent: GREATER_EXPONENT_DEFAULT,
+    networkName: 'Symphony Testnet',
+    networkID: 'symphony-testnet-1',
   },
   uvnd: {
     denom: 'uvnd',
@@ -50,6 +54,8 @@ export const LOCAL_ASSET_REGISTRY: AssetRegistry = {
     logo: 'https://raw.githubusercontent.com/cosmos/chain-registry/master/testnets/symphonytestnet/images/hvnd.png',
     symbol: 'HVND',
     exponent: GREATER_EXPONENT_DEFAULT,
+    networkName: 'Symphony Testnet',
+    networkID: 'symphony-testnet-1',
   },
   note: {
     denom: 'note',
@@ -59,6 +65,8 @@ export const LOCAL_ASSET_REGISTRY: AssetRegistry = {
     symbol: 'MLD',
     exponent: GREATER_EXPONENT_DEFAULT,
     isFeeToken: true,
+    networkName: 'Symphony Testnet',
+    networkID: 'symphony-testnet-1',
   },
   ustars: {
     denom: 'stars',
@@ -67,6 +75,8 @@ export const LOCAL_ASSET_REGISTRY: AssetRegistry = {
     logo: 'https://raw.githubusercontent.com/chainapsis/keplr-chain-registry/main/images/stargaze/ustars.png',
     symbol: 'STARS',
     exponent: GREATER_EXPONENT_DEFAULT,
+    networkName: 'Stargaze Testnet',
+    networkID: 'stargaze-testnet-1',
   },
   uosmo: {
     denom: 'osmo',
@@ -75,6 +85,8 @@ export const LOCAL_ASSET_REGISTRY: AssetRegistry = {
     logo: 'https://raw.githubusercontent.com/chainapsis/keplr-chain-registry/main/images/osmosis/uosmo.png',
     symbol: 'OSMO',
     exponent: GREATER_EXPONENT_DEFAULT,
+    networkName: 'Osmosis Testnet',
+    networkID: 'osmosis-testnet-1',
   },
 };
 
@@ -82,6 +94,7 @@ export const DEFAULT_ASSET = LOCAL_ASSET_REGISTRY.note;
 
 export const CHAIN_NODES = {
   symphonytestnet: [
+    // TODO: comment out Kleomedes when ready to ttest latest Symphony-js package
     {
       rpc: isDev ? `${DEV_PROXY}/kleomedes-rpc` : 'https://symphony-rpc.kleomedes.network',
       rest: isDev ? `${DEV_PROXY}/kleomedes-rest` : 'https://symphony-api.kleomedes.network',
@@ -120,12 +133,29 @@ export const CHAIN_ENDPOINTS = {
   sendIbcMessage: '/cosmos/tx/v1beta1/txs',
 };
 
-export const LOCAL_CHAIN_REGISTRY = {
-  Symphony: {
+type LocalChainRegistryType = {
+  [key: string]: {
+    chainID: string;
+    prefix: string;
+    nodes: any;
+    assets: AssetRegistry;
+    chainName?: string;
+  };
+};
+
+export const LOCAL_CHAIN_REGISTRY: LocalChainRegistryType = {
+  'symphony-testnet-1': {
+    chainName: 'Symphony',
     chainID: 'symphony-testnet-1',
     prefix: 'symphony',
     nodes: CHAIN_NODES,
     assets: LOCAL_ASSET_REGISTRY,
+  },
+};
+
+export const DEFAULT_SUBSCRIPTION = {
+  [LOCAL_CHAIN_REGISTRY['symphony-testnet-1'].chainID]: {
+    coinDenoms: [] as string[],
   },
 };
 
@@ -148,11 +178,11 @@ export const defaultSendState = {
   asset: DEFAULT_ASSET,
   amount: 0,
   chainName: DEFAULT_CHAIN_NAME,
-  networkOption: NetworkOptions.TESTNET,
+  networkLevel: NetworkLevel.TESTNET,
 };
 export const defaultReceiveState = {
   asset: DEFAULT_ASSET,
   amount: 0,
   chainName: DEFAULT_CHAIN_NAME,
-  networkOption: NetworkOptions.TESTNET,
+  networkLevel: NetworkLevel.TESTNET,
 };

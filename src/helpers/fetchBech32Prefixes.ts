@@ -2,8 +2,6 @@ import axios from 'axios';
 import { getPrefixes, prefixesNeedRefresh, savePrefixes } from './dataHelpers';
 import { ChainData } from '@/types';
 
-// TODO: lastUpdated in localStorage.  if not exists or past 24 hours, call to update data
-// TODO: load data into state, use for address input verification
 // TODO: on valid address, check for route
 const SLIP_0173_URL = 'https://raw.githubusercontent.com/satoshilabs/slips/master/slip-0173.md';
 
@@ -52,13 +50,11 @@ const parseBech32Markdown = (markdown: string): ChainData[] => {
     const coin: string = columns[1] || '';
     const mainnet: string = columns[2] || '';
     const testnet: string = columns[3] || mainnet;
-    // const regtest: string | null = columns[4] || mainnet;
 
     chains.push({
       coin,
       mainnet,
       testnet,
-      // regtest
     });
   }
 
