@@ -617,10 +617,10 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
-"@orchestra-labs/symphonyjs@^1.0.28":
-  version "1.0.28"
-  resolved "https://registry.yarnpkg.com/@orchestra-labs/symphonyjs/-/symphonyjs-1.0.28.tgz#2e36bfdfa582619c08c25d6a81912864b141d421"
-  integrity sha512-QxKOMYXzJM9pOjSdah9cBpUgDXQlMNw6U1Wygql/tOqbwfJMccQmvY4lpA2N5pNnSU256x88gAGli7z9MvWqoQ==
+"@orchestra-labs/symphonyjs@^1.0.29":
+  version "1.0.29"
+  resolved "https://registry.yarnpkg.com/@orchestra-labs/symphonyjs/-/symphonyjs-1.0.29.tgz#2e443dd225fac7ec7e7053b1fcd22a2f527ba9ce"
+  integrity sha512-GyQnRqbMBQWCOb1xAYNU2l8A8TVswmbiD0B3Flvjsjkdy9CNJ7jZFI133nzcaA97FJsjY/omL5WRIB645hlOYA==
   dependencies:
     "@cosmjs/amino" "^0.32.3"
     "@cosmjs/crypto" "^0.32.3"
