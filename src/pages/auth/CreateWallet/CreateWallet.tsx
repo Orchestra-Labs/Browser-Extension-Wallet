@@ -151,7 +151,7 @@ export const CreateWallet = () => {
 
   /* Nice to have TODOs */
   // TODO: get google analytics going
-  // TODO: creation of wallet with old password should add additional wallet on same account
+  // TODO: creation of wallet with old password should overwrite old wallet
   // TODO: fix issue with gas on 'all' button for validator selections (bundle transactions)
   // TODO: make toasts copy-on-click
   // TODO: fix copytextfield issue of enlarged border on click

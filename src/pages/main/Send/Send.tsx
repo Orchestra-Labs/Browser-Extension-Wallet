@@ -1,7 +1,13 @@
 import { useEffect, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { ArrowLeft, Spinner, Swap } from '@/assets/icons';
-import { DEFAULT_ASSET, GREATER_EXPONENT_DEFAULT, ROUTES } from '@/constants';
+import {
+  DEFAULT_ASSET,
+  defaultReceiveState,
+  defaultSendState,
+  GREATER_EXPONENT_DEFAULT,
+  ROUTES,
+} from '@/constants';
 import { Button, Separator } from '@/ui-kit';
 import { useAtom, useAtomValue } from 'jotai';
 import {
@@ -498,14 +504,8 @@ export const Send = () => {
   };
 
   const resetStates = () => {
-    setSendState({
-      asset: DEFAULT_ASSET,
-      amount: 0,
-    });
-    setReceiveState({
-      asset: DEFAULT_ASSET,
-      amount: 0,
-    });
+    setSendState(defaultSendState);
+    setReceiveState(defaultReceiveState);
     setRecipientAddress('');
     setSelectedAsset(DEFAULT_ASSET);
   };
@@ -621,7 +621,7 @@ export const Send = () => {
 
           {/* Send Button */}
           <Button
-            className="w-full"
+            className="w-[85%]"
             onClick={() => handleTransaction()}
             disabled={isLoading || sendState.amount === 0}
           >
