@@ -566,7 +566,7 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
-"@orchestra-labs/symphonyjs@^1.0.28":
+"@orchestra-labs/symphonyjs@^1.0.29":
   version "1.0.29"
   resolved "https://registry.yarnpkg.com/@orchestra-labs/symphonyjs/-/symphonyjs-1.0.29.tgz#2e443dd225fac7ec7e7053b1fcd22a2f527ba9ce"
   integrity sha512-GyQnRqbMBQWCOb1xAYNU2l8A8TVswmbiD0B3Flvjsjkdy9CNJ7jZFI133nzcaA97FJsjY/omL5WRIB645hlOYA==
