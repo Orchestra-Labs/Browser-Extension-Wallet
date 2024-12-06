@@ -69,26 +69,6 @@ export const LOCAL_ASSET_REGISTRY: AssetRegistry = {
     networkName: 'Symphony Testnet',
     networkID: 'symphony-testnet-1',
   },
-  ustars: {
-    denom: 'stars',
-    amount: '1',
-    isIbc: true,
-    logo: 'https://raw.githubusercontent.com/chainapsis/keplr-chain-registry/main/images/stargaze/ustars.png',
-    symbol: 'STARS',
-    exponent: GREATER_EXPONENT_DEFAULT,
-    networkName: 'Stargaze Testnet',
-    networkID: 'stargaze-testnet-1',
-  },
-  uosmo: {
-    denom: 'osmo',
-    amount: '1',
-    isIbc: true,
-    logo: 'https://raw.githubusercontent.com/chainapsis/keplr-chain-registry/main/images/osmosis/uosmo.png',
-    symbol: 'OSMO',
-    exponent: GREATER_EXPONENT_DEFAULT,
-    networkName: 'Osmosis Testnet',
-    networkID: 'osmosis-testnet-1',
-  },
 };
 
 export const DEFAULT_ASSET = LOCAL_ASSET_REGISTRY.note;
