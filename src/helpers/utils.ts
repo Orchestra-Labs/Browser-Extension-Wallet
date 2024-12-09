@@ -3,7 +3,7 @@ import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { isValidSwap } from './swapTransactions';
 import { isValidSend } from './sendTransactions';
-import { NetworkOptions, TextFieldStatus } from '@/constants';
+import { NetworkLevel, TextFieldStatus } from '@/constants';
 import { isIBC } from './ibcTransactions';
 
 export const cn = (...inputs: ClassValue[]) => {
@@ -56,9 +56,9 @@ export const isValidTransaction = async ({
   recipientAddress: string;
   sendState: TransactionState;
   receiveState: TransactionState;
-  network: NetworkOptions;
+  network: NetworkLevel;
 }) => {
-  if (sendState.networkOption !== receiveState.networkOption) {
+  if (sendState.networkLevel !== receiveState.networkLevel) {
     return false;
   }
 

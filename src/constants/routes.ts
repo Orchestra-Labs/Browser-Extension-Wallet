@@ -10,6 +10,7 @@ export const ROUTES = {
     SEND: '/send',
     RECEIVE: '/receive',
     ADD_NETWORK: '/add-network',
+    EDIT_CHAIN_LIST: '/edit-chain-list',
     EDIT_COIN_LIST: '/edit-coin-list',
   },
   AUTH: {

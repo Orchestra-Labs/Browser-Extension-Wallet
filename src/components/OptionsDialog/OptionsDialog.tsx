@@ -11,10 +11,10 @@ import { ROUTES } from '@/constants';
 const OPTIONS = [
   {
     id: 1,
-    name: 'Edit Coin List',
+    name: 'Edit Chain List',
     icon: <Edit width={16} height={16} />,
     target: '',
-    to: ROUTES.APP.EDIT_COIN_LIST,
+    to: ROUTES.APP.EDIT_CHAIN_LIST,
   },
   {
     id: 2,
