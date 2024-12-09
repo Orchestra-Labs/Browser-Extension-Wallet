@@ -16,7 +16,7 @@
     "extension_pages": "script-src 'self'; object-src 'self'"
   },
   "host_permissions": ["https://*/*", "http://*/*"],
-  "permissions": ["activeTab", "videoCapture", "camera", "tabs", "storage", "clipboardWrite"],
+  "permissions": ["videoCapture", "camera", "clipboardWrite"],
   "web_accessible_resources": [
     {
       "resources": ["index.html"],
