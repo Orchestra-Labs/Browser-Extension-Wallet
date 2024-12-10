@@ -30,7 +30,6 @@ import { Loader } from '../Loader';
 import { useRefreshData, useToast } from '@/hooks';
 import { TransactionResultsTile } from '../TransactionResultsTile';
 
-// TODO: show all validators for user, including those where the user is unstaking.
 // TODO: for the case where the user is unstaking all and the filtered validators would not include this tray, if this causes graphical errors, swipe away the tray and show toast
 interface ValidatorScrollTileProps {
   combinedStakingInfo: CombinedStakingInfo;

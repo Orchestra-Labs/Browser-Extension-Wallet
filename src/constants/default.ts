@@ -75,7 +75,6 @@ export const DEFAULT_ASSET = LOCAL_ASSET_REGISTRY.note;
 
 export const CHAIN_NODES = {
   symphonytestnet: [
-    // TODO: comment out Kleomedes when ready to ttest latest Symphony-js package
     {
       rpc: isDev ? `${DEV_PROXY}/kleomedes-rpc` : 'https://symphony-rpc.kleomedes.network',
       rest: isDev ? `${DEV_PROXY}/kleomedes-rest` : 'https://symphony-api.kleomedes.network',
