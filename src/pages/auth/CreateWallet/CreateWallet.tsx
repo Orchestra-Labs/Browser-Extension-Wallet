@@ -119,7 +119,6 @@ export const CreateWallet = () => {
   // TODO: abstract IBC needs
   // TODO: add button to "add chain" at bottom of Holdings list
   // TODO: add link to github repo for registry
-  // TODO: enable Wallet Name display
 
   /* Revenue TODOs (ensure no added fees from us adds total fees over 1% on transaction */
   // TODO: list these in user info:
