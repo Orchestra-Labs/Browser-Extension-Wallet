@@ -159,7 +159,6 @@ export const CreateWallet = () => {
   // TODO: make "clear" and "max" button send screen inputs.  make placement and appearance for these uniform (send and unstake sections)
   // TODO: add search icon to search field, add onclick
   // TODO: keep track of current page for case of re-open before timeout
-  // TODO: prevent re-building auth every time wallet updates
   // TODO: make data text in asset and validator tiles scrollable
   // TODO: add feeLoading state so user knows fees are updating
   // TODO: ensure logout after blur + timeout (blur is click outside application to close).  to remove sensitive data after time period
