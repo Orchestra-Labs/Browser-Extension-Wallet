@@ -11,12 +11,16 @@ type RecoveryPhraseGridProps = {
   isVerifyMode?: boolean;
   hiddenIndices?: number[];
   isEditable?: boolean;
+  mnemonic?: string[];
+  lockWordCount?: boolean;
 };
 
 export const RecoveryPhraseGrid: React.FC<RecoveryPhraseGridProps> = ({
   isVerifyMode = false,
   hiddenIndices: hiddenWordIndices = [],
   isEditable = false,
+  mnemonic,
+  lockWordCount = false,
 }) => {
   const [mnemonic12, setMnemonic12] = useAtom(mnemonic12State);
   const [mnemonic24, setMnemonic24] = useAtom(mnemonic24State);
@@ -332,24 +336,44 @@ export const RecoveryPhraseGrid: React.FC<RecoveryPhraseGridProps> = ({
     return () => el?.removeEventListener('scroll', handleScroll);
   }, [use24Words]);
 
+  useEffect(() => {
+    if (mnemonic) {
+      setUse24Words(mnemonic.length === 24);
+      if (mnemonic.length === 12) setMnemonic12(mnemonic);
+      if (mnemonic.length === 24) setMnemonic24(mnemonic);
+    }
+  }, []);
+
   return (
     <>
       {/* 12 Words vs 24 Words selection */}
       {!isVerifyMode && (
-        <div className="flex justify-center mt-5">
-          <Button
-            variant={!use24Words ? 'selected' : 'unselected'}
-            onClick={() => setUse24Words(false)}
-            className="ml-4"
-          >
-            12 Words
-          </Button>
-          <Button
-            variant={use24Words ? 'selected' : 'unselected'}
-            onClick={() => setUse24Words(true)}
-          >
-            24 Words
-          </Button>
+        <div
+          className={cn(`flex justify-center mt-5 ${lockWordCount ? 'text-base text-blue' : ''}`)}
+        >
+          {lockWordCount ? (
+            use24Words ? (
+              '24 Words'
+            ) : (
+              '12 Words'
+            )
+          ) : (
+            <>
+              <Button
+                variant={!use24Words ? 'selected' : 'unselected'}
+                onClick={() => setUse24Words(false)}
+                className="ml-4"
+              >
+                12 Words
+              </Button>
+              <Button
+                variant={use24Words ? 'selected' : 'unselected'}
+                onClick={() => setUse24Words(true)}
+              >
+                24 Words
+              </Button>
+            </>
+          )}
         </div>
       )}
       <div className="mt-3 flex-1">

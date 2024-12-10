@@ -4,3 +4,4 @@ export * from './Main';
 export * from './Send';
 export * from './Transaction';
 export * from './TransactionsHistory';
+export * from './RecoveryPhrasePage';

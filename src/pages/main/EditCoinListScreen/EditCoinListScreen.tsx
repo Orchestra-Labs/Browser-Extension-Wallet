@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Loader, SearchBar, SortDialog, TileScroller } from '@/components';
+import { Loader, PageTitle, SearchBar, SortDialog, TileScroller } from '@/components';
 import {
   assetDialogSortOrderAtom,
   assetDialogSortTypeAtom,
@@ -9,22 +9,23 @@ import {
   selectedCoinListAtom,
 } from '@/atoms';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { DEFAULT_SUBSCRIPTION, LOCAL_CHAIN_REGISTRY, ROUTES } from '@/constants';
-import { X } from '@/assets/icons';
 import { Button, Separator } from '@/ui-kit';
 import { Asset, SubscriptionRecord } from '@/types';
 import { saveAccountByID } from '@/helpers/dataHelpers/account';
 import { userAccountAtom } from '@/atoms/accountAtom';
 
-interface EditCoinListScreenProps {}
+interface EditCoinListScreenProps {
+  useCloseIcon?: boolean;
+}
 
 const PAGE_TITLE = 'Select Visible Coins';
 
 // TODO: make registry, add github action to auto-update entries based on items in pull request. then sort?
 // TODO: save registry info into localStorage, set default data expiration to one day
 // TODO: pull registry info whenever data is empty or data expires
-export const EditCoinListScreen: React.FC<EditCoinListScreenProps> = ({}) => {
+export const EditCoinListScreen: React.FC<EditCoinListScreenProps> = ({ useCloseIcon = false }) => {
   const navigate = useNavigate();
 
   const isInitialDataLoad = useAtomValue(isInitialDataLoadAtom);
@@ -156,22 +157,7 @@ export const EditCoinListScreen: React.FC<EditCoinListScreenProps> = ({}) => {
 
   return (
     <div className="h-screen flex flex-col bg-black text-white">
-      {/* Top bar with back button and title */}
-      <div className="flex justify-between items-center w-full p-5">
-        <NavLink
-          to={ROUTES.APP.ROOT}
-          className="flex items-center justify-center max-w-5 max-h-5 p-0.5"
-          onClick={cancel}
-        >
-          <X className="w-full h-full text-white" />
-        </NavLink>
-        <div>
-          <h1 className="text-h5 text-white font-bold">{PAGE_TITLE}</h1>
-        </div>
-        <div className="max-w-5 w-full max-h-5" />
-      </div>
-
-      <Separator />
+      <PageTitle title={PAGE_TITLE} useCloseIcon={useCloseIcon} handleBackClick={cancel} />
 
       {/* TODO: extract the below items from here and assetselectdialog to external component */}
       <div className="flex pt-2 px-4 justify-between items-center px-2">

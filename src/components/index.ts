@@ -19,3 +19,4 @@ export * from './TransactionResultsTile';
 export * from './ValidatorScrollTile';
 export * from './ValidatorSelectDialog';
 export * from './WalletSuccessScreen';
+export * from './PageTitle';

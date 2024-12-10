@@ -11,6 +11,7 @@ import {
   Login,
   Main,
   NewWallet,
+  RecoveryPhrasePage,
   Send,
   Transaction,
   TransactionsHistory,
@@ -78,6 +79,10 @@ export const AppRouter: React.FC = (): React.ReactElement | null =>
         {
           path: ROUTES.APP.EDIT_COIN_LIST,
           element: <EditCoinListScreen />,
+        },
+        {
+          path: ROUTES.APP.RECOVERY_PHRASE,
+          element: <RecoveryPhrasePage />,
         },
       ],
     },

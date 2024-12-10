@@ -1,9 +1,9 @@
 import { Dialog, DialogTrigger } from '@radix-ui/react-dialog';
-import { LogOut } from 'lucide-react';
+import { Download, Edit, LogOut } from 'lucide-react';
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 
-import { ArrowLeft, Discord, DotsVertical, Edit } from '@/assets/icons';
+import { ArrowLeft, Discord, DotsVertical } from '@/assets/icons';
 import { Button, DialogContent } from '@/ui-kit';
 import { useLogout } from '@/hooks';
 import { ROUTES } from '@/constants';
@@ -11,13 +11,20 @@ import { ROUTES } from '@/constants';
 const OPTIONS = [
   {
     id: 1,
+    name: 'View Recovery Phrase',
+    icon: <Download width={16} height={16} />,
+    target: '',
+    to: ROUTES.APP.RECOVERY_PHRASE,
+  },
+  {
+    id: 2,
     name: 'Edit Coin List',
     icon: <Edit width={16} height={16} />,
     target: '',
     to: ROUTES.APP.EDIT_COIN_LIST,
   },
   {
-    id: 2,
+    id: 3,
     name: 'Contact Us',
     icon: <Discord />,
     target: '_blank',
