@@ -1,4 +1,3 @@
-// constants/defaultValues.ts
 import { Asset } from '@/types';
 import { NetworkLevel } from './enums';
 
@@ -19,7 +18,7 @@ export const MAX_NODES_PER_QUERY = 3;
 
 const isDev = import.meta.env.DEV;
 
-const DEV_PROXY = 'http://localhost:5173'; // Your Vite dev server URL
+const DEV_PROXY = 'http://localhost:5173';
 
 // Define the shape of the local asset registry
 type AssetRegistry = {
@@ -110,6 +109,8 @@ export const CHAIN_ENDPOINTS = {
   exchangeRequirements: '/symphony/market/v1beta1/exchange_requirements',
   getStakingParams: '/cosmos/staking/v1beta1/params',
   getUptime: '/cosmos/slashing/v1beta1/signing_infos/',
+  getIBCConnections: '/ibc/core/channel/v1/channels',
+  sendIbcMessage: '/cosmos/tx/v1beta1/txs',
 };
 
 type LocalChainRegistryType = {
