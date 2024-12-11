@@ -245,12 +245,12 @@ const sendIBCTransaction = async (
   const endpoint = CHAIN_ENDPOINTS.sendIbcMessage;
 
   const ibcMessageValue = {
-    source_port: connection.port_id,
-    source_channel: connection.channel_id,
+    sourcePort: connection.port_id, // Usually "transfer" for IBC token transfers
+    sourceChannel: connection.channel_id, // Channel ID for the IBC connection
     token: { denom: sendObject.denom, amount: sendObject.amount },
     sender: fromAddress,
     receiver: sendObject.recipientAddress,
-    timeout_timestamp: `${Date.now() + ONE_MINUTE}000000`, // Nanoseconds
+    timeoutTimestamp: `${Date.now() + ONE_MINUTE}000000`, // Nanoseconds
   };
 
   const messages = [
@@ -310,6 +310,7 @@ export const sendIBC = async ({
   ibcObject: IBCObject;
   simulateTransaction?: boolean;
 }): Promise<TransactionResult> => {
+  console.log("🚀 ~ sendIBC:", sendIBC)
   try {
     const validChannel = await getValidIBCChannel(
       ibcObject.fromAddress,
