@@ -110,6 +110,14 @@ export const CreateWallet = () => {
 
   /* ******************************************************************************************* */
   /* David Current TODOs */
+  // TODO: Add remember me
+  // TODO: make toast animate in, animate out, and swipe-away
+  // TODO: Add get for IBC information
+  // TODO: Add support for IBC sends
+  // TODO: Add first level of routing (swap to IBC send or IBC to swap)
+  // TODO: Add additional chain views to verify above
+  // TODO: enable Wallet Name display
+  // TODO: abstract wallet prefix and mnemonic decryption
   // TODO: add auth support for dApps
   /* ******************************************************************************************* */
 
@@ -119,9 +127,14 @@ export const CreateWallet = () => {
   // TODO: abstract IBC needs
   // TODO: add button to "add chain" at bottom of Holdings list
   // TODO: add link to github repo for registry
-  // TODO: enable Wallet Name display
+  // Add routing
+  // TODO: modify claim, restake, and unstake functions to withdraw from all unique delegator addresses
+  // TODO: enable search function for wallet asset list by chain (on top of current functionality)
+  // TODO: enable search function to validator list by chain (on top of current functionality)
+  // TODO: add show/hide function to validator list (by chain)
 
   /* Revenue TODOs (ensure no added fees from us adds total fees over 1% on transaction */
+  // TODO: enable transaction fees for wallet transactions (bundle a transaction for revenue. based on transaction fees (0.5x basic transaction fee)?)
   // TODO: list these in user info:
   // revenue sources will be gas markups (transaction fees), cross-chain exchange fees, on-ramp/off-ramp fees, staking commission, affiliate revenue
   // TODO: minor revenue for wallets - gas markups
@@ -137,10 +150,6 @@ export const CreateWallet = () => {
   /* Interchain-compatibility TODOs (mobile version before this) */
   // TODO: ensure pipeline to other registries is functional.  change here auto-PRs there
   // TODO: integrate skip protocol or automated use of exchange to allow swapping between chains
-  // TODO: modify claim, restake, and unstake functions to withdraw from all unique delegator addresses
-  // TODO: enable search function for wallet asset list by chain (on top of current functionality)
-  // TODO: enable search function to validator list by chain (on top of current functionality)
-  // TODO: add show/hide function to validator list (by chain)
 
   /* dApp TODOs */
   // TODO: add page
