@@ -127,7 +127,7 @@ export const CreateWallet = () => {
   // TODO: abstract IBC needs
   // TODO: add button to "add chain" at bottom of Holdings list
   // TODO: add link to github repo for registry
-  // Add routing
+  // TODO: Add routing
   // TODO: modify claim, restake, and unstake functions to withdraw from all unique delegator addresses
   // TODO: enable search function for wallet asset list by chain (on top of current functionality)
   // TODO: enable search function to validator list by chain (on top of current functionality)
