@@ -112,11 +112,8 @@ export const CreateWallet = () => {
   /* David Current TODOs */
   // TODO: Add remember me
   // TODO: make toast animate in, animate out, and swipe-away
-  // TODO: Add get for IBC information
-  // TODO: Add support for IBC sends
   // TODO: Add first level of routing (swap to IBC send or IBC to swap)
   // TODO: Add additional chain views to verify above
-  // TODO: enable Wallet Name display
   // TODO: abstract wallet prefix and mnemonic decryption
   // TODO: add auth support for dApps
   /* ******************************************************************************************* */
@@ -132,20 +129,6 @@ export const CreateWallet = () => {
   // TODO: enable search function for wallet asset list by chain (on top of current functionality)
   // TODO: enable search function to validator list by chain (on top of current functionality)
   // TODO: add show/hide function to validator list (by chain)
-
-  /* Revenue TODOs (ensure no added fees from us adds total fees over 1% on transaction */
-  // TODO: enable transaction fees for wallet transactions (bundle a transaction for revenue. based on transaction fees (0.5x basic transaction fee)?)
-  // TODO: list these in user info:
-  // revenue sources will be gas markups (transaction fees), cross-chain exchange fees, on-ramp/off-ramp fees, staking commission, affiliate revenue
-  // TODO: minor revenue for wallets - gas markups
-  // TODO: in-app exchange fee (find lowest rates for user, but add small commission)
-  // TODO: on-ramp fees (add small commission)
-  // TODO: staking fees add small percent commission
-  // TODO: affiliate revenue from integrated services
-  // NOTE: metamask - primary from swap and on-ramp
-  // NOTE: trust - primary from on-ramps, swaps, and staking
-  // NOTE: coinbase - primary from on-ramps, coinbase, and affiliate
-  // NOTE: exodus - primary from staking, affiliate, and on-ramp
 
   /* Interchain-compatibility TODOs (mobile version before this) */
   // TODO: ensure pipeline to other registries is functional.  change here auto-PRs there
