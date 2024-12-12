@@ -10,7 +10,6 @@ interface ReceiveDialogProps {
   buttonSize?: 'default' | 'medium' | 'small' | 'xsmall';
 }
 
-// TODO: pass unit to receive, default to wallet default
 export const ReceiveDialog: React.FC<ReceiveDialogProps> = ({ buttonSize = 'default' }) => {
   const walletState = useAtomValue(walletStateAtom);
 
