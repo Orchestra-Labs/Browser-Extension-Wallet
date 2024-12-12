@@ -110,6 +110,7 @@ export const CreateWallet = () => {
 
   /* ******************************************************************************************* */
   /* David Current TODOs */
+  // TODO: for send page, on user's send, filter out 0 count assets.  ensure this doesn't affect coin select or receive
   // TODO: for receive dialog, pass unit to receive, default to wallet default
   // TODO: for when viewing all validators, enable selectable option for viewing unbonded validators
   // TODO: add auth support for dApps
