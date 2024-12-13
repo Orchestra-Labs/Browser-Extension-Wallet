@@ -38,7 +38,7 @@ export const LOCAL_ASSET_REGISTRY: AssetRegistry = {
     networkID: 'symphony-testnet-1',
   },
   ukhd: {
-    denom: 'ukhd',
+    denom: 'uhkd',
     amount: '1.282',
     isIbc: false,
     logo: 'https://raw.githubusercontent.com/cosmos/chain-registry/master/testnets/symphonytestnet/images/hhkd.png',
