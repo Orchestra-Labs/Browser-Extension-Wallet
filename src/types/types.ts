@@ -70,7 +70,7 @@ export interface IBCObject {
   sendObject: SendObject;
   sendChain: string;
   receiveChain: string;
-  networkLevel: NetworkOptions;
+  networkLevel: NetworkLevel;
 }
 
 export interface DelegationResponse {
@@ -268,6 +268,7 @@ export interface IBCConnectionFileChannel {
 }
 
 export interface IBCConnectionFile {
+  lastUpdated: string;
   chain_1: any;
   chain_2: any;
   channels: Array<{
