@@ -1,4 +1,4 @@
-import { NetworkOptions, STORED_DATA_TIMEOUT } from '@/constants';
+import { NetworkLevel, STORED_DATA_TIMEOUT } from '@/constants';
 import { getLocalStorageItem, setLocalStorageItem } from './localStorage';
 
 const IBC_STORAGE_KEYS = {
@@ -7,7 +7,7 @@ const IBC_STORAGE_KEYS = {
 };
 
 export const getIBCConnections = (
-  network: NetworkOptions,
+  network: NetworkLevel,
 ): { lastUpdated: string; data: any[] } | null => {
   const storedData = getLocalStorageItem(IBC_STORAGE_KEYS[network]);
 
@@ -21,7 +21,7 @@ export const getIBCConnections = (
   return null;
 };
 
-export const saveIBCConnections = (network: NetworkOptions, data: any[]): void => {
+export const saveIBCConnections = (network: NetworkLevel, data: any[]): void => {
   const storageData = {
     lastUpdated: new Date().toISOString(),
     data,

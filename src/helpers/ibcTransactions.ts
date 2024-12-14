@@ -9,7 +9,7 @@ import {
   SendObject,
   TransactionResult,
 } from '@/types';
-import { CHAIN_ENDPOINTS, NetworkOptions, ONE_MINUTE } from '@/constants';
+import { CHAIN_ENDPOINTS, NetworkLevel, ONE_MINUTE } from '@/constants';
 import { getIBCConnections, ibcConnectionsNeedRefresh, saveIBCConnections } from './dataHelpers';
 import { queryRestNode, queryRpcNode } from './queryNodes';
 import { getValidFeeDenom } from './feeDenom';
@@ -26,7 +26,7 @@ const IBC_URLS = {
 const getValidIBCChannel = async (
   sendAddress: string,
   recipientAddress: string,
-  network: NetworkOptions,
+  network: NetworkLevel,
 ): Promise<IBCChannel | null> => {
   if (!recipientAddress || !sendAddress) return null;
   console.log(
@@ -144,7 +144,7 @@ export const isIBC = async ({
 }: {
   sendAddress: string;
   recipientAddress: string;
-  network: NetworkOptions;
+  network: NetworkLevel;
 }): Promise<boolean> => {
   if (sendAddress === recipientAddress) {
     return false;
@@ -170,7 +170,7 @@ export const fetchActiveIBCChannels = async (): Promise<IBCChannel[]> => {
   }
 };
 
-export const fetchIbcPaths = async (network: NetworkOptions): Promise<any[]> => {
+export const fetchIbcPaths = async (network: NetworkLevel): Promise<any[]> => {
   const ibcUrl = IBC_URLS[network];
   console.log(`Fetching IBC paths from URL: ${ibcUrl}`);
 
@@ -193,13 +193,13 @@ export const fetchIbcPaths = async (network: NetworkOptions): Promise<any[]> => 
 
 export const fetchIBCFile = async (
   file: GitHubFile,
-  network: NetworkOptions,
+  network: NetworkLevel,
 ): Promise<IBCConnectionFile | null> => {
   const storedFile = getIBCFile(network, file.name);
 
   if (storedFile && !ibcFileNeedsRefresh(storedFile)) {
     console.log(`Using cached IBC file content for: ${file.name}`);
-    return storedFile.data;
+    return storedFile;
   }
 
   try {
@@ -310,7 +310,7 @@ export const sendIBC = async ({
   ibcObject: IBCObject;
   simulateTransaction?: boolean;
 }): Promise<TransactionResult> => {
-  console.log("🚀 ~ sendIBC:", sendIBC)
+  console.log('🚀 ~ sendIBC:', sendIBC);
   try {
     const validChannel = await getValidIBCChannel(
       ibcObject.fromAddress,
