@@ -7,6 +7,7 @@ export const WALLET_PREFIX = 'symphony';
 
 // RPC and REST URLs for the Symphony network
 export const DEFAULT_CHAIN_NAME = 'symphonytestnet';
+const DEFAULT_CHAIN_ID = 'symphony-testnet-4';
 
 // IBC-related constants
 export const IBC_PREFIX = 'ibc/';
@@ -35,7 +36,7 @@ export const LOCAL_ASSET_REGISTRY: AssetRegistry = {
     symbol: 'HUSD',
     exponent: GREATER_EXPONENT_DEFAULT,
     networkName: 'Symphony Testnet',
-    networkID: 'symphony-testnet-1',
+    networkID: DEFAULT_CHAIN_ID,
   },
   ukhd: {
     denom: 'uhkd',
@@ -45,7 +46,7 @@ export const LOCAL_ASSET_REGISTRY: AssetRegistry = {
     symbol: 'HHKD',
     exponent: GREATER_EXPONENT_DEFAULT,
     networkName: 'Symphony Testnet',
-    networkID: 'symphony-testnet-1',
+    networkID: DEFAULT_CHAIN_ID,
   },
   uvnd: {
     denom: 'uvnd',
@@ -55,7 +56,7 @@ export const LOCAL_ASSET_REGISTRY: AssetRegistry = {
     symbol: 'HVND',
     exponent: GREATER_EXPONENT_DEFAULT,
     networkName: 'Symphony Testnet',
-    networkID: 'symphony-testnet-1',
+    networkID: DEFAULT_CHAIN_ID,
   },
   note: {
     denom: 'note',
@@ -66,7 +67,7 @@ export const LOCAL_ASSET_REGISTRY: AssetRegistry = {
     exponent: GREATER_EXPONENT_DEFAULT,
     isFeeToken: true,
     networkName: 'Symphony Testnet',
-    networkID: 'symphony-testnet-1',
+    networkID: DEFAULT_CHAIN_ID,
   },
 };
 
@@ -123,9 +124,9 @@ type LocalChainRegistryType = {
 };
 
 export const LOCAL_CHAIN_REGISTRY: LocalChainRegistryType = {
-  'symphony-testnet-1': {
+  [DEFAULT_CHAIN_ID]: {
     chainName: 'Symphony',
-    chainID: 'symphony-testnet-1',
+    chainID: DEFAULT_CHAIN_ID,
     prefix: 'symphony',
     nodes: CHAIN_NODES,
     assets: LOCAL_ASSET_REGISTRY,
@@ -133,7 +134,7 @@ export const LOCAL_CHAIN_REGISTRY: LocalChainRegistryType = {
 };
 
 export const DEFAULT_SUBSCRIPTION = {
-  [LOCAL_CHAIN_REGISTRY['symphony-testnet-1'].chainID]: {
+  [DEFAULT_CHAIN_ID]: {
     coinDenoms: [] as string[],
   },
 };
