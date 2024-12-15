@@ -70,7 +70,7 @@ export interface IBCObject {
   sendObject: SendObject;
   sendChain: string;
   receiveChain: string;
-  networkLevel: NetworkOptions;
+  networkLevel: NetworkLevel;
 }
 
 export interface DelegationResponse {
@@ -221,6 +221,14 @@ export interface StakingParams {
   max_entries: number;
   historical_entries: number;
   bond_denom: string;
+}
+
+export interface ChainRecord {
+  name: string;
+  chainId: string;
+  rpcUrls: string[];
+  restUrls: string[];
+  status: string;
 }
 
 // TODO: ensure IBC channel used is always the one for the sending chain

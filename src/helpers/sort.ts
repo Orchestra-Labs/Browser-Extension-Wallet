@@ -1,6 +1,6 @@
-import { Asset, CombinedStakingInfo } from '@/types';
+import { Asset, ChainRecord, CombinedStakingInfo } from '@/types';
 import { stripNonAlphanumerics } from './formatString';
-import { BondStatus, ValidatorSortType, ValidatorStatusFilter } from '@/constants';
+import { BondStatus, ChainSortType, ValidatorSortType, ValidatorStatusFilter } from '@/constants';
 
 export function filterAndSortAssets(
   assets: Asset[],
@@ -75,6 +75,69 @@ export function filterAndSortValidators(
   showCurrentValidators: boolean,
   statusFilter: ValidatorStatusFilter,
 ): typeof validators {
+  const lowercasedSearchTerm = searchTerm.toLowerCase();
+
+  const filteredByStatus = validators.filter(validator => {
+    const shouldIncludeValidator =
+      statusMatch(validator, statusFilter) || hasUserActivity(validator);
+
+    return shouldIncludeValidator;
+  });
+
+  const filteredValidators = filteredByStatus.filter(validator => {
+    const matchesSearch = validator.validator.description.moniker
+      .toLowerCase()
+      .includes(lowercasedSearchTerm);
+    return matchesSearch;
+  });
+
+  const finalValidators = showCurrentValidators
+    ? filteredValidators.filter(validator => hasUserActivity(validator))
+    : filteredValidators;
+
+  return finalValidators.sort((a, b) => {
+    let valueA, valueB;
+
+    switch (sortType) {
+      case ValidatorSortType.NAME:
+        valueA = stripNonAlphanumerics(a.validator.description.moniker.toLowerCase());
+        valueB = stripNonAlphanumerics(b.validator.description.moniker.toLowerCase());
+        return sortOrder === 'Asc'
+          ? valueA.localeCompare(valueB, undefined, { sensitivity: 'base' })
+          : valueB.localeCompare(valueA, undefined, { sensitivity: 'base' });
+
+      case ValidatorSortType.DELEGATION:
+        valueA = parseFloat(a.delegation.shares);
+        valueB = parseFloat(b.delegation.shares);
+        break;
+
+      case ValidatorSortType.REWARDS:
+        valueA = a.rewards.reduce((sum, reward) => sum + parseFloat(reward.amount), 0);
+        valueB = b.rewards.reduce((sum, reward) => sum + parseFloat(reward.amount), 0);
+        break;
+
+      case ValidatorSortType.APY:
+        valueA = parseFloat(a.estimatedReturn ?? '0');
+        valueB = parseFloat(b.estimatedReturn ?? '0');
+        break;
+
+      case ValidatorSortType.VOTING_POWER:
+        valueA = parseFloat(a.votingPower ?? '0');
+        valueB = parseFloat(b.votingPower ?? '0');
+        break;
+    }
+
+    return sortOrder === 'Asc' ? (valueA > valueB ? 1 : -1) : valueA < valueB ? 1 : -1;
+  });
+}
+
+export function filterAndSortChains(
+  chains: ChainRecord[],
+  searchTerm: string,
+  sortType: ChainSortType,
+  sortOrder: 'Asc' | 'Desc',
+  showCurrentChains: boolean,
+) {
   const lowercasedSearchTerm = searchTerm.toLowerCase();
 
   const filteredByStatus = validators.filter(validator => {

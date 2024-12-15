@@ -6,6 +6,7 @@ import { AuthGuard, GuestGuard } from '@/guards';
 import {
   AddNewNetwork,
   CreateWallet,
+  EditChainListScreen,
   EditCoinListScreen,
   ImportWallet,
   Login,
@@ -74,6 +75,10 @@ export const AppRouter: React.FC = (): React.ReactElement | null =>
         {
           path: ROUTES.APP.ADD_NETWORK,
           element: <AddNewNetwork />,
+        },
+        {
+          path: ROUTES.APP.EDIT_CHAIN_LIST,
+          element: <EditChainListScreen />,
         },
         {
           path: ROUTES.APP.EDIT_COIN_LIST,

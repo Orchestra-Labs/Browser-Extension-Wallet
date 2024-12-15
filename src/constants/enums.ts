@@ -33,6 +33,10 @@ export enum ValidatorSortType {
   VOTING_POWER = 'votingPower',
 }
 
+export enum ChainSortType {
+  NAME = 'name',
+}
+
 export enum IBCConnectionState {
   OPEN = 'STATE_OPEN',
   CLOSED = 'STATE_CLOSED',
