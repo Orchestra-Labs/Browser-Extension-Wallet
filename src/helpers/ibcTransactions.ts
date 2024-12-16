@@ -79,11 +79,7 @@ const getValidIBCChannel = async (
     return null;
   }
 
-  // Fetch IBC paths
   const ibcPaths = await fetchIbcPaths(network);
-  console.log('Fetched IBC paths:', ibcPaths);
-
-  // Find matching file
   const matchingFile = ibcPaths.find(file => {
     if (!sendChain || !receiveChain) return false;
     return (
@@ -96,20 +92,26 @@ const getValidIBCChannel = async (
     console.error('No matching IBC file found for the given chains.');
     return null;
   }
-  console.log('Matching IBC file found:', matchingFile);
 
   // Fetch IBC file details
-  const ibcFileData = await fetchIBCFile(matchingFile, network);
+  const ibcFile = await fetchIBCFile(matchingFile, network);
+  const ibcFileData = ibcFile?.data;
 
   if (!ibcFileData) {
     console.error('Failed to fetch IBC file details.');
     return null;
   }
-  console.log('Fetched IBC file data:', ibcFileData);
+  if (!ibcFileData.channels || !Array.isArray(ibcFileData.channels)) {
+    console.error(
+      'Failed to format IBC file channels.',
+      !ibcFileData.channels,
+      !Array.isArray(ibcFileData.channels),
+    );
+    return null;
+  }
 
   // Query active IBC channels
   const activeChannels = await fetchActiveIBCChannels();
-  console.log('Active IBC channels:', activeChannels);
 
   if (!activeChannels.length) {
     console.error('No active IBC channels found on the sending chain.');
@@ -118,21 +120,23 @@ const getValidIBCChannel = async (
 
   // Validate channels
   const validChannel = activeChannels.find(channel =>
-    ibcFileData.channels.some(
-      fileChannel =>
-        ((fileChannel.chain_1.channel_id === channel.channel_id &&
-          fileChannel.chain_2.channel_id === channel.counterparty.channel_id) ||
-          (fileChannel.chain_2.channel_id === channel.channel_id &&
-            fileChannel.chain_1.channel_id === channel.counterparty.channel_id)) &&
-        channel.state === 'STATE_OPEN',
-    ),
+    ibcFileData.channels.some(fileChannel => {
+      const matchOne =
+        fileChannel.chain_1.channel_id === channel.channel_id &&
+        fileChannel.chain_2.channel_id === channel.counterparty.channel_id;
+
+      const matchTwo =
+        fileChannel.chain_2.channel_id === channel.channel_id &&
+        fileChannel.chain_1.channel_id === channel.counterparty.channel_id;
+
+      return (matchOne || matchTwo) && channel.state === 'STATE_OPEN';
+    }),
   );
 
   if (!validChannel) {
     console.error('No valid IBC channel found.');
     return null;
   }
-  console.log('Valid IBC channel found:', validChannel);
 
   return validChannel;
 };
@@ -146,11 +150,13 @@ export const isIBC = async ({
   recipientAddress: string;
   network: NetworkLevel;
 }): Promise<boolean> => {
+  console.log('checking is ibc.  send address', sendAddress, 'receive address', recipientAddress);
   if (sendAddress === recipientAddress) {
     return false;
   }
 
   const validChannel = await getValidIBCChannel(sendAddress, recipientAddress, network);
+  console.log('checking is ibc.  valid channel', validChannel);
 
   return validChannel !== null;
 };
@@ -196,6 +202,7 @@ export const fetchIBCFile = async (
   network: NetworkLevel,
 ): Promise<IBCConnectionFile | null> => {
   const storedFile = getIBCFile(network, file.name);
+  console.log('stored file', storedFile);
 
   if (storedFile && !ibcFileNeedsRefresh(storedFile)) {
     console.log(`Using cached IBC file content for: ${file.name}`);
@@ -205,6 +212,7 @@ export const fetchIBCFile = async (
   try {
     console.log('Fetching IBC file from GitHub:', file.download_url);
     const response = await axios.get<GitHubFileResponse>(file.download_url);
+    console.log('github file response', response);
 
     if (response.data.encoding === 'base64' && response.data.content) {
       const decodedContent = atob(response.data.content);

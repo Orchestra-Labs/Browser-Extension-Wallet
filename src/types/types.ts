@@ -269,12 +269,14 @@ export interface IBCConnectionFileChannel {
 
 export interface IBCConnectionFile {
   lastUpdated: string;
-  chain_1: any;
-  chain_2: any;
-  channels: Array<{
-    chain_1: IBCConnectionFileChannel;
-    chain_2: IBCConnectionFileChannel;
-  }>;
+  data: {
+    chain_1: any;
+    chain_2: any;
+    channels: Array<{
+      chain_1: IBCConnectionFileChannel;
+      chain_2: IBCConnectionFileChannel;
+    }>;
+  };
 }
 
 export interface TransactionState {
